@@ -1,0 +1,33 @@
+Project Root/
+│
+├── index.html                 # The Main Converter Tool
+├── visual-editor.html                # The Visual Builder Page
+├── help.html                  # Help Page
+│
+├── ARCHIVE/                   # Old files
+│
+├── converter/                 # Logic for the Text-to-HTML Tool
+│   ├── css/
+│   │   └── converter-styles.css
+│   └── js/
+│       ├── html-generator.js
+│       ├── latex-generator.js
+│       ├── quiz-parser.js
+│       ├── storage.js
+│       └── ui.js
+│
+├── editor/                    # Logic for the Visual Builder
+│   └── js/
+│       ├── builder.js         # The Controller
+│       └── visual-editor.js   # The Rendering Logic
+│
+├── quiz/                      # The "Template" injected into downloaded quizzes
+│   ├── css/
+│   │   ├── base.css
+│   │   ├── content.css
+│   │   ├── layout.css
+│   │   └── sidebar.css
+│   └── js/
+│       └── script.js
+│
+└── docs/                      # Documentation

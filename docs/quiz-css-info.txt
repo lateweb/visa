@@ -1,0 +1,19 @@
+1. base.css
+
+Contains: Resets, Body settings, Global Typography, and Global Variables.
+Use this file when you need to change the background color, the main font, or page margins.
+
+2. sidebar.css
+
+Contains: The Sidebar, Timer, Navigation Links, and Toggle Button.
+Use this file when editing the navigation menu logic or styling. It isolates the "Application Shell" from the content.
+
+3. layout.css
+
+Contains: The containers, Question Blocks, and Answer Buttons.
+Use this file when you need to change how the questions look, or style the "Correct/Incorrect" feedback.
+
+4. content.css
+
+Contains: Material Boxes, Quotes, Tables, Code, and Math.
+Use this file whenever you are styling the educational content inside the question blocks.
