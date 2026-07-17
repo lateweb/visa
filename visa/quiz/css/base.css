@@ -1,0 +1,52 @@
+/* --- base.css --- */
+*, *:before, *:after {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 3rem; 
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f2f7f5;
+  color: #000000;
+  font-size: 1.15rem;
+  line-height: 1.6;
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  transition: padding-left 0.3s ease;
+  overflow-x: hidden;
+}
+
+h1 {
+  font-weight: 600;
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 3rem;
+  color: #184e77;
+  scroll-margin-top: 2rem;
+  line-height: 1.2;
+}
+
+/* Global Responsive Adjustments */
+@media (max-width: 768px) {
+  body {
+    padding: 1.5rem 0.75rem !important;
+    padding-top: 4rem;
+  }
+  h1 { font-size: 1.8rem; margin-bottom: 2rem; }
+}
+
+@media (max-width: 480px) {
+  body { padding: 1.25rem 0.5rem !important; }
+  h1 { font-size: 1.6rem !important; margin-bottom: 1.5rem !important; }
+}
