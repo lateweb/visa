@@ -1,3 +1,5 @@
+// converter/js/quiz-parser.js
+
 // Utility function to shuffle an array in place
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
@@ -92,17 +94,36 @@ function parseQuizdown(text, lang = 'en') {
       }).join('');
     }
 
+    // Helper: Interleave materials into formatted text
+    function interleaveMaterials(text, materialList) {
+      if (!text) return '';
+      const tokenPattern = new RegExp(`(${materialList.map(m => m.token).join('|')})`, 'g');
+      const parts = text.split(tokenPattern);
+      let out = '';
+      parts.forEach(part => {
+        if (!part) return;
+        const material = materialList.find(m => m.token === part);
+        if (material) {
+          out += material.html;
+        } else {
+          out += formatParagraphs(part);
+        }
+      });
+      return out;
+    }
+
     try {
       block = block.split('\n').filter(line => !line.trim().startsWith('//')).join('\n').trim();
       const qNum = index + 1;
-      let materialsHtml = '';
 
-      // PARSE MATERIALS
+      // PARSE MATERIALS – store html in list, replace with tokens
+      let materialList = [];
       block = block.replace(/\[(code|quote|table|material|plot)\]\n?([\s\S]*?)\n?\[\/(?:code|quote|table|material|plot)\]/gs, (match, type, content) => {
         content = content.trim();
-        
+        let materialHtml = '';
+
         if (type === 'code') {
-          materialsHtml += `<div class="material-box"><pre><code>${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>`;
+          materialHtml = `<div class="material-box"><pre><code>${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>`;
         } 
         else if (type === 'table') {
           const protectedContent = maskMath(content);
@@ -116,8 +137,7 @@ function parseQuizdown(text, lang = 'en') {
             body.map(r => `<tr>${r.map(d => `<td>${applyFormatting(d)}</td>`).join('')}</tr>`).join('')
           }</tbody></table>`;
           
-          // --- FIX HERE: Added 'single-table-box' class ---
-          materialsHtml += `<div class="material-box single-table-box">${tableHtml}</div>`;
+          materialHtml = `<div class="material-box single-table-box">${tableHtml}</div>`;
         } 
         else if (type === 'quote') {
            const lines = content.split('\n');
@@ -140,12 +160,15 @@ function parseQuizdown(text, lang = 'en') {
            } else {
               quoteTextLines = lines;
            }
-           materialsHtml += `<div class="material-box"><figure><blockquote>${formatParagraphs(quoteTextLines.join('\n').trim())}</blockquote>${attribution ? `<figcaption>${applyFormatting(attribution)}</figcaption>` : ''}</figure></div>`;
+           materialHtml = `<div class="material-box"><figure><blockquote>${formatParagraphs(quoteTextLines.join('\n').trim())}</blockquote>${attribution ? `<figcaption>${applyFormatting(attribution)}</figcaption>` : ''}</figure></div>`;
         } 
         else if (type === 'material') {
-          materialsHtml += `<div class="material-box">${formatParagraphs(content)}</div>`;
+          materialHtml = `<div class="material-box">${formatParagraphs(content)}</div>`;
         }
-        return '';
+
+        const token = `@@MATERIAL_${materialList.length}@@`;
+        materialList.push({ token, html: materialHtml });
+        return token;
       });
 
       // PARSE Q/A/Options
@@ -173,16 +196,18 @@ function parseQuizdown(text, lang = 'en') {
         }
       }
 
-      const questionTitle = formatParagraphs(questionLines.join('\n').trim());
-      const answer = formatParagraphs(answerLines.join('\n').trim());
-      
+      const questionRaw = questionLines.join('\n').trim();
+      const answerRaw = answerLines.join('\n').trim();
+      const questionTitle = interleaveMaterials(questionRaw, materialList);
+      const answer = answerRaw ? interleaveMaterials(answerRaw, materialList) : '';
+
       if (options.length > 2) shuffleArray(options);
       if (!questionTitle) return '';
 
       const isMcq = options.length > 0;
       const qId = `q${qNum}`;
       let html = `<section class="question-block" id="${qId}" ${isMcq ? `data-correct-answer="${String.fromCharCode(97 + options.findIndex(opt => opt.correct))}"` : ''} aria-labelledby="${qId}-title">`;
-      html += `<p class="question-number" id="${qId}-number">${qNum}.</p><div class="question-title" id="${qId}-title">${questionTitle}</div>${materialsHtml}`;
+      html += `<p class="question-number" id="${qId}-number">${qNum}.</p><div class="question-title" id="${qId}-title">${questionTitle}</div>`;
 
       if (isMcq) {
         html += '<fieldset><div class="options" role="radiogroup">';
