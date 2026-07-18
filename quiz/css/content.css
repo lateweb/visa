@@ -110,30 +110,26 @@ span.backtick {
 }
 
 .data-table {
-  width: 100%;
+  width: auto; /* Shrinks table to fit content */
+  min-width: min-content;
   border-collapse: collapse;
   margin: 0.5rem 0;
-  font-size: 0.98rem;
+  font-size: 1rem;
   background-color: #fff;
 }
 
-.data-table th,
+.data-table th, 
 .data-table td {
-  border: 1px solid #e5e7eb;
-  padding: 0.6rem 0.75rem;
+  border: 1px solid #dee2e6;
+  padding: 10px 12px;
   text-align: left;
-  vertical-align: top;
-  white-space: normal;
+  white-space: nowrap; /* Prevents wrapping in tight columns */
 }
 
-.data-table thead th {
-  background-color: #f3f4f6;
+.data-table th {
+  background-color: #e9ecef;
   font-weight: 600;
-  color: #4b5563;
-}
-
-.data-table tbody tr:nth-child(even) {
-  background-color: #fafafa;
+  color: #184e77;
 }
 
 /* --- 5. MathJax Layout --- */
