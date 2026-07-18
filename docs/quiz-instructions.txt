@@ -60,7 +60,7 @@ Analyze the provided materials, which include a historical quote, a description 
 
 [quote]
 "That's one small step for a man, a giant leap for mankind."
-— Neil Armstrong
+Author: Neil Armstrong
 [/quote]
 
 
@@ -339,7 +339,7 @@ Evaluate the long-term geopolitical and domestic consequences of the Iraq War. U
 
 [quote]
 "The 2003 U.S. invasion of Iraq and its aftermath have arguably been the most pivotal events in the Middle East region since the end of the Cold War... the strategic implications of this war and its aftermath have already affected the broader region."
-— RAND Corporation Report, *The Iraq Effect*, 2010.
+Source: RAND Corporation Report, *The Iraq Effect*, 2010.
 [/quote]
 
 
@@ -541,7 +541,7 @@ The cost per QALY is $ \$100,000 / 2 = \$50,000 $, which meets the threshold, bu
 Analyze the provided quote and determine the output of the Python code.
 [quote]
 "The code should be its own best documentation."
-— Steve McConnell in his book *Code Complete*
+Author: Steve McConnell in his book *Code Complete*
 [/quote]
 [code]
 def parse(text):
