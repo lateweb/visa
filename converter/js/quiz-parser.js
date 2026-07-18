@@ -74,9 +74,22 @@ function parseQuizdown(text, lang = 'en') {
     // Helper: Format Paragraphs
     function formatParagraphs(txt) {
       if (!txt) return '';
-      return txt.split(/\n\s*\n/).filter(p => p.trim()).map(p => 
-        `<p class="content-text">${applyFormatting(p.replace(/\n/g, '<br>'))}</p>`
-      ).join('');
+      return txt.split(/\n\s*\n/).filter(p => p.trim()).map(p => {
+        const processed = applyFormatting(p.replace(/\n/g, '<br>'));
+        const segments = processed
+          .split(/(<div class="math-scroll">[\s\S]*?<\/div>)/g)
+          .filter(Boolean);
+
+        return segments.map(segment => {
+          if (segment.startsWith('<div class="math-scroll">')) {
+            return segment;
+          }
+
+          const trimmed = segment.trim();
+          if (!trimmed) return '';
+          return `<p class="content-text">${segment}</p>`;
+        }).join('');
+      }).join('');
     }
 
     try {
