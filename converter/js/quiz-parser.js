@@ -123,15 +123,24 @@ function parseQuizdown(text, lang = 'en') {
            const lines = content.split('\n');
            let quoteTextLines = [];
            let attribution = '';
-           const attributionIndex = lines.findIndex(line => line.trim().startsWith('—'));
+           const attributionIndex = lines.findIndex(line => {
+             const trimmed = line.trim();
+             return trimmed.startsWith('—') || /^(author|by|source|attribution)\s*:/i.test(trimmed);
+           });
            if (attributionIndex !== -1) {
-              attribution = lines[attributionIndex].trim().replace(/^—\s*/, '');
+              const attributionLine = lines[attributionIndex].trim();
+              const prefixMatch = attributionLine.match(/^(author|by|source|attribution)\s*:\s*(.*)$/i);
+              if (prefixMatch) {
+                attribution = prefixMatch[2].trim();
+              } else {
+                attribution = attributionLine.replace(/^—\s*/, '');
+              }
               if (attributionIndex < lines.length - 1) attribution += ' ' + lines.slice(attributionIndex + 1).join(' ').trim();
               quoteTextLines = lines.slice(0, attributionIndex);
            } else {
               quoteTextLines = lines;
            }
-           materialsHtml += `<div class="material-box"><figure><blockquote>${formatParagraphs(quoteTextLines.join('\n').trim())}</blockquote>${attribution ? `<figcaption>— ${applyFormatting(attribution)}</figcaption>` : ''}</figure></div>`;
+           materialsHtml += `<div class="material-box"><figure><blockquote>${formatParagraphs(quoteTextLines.join('\n').trim())}</blockquote>${attribution ? `<figcaption>${applyFormatting(attribution)}</figcaption>` : ''}</figure></div>`;
         } 
         else if (type === 'material') {
           materialsHtml += `<div class="material-box">${formatParagraphs(content)}</div>`;
