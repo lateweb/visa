@@ -97,6 +97,10 @@ function parseQuizdown(text, lang = 'en') {
     // Helper: Interleave materials into formatted text
     function interleaveMaterials(text, materialList) {
       if (!text) return '';
+      // Fix: Prevent splitting text into individual letters when no materials exist
+      if (materialList.length === 0) {
+        return formatParagraphs(text);
+      }
       const tokenPattern = new RegExp(`(${materialList.map(m => m.token).join('|')})`, 'g');
       const parts = text.split(tokenPattern);
       let out = '';
