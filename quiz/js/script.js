@@ -313,6 +313,25 @@
     }
   }
 
+  // --- CODE COPY HANDLER ---
+  function setupCodeCopy() {
+    document.querySelectorAll('.copy-code-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const codeEl = btn.parentElement.querySelector('code');
+        if (codeEl) {
+          try {
+            await navigator.clipboard.writeText(codeEl.textContent);
+            const origHTML = btn.innerHTML;
+            btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+            setTimeout(() => { btn.innerHTML = origHTML; }, 2000);
+          } catch (err) {
+            console.error('Failed to copy', err);
+          }
+        }
+      });
+    });
+  }
+
   // --- SIDEBAR & TIMER ---
 
   function buildTimer(sidebar) {
@@ -481,6 +500,7 @@
     wireQuiz();
     processBackticks();
     autoFormatQuotes(); // <--- Automatically styles quotes
+    setupCodeCopy(); // <--- Attaches clipboard events to code blocks
     initTheme(); // <--- Initialize Theme Toggle
 
     const onMathJaxReady = () => {
