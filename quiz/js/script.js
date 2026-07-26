@@ -20,8 +20,8 @@
     style.id = styleId;
     style.textContent = `
       /* Standard Converter Styles */
-      .tex-raw-inline { display:inline; white-space:pre-wrap; word-break:break-word; cursor:text; font-family: 'Fira Code', monospace; color: #d63384; }
-      .tex-raw-block { display:block; white-space:pre-wrap; word-break:break-word; cursor:text; margin:0.5em 0; background: var(--quiz-surface); padding: 0.5em; border-radius: 4px; font-family: 'Fira Code', monospace; color: #d63384; }
+      .tex-raw-inline { display:inline; white-space:pre-wrap; word-break:break-word; cursor:text; font-family: 'Fira Code', monospace; color: #d63384; font-size: 1.05em; }
+      .tex-raw-block { display:block; white-space:pre-wrap; word-break:break-word; cursor:text; margin:0.5em 0; background: var(--quiz-surface); padding: 0.5em; border-radius: 4px; font-family: 'Fira Code', monospace; color: #d63384; font-size: 1.05em; }
       
       .question-number { cursor: pointer; user-select: none; font-weight: bold; color: inherit; font-size: 1.2em; display: inline-block; margin-right: 8px; }
       .question-number:hover { text-decoration: underline; }
@@ -35,7 +35,7 @@
         margin: 0 !important;
         padding: 0 !important;
         line-height: inherit !important;
-        font-size: inherit !important; 
+        font-size: 1.05em !important;     /* Scales inline and block math equally */
         width: auto !important;
         max-width: 100% !important;
         
@@ -317,7 +317,7 @@
   function setupCodeCopy() {
     document.querySelectorAll('.copy-code-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const codeEl = btn.parentElement.querySelector('code');
+        const codeEl = btn.closest('.code-box').querySelector('code');
         if (codeEl) {
           try {
             await navigator.clipboard.writeText(codeEl.textContent);
@@ -389,7 +389,11 @@
     
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'nav-toggle-btn';
-    toggleBtn.innerHTML = '☰';
+    toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>`;
     toggleBtn.setAttribute('aria-label', 'Toggle Navigation');
     
     const overlay = document.createElement('div');
@@ -415,12 +419,8 @@
     document.body.appendChild(toggleBtn);
 
     const toggleSidebar = () => {
-      if (window.innerWidth >= 1100) {
-        document.body.classList.toggle('nav-hidden');
-      } else {
-        sidebar.classList.toggle('open');
-        overlay.classList.toggle('active');
-      }
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
     };
 
     toggleBtn.addEventListener('click', toggleSidebar);
@@ -428,10 +428,8 @@
 
     list.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', () => {
-        if (window.innerWidth < 1100) {
-          sidebar.classList.remove('open');
-          overlay.classList.remove('active');
-        }
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
       });
     });
 
