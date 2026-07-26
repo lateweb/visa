@@ -32,7 +32,7 @@ body.dark {
 }
 
 html, body {
-  overflow-x: hidden; /* prevent horizontal scroll on mobile */
+  overflow-x: hidden;
   width: 100%;
 }
 
@@ -272,7 +272,7 @@ body {
   flex-direction: column;
   min-width: 0;
   background: var(--bg);
-  overflow-x: hidden; /* prevent child overflow from causing horizontal scroll */
+  overflow-x: hidden;
 }
 
 /* Toolbar */
@@ -284,7 +284,7 @@ body {
   flex-wrap: wrap;
   gap: 15px;
   border-bottom: 1px solid var(--border-color);
-  overflow-x: auto;  /* allow internal scroll if needed, but keep container tight */
+  overflow-x: auto;
   min-width: 0;
 }
 
@@ -296,7 +296,7 @@ body {
   border-top: 1px solid var(--border-color);
   border-bottom: none;
   padding: 12px 20px;
-  flex-wrap: wrap;     /* already set in .toolbar, but reinforce */
+  flex-wrap: wrap;
   row-gap: 10px;
 }
 
@@ -341,8 +341,11 @@ textarea#quizdownCode {
   resize: none;
   outline: none;
   display: block;
-  max-width: 100%;            /* prevent any overflow beyond parent */
-  box-sizing: border-box;     /* already set globally, but reinforce */
+  max-width: 100%;
+  box-sizing: border-box;
+  /* Disable programming ligatures so that <- stays as two characters */
+  font-feature-settings: "liga" 0;
+  font-variant-ligatures: none;
 }
 
 textarea#quizdownCode:focus {
@@ -594,7 +597,7 @@ textarea#quizdownCode:focus {
 /* Responsive */
 @media (max-width: 768px) {
   html, body {
-    overflow-x: hidden;   /* ensure no accidental horizontal scroll */
+    overflow-x: hidden;
   }
 
   .main-container {
@@ -622,8 +625,8 @@ textarea#quizdownCode:focus {
   .toolbar {
     padding: 10px 15px;
     gap: 10px;
-    justify-content: flex-start; /* leave space for wrapping */
-    overflow-x: hidden;          /* prevent scroll on toolbar itself */
+    justify-content: flex-start;
+    overflow-x: hidden;
   }
 
   .bottom-toolbar {
@@ -656,6 +659,8 @@ textarea#quizdownCode:focus {
   }
 
   textarea#quizdownCode {
-    padding: 15px;          /* slightly less padding on mobile */
+    padding: 15px;
+    font-feature-settings: "liga" 0;
+    font-variant-ligatures: none;
   }
 }
