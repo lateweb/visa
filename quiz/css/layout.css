@@ -1,6 +1,6 @@
 /* quiz/css/layout.css */
 .quiz-section {
-  max-width: 1200px;
+  max-width: 750px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
