@@ -132,10 +132,13 @@
 
     function parseMaterialBlock(type, content) {
       const trimmed = content.trim();
-      switch (type) {
-        case 'code':
-          return `\\begin{verbatim}\n${trimmed}\n\\end{verbatim}\n`;
 
+      // handle code blocks (with optional language specifier, e.g., code:python)
+      if (type === 'code' || type.startsWith('code:')) {
+        return `\\begin{verbatim}\n${trimmed}\n\\end{verbatim}\n`;
+      }
+
+      switch (type) {
         case 'quote': {
           const lines = trimmed.split('\n');
           let quoteLines = [];
@@ -154,7 +157,6 @@
           }
           let body = applyLatexFormatting(quoteLines.join('\n').trim());
           if (attribution) {
-            // Process the attribution with full formatting to support *italic* and **bold**
             body += `\\par\\vspace{0.8em}\\textbf{---} ${applyLatexFormatting(attribution)}`;
           }
           return `\\begin{quote}\n${body}\n\\end{quote}\n`;
@@ -173,12 +175,13 @@
           );
           const numCols = grid[0].length;
           const colSpec = '|' + 'c|'.repeat(numCols);
-          let tab = `\\begin{center}\n\\small\n\\resizebox{\\textwidth}{!}{%\n\\begin{tabular}{${colSpec}}\n\\hline\n`;
+          // Use adjustbox to scale down only if table is too wide, never enlarge.
+          let tab = `\\begin{center}\n\\small\n\\adjustbox{max width=\\textwidth}{\\begin{tabular}{${colSpec}}\n\\hline\n`;
           grid.forEach(row => {
             const cells = row.map(c => applyLatexFormatting(c));
             tab += cells.join(' & ') + ' \\\\ \\hline\n';
           });
-          tab += `\\end{tabular}%\n}\n\\end{center}\n`;
+          tab += `\\end{tabular}}\n\\end{center}\n`;
           return tab;
         }
 
@@ -251,8 +254,10 @@
     blocks.forEach((block, i) => {
       try {
         let materialLatex = '';
-        const cleanBlock = block.replace(/\[(code|quote|table|material|plot)\]\s*([\s\S]*?)\s*\[\/\1\]/gi, (m, type, content) => {
-          materialLatex += parseMaterialBlock(type.toLowerCase(), content);
+        // Updated regex to support optional language specifier (e.g., [code:python])
+        const cleanBlock = block.replace(/\[(code|quote|table|material|plot)(?::([^\]]+))?\]\s*([\s\S]*?)\s*\[\/\1\]/gi, (m, baseType, lang, content) => {
+          const fullType = lang ? `${baseType}:${lang}` : baseType;
+          materialLatex += parseMaterialBlock(fullType, content);
           return '';
         });
         const s = splitBlockIntoSections(cleanBlock);
@@ -322,6 +327,7 @@ ${lang === 'fi' ? '\\usepackage[finnish]{babel}' : ''}
             pdfborder={0 0 0}]{hyperref}
 \\usepackage{footmisc}
 \\usepackage{graphicx}
+\\usepackage{adjustbox}            % for max width tables
 
 % ----- footnotes -----
 \\renewcommand{\\footnoterule}{\\kern -3pt \\hrule width \\columnwidth height 0.4pt \\kern 2.6pt}
