@@ -1,22 +1,19 @@
-// converter/js/html-generator.js
+// app/js/html-generator.js
 /**
  * html-generator.js
  * Bundles the Quizdown content, CSS, and JS into a single HTML string.
- * 
- * Updated: Fetches files from the 'quiz' folder structure.
- * Context: This script is loaded by index.html, so paths are relative to root.
  */
 
 // Variable to cache the fetched assets (CSS strings and JS string)
 let assetsPromise = null;
 
 // DEFINITION: The list of CSS files to merge
-// Updated paths to point to 'quiz/css' folder
+// Updated paths to point to 'template/css' folder
 const CSS_FILES = [
-  './quiz/css/base.css',
-  './quiz/css/sidebar.css',
-  './quiz/css/layout.css',
-  './quiz/css/content.css'
+  './template/css/base.css',
+  './template/css/sidebar.css',
+  './template/css/layout.css',
+  './template/css/content.css'
 ];
 
 /**
@@ -49,26 +46,19 @@ async function fetchAsset(url) {
  */
 function loadAssets() {
   if (!assetsPromise) {
-    // 1. Create an array of promises for the CSS files
     const cssPromises = CSS_FILES.map(file => fetchAsset(file));
     
-    // 2. Create a promise for the JS file (Now located in quiz/js/)
-    const jsPromise = fetchAsset('./quiz/js/script.js');
+    // JS file is located in template/js/
+    const jsPromise = fetchAsset('./template/js/script.js');
 
-    // 3. Wait for ALL promises (CSS + JS) to resolve
     assetsPromise = Promise.all([...cssPromises, jsPromise])
       .then(results => {
-        // The last result is the JS content
         const jsContent = results.pop();
-        
-        // The remaining results are the CSS files, in order. Join them.
         const cssContent = results.join('\n\n/* --- END OF FILE --- */\n\n');
-        
         return [cssContent, jsContent];
       })
       .catch((err) => {
         console.error("Error loading quiz assets:", err);
-        // Reset cache so user can try again
         assetsPromise = null; 
         throw err;
       });
@@ -109,7 +99,6 @@ function preprocessQuizdownContent(content) {
  */
 async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) {
   try {
-    // Wait for assets to load (or pull from cache)
     const [cssContent, jsContent] = await loadAssets();
     const safeTitle = escapeHtml(quizTitle);
 
@@ -139,7 +128,6 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) 
         matchFontHeight: false,
         scale: 1,
         minScale: 0.5,
-        // FIX: Disabled automatic linebreaks to force scrolling behavior
         linebreaks: {
           automatic: false 
         }
