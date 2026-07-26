@@ -20,6 +20,7 @@
   max-width: 100%;
   border: 1px solid var(--quiz-border);
   background: var(--quiz-surface);
+  overflow: hidden;
 }
 
 .code-header {
@@ -55,16 +56,17 @@
 
 .code-box pre {
   display: block;
-  border: none;
   margin: 0;
   padding: 0;
+  border: none;
   overflow-x: auto;
   white-space: pre;
   font-family: "Fira Code", monospace;
   font-size: 0.95rem;
 }
 
-/* Prevent programming ligatures inside code blocks */
+/* Prevent programming ligatures inside code blocks. 
+   CRITICAL FIX: Removed all color/background inherit overrides here */
 .code-box pre code {
   font-family: inherit;
   font-size: inherit;
@@ -72,10 +74,19 @@
   font-variant-ligatures: none;
 }
 
-/* Highlight.js overrides: allow native theme colors and backgrounds, just fix padding */
-.code-box .hljs {
-  padding: 1rem 1.5rem !important;
-  margin: 0 !important;
+/* Apply proper padding once Highlight.js adds .hljs */
+.code-box pre code.hljs {
+  padding: 1rem 1.5rem;
+  display: block;
+  margin: 0;
+}
+
+/* Fallback if Highlight.js fails to load or isn't present */
+.code-box pre code:not(.hljs) {
+  padding: 1rem 1.5rem;
+  display: block;
+  color: var(--quiz-text);
+  background: transparent;
 }
 
 .content-text {
@@ -168,5 +179,6 @@ mjx-assistive-mml { display: none !important; }
 @media (max-width: 768px) {
   .material-box { padding: 1rem; }
   .code-box { padding: 0; }
-  .code-box .hljs { padding: 1rem !important; }
+  .code-box pre code.hljs,
+  .code-box pre code:not(.hljs) { padding: 1rem; }
 }
