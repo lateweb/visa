@@ -88,7 +88,7 @@
       processed = processed.replace(/€/g, '{\\EUR}');
       processed = escapeLatex(processed);
 
-      // 6. Markdown Formatting
+      // 6. Markdown Formatting (bold first, then italics)
       processed = processed.replace(/\*\*(.+?)\*\*/g, '\\textbf{$1}');
       processed = processed.replace(/\*([^*]+?)\*/g, '\\textit{$1}');
 
@@ -149,12 +149,13 @@
           );
           const numCols = grid[0].length;
           const colSpec = '|' + 'c|'.repeat(numCols);
-          let tab = `\\begin{center}\n\\small\n\\begin{tabular}{${colSpec}}\n\\hline\n`;
+          // Wrap in \resizebox to make the table fit the text width
+          let tab = `\\begin{center}\n\\small\n\\resizebox{\\textwidth}{!}{%\n\\begin{tabular}{${colSpec}}\n\\hline\n`;
           grid.forEach(row => {
             const cells = row.map(c => applyLatexFormatting(c));
             tab += cells.join(' & ') + ' \\\\ \\hline\n';
           });
-          tab += '\\end{tabular}\n\\end{center}\n';
+          tab += `\\end{tabular}%\n}\n\\end{center}\n`;
           return tab;
         }
 
@@ -233,11 +234,10 @@
         });
         const s = splitBlockIntoSections(cleanBlock);
 
-        // Points string (if any) will be placed after the question body, right-aligned.
         const pointsStr = s.points ? `\\hfill (\\rule{1cm}{0.4pt} / ${escapeLatex(String(s.points))} p.)` : '';
         const qBody = applyLatexFormatting(s.question);
 
-        // NO manual number – let enumerate handle the numbering.
+        // No manual numbering – let enumerate handle it.
         let qItem = `\\item ${qBody}\n${materialLatex}`;
         if (pointsStr) {
           qItem += `\\par\\vspace{0.5em}${pointsStr}`;
@@ -249,7 +249,7 @@
         }
         qLatex += qItem;
 
-        // Answer block
+        // Answer block (no manual numbering)
         let aContent = '';
         const correctOptIndex = s.options.findIndex(o => o.correct);
         if (correctOptIndex !== -1) {
@@ -268,8 +268,6 @@
   };
 
   // --- 4. Stand‑alone LaTeX Document Builder ---
-  // Hardcodes the one‑column, serif, black‑link baseline (from preamble.cls)
-  // so that no external class file is required.
   const generateLatexDocument = (content = '', includeAnswers = false, lang = 'en', isCompact = false) => {
     if (!content.trim()) return null;
     const parsed = parseQuizdownToLatex(content);
@@ -434,14 +432,14 @@ ${docPreamble}
 ${docHeader}
 
 \\section*{${labels.q}}
-\\begin{enumerate}[leftmargin=*]
+\\begin{enumerate}[leftmargin=*, itemsep=1.5em]
 ${parsed.questions}
 \\end{enumerate}
 
 ${includeAnswers ? `
 \\newpage
 \\section*{${labels.a}}
-\\begin{enumerate}[leftmargin=*]
+\\begin{enumerate}[leftmargin=*, itemsep=0.8em]
 ${parsed.answers}
 \\end{enumerate}
 ` : ''}
