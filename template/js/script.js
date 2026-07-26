@@ -1,4 +1,4 @@
-// quiz/js/script.js
+// template/js/script.js
 /**
  * script.js
  * Handles interactive elements, navigation, and robustly manages MathJax interaction.
@@ -285,7 +285,6 @@
     quotes.forEach(quote => {
       const box = quote.closest('.material-box');
       if (box) {
-        // Adds the .clean class defined in CSS to remove the boxy look
         box.classList.add('clean');
       }
     });
@@ -395,9 +394,6 @@
         <line x1="3" y1="18" x2="21" y2="18"></line>
     </svg>`;
     toggleBtn.setAttribute('aria-label', 'Toggle Navigation');
-    
-    const overlay = document.createElement('div');
-    overlay.className = 'sidebar-overlay';
 
     buildTimer(sidebar);
 
@@ -414,22 +410,24 @@
       list.appendChild(li);
     });
 
-    document.body.appendChild(overlay);
     document.body.appendChild(sidebar);
     document.body.appendChild(toggleBtn);
 
+    // Open sidebar by default on wide screens (≥ 768px)
+    if (window.innerWidth >= 768) {
+      sidebar.classList.add('open');
+    }
+
     const toggleSidebar = () => {
       sidebar.classList.toggle('open');
-      overlay.classList.toggle('active');
     };
 
     toggleBtn.addEventListener('click', toggleSidebar);
-    overlay.addEventListener('click', toggleSidebar);
 
+    // Link clicks NO LONGER close the sidebar – allowing the quiz area to remain usable
     list.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        sidebar.classList.remove('open');
-        overlay.classList.remove('active');
+      link.addEventListener('click', (e) => {
+        // do nothing – sidebar stays open
       });
     });
 
@@ -491,15 +489,15 @@
   // --- INITIALIZATION ---
 
   function initializePage() {
-    preventMathInteraction(); // Start the guard immediately
+    preventMathInteraction();
     installQuestionNumberClickHandler();
     
     buildSidebar();
     wireQuiz();
     processBackticks();
-    autoFormatQuotes(); // <--- Automatically styles quotes
-    setupCodeCopy(); // <--- Attaches clipboard events to code blocks
-    initTheme(); // <--- Initialize Theme Toggle
+    autoFormatQuotes();
+    setupCodeCopy();
+    initTheme();
 
     const onMathJaxReady = () => {
        annotateAllMathWithTex();
