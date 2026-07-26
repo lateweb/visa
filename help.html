@@ -14,14 +14,12 @@
       --surface: #f4f4f4;
     }
     
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #000000;
-        --text: #ffffff;
-        --border: #444444;
-        --muted: #aaaaaa;
-        --surface: #111111;
-      }
+    body.dark {
+      --bg: #000000;
+      --text: #ffffff;
+      --border: #444444;
+      --muted: #aaaaaa;
+      --surface: #111111;
     }
 
     body {
@@ -103,11 +101,35 @@
     li {
       margin-bottom: 8px;
     }
+
+    /* Theme toggle button (no border, no background) */
+    .theme-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: transparent;
+      border: none;
+      padding: 4px;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+    .theme-toggle:hover {
+      color: var(--text);
+    }
   </style>
 </head>
 <body>
 
   <a href="index.html" class="back-link">← Back to Converter</a>
+
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+  </button>
 
   <h1>Documentation</h1>
   
@@ -193,6 +215,33 @@ Author: William Shakespeare
   </ul>
 
   <script>
+    // --- Theme toggle (consistent with other pages, no border/box) ---
+    (function() {
+      const toggle = document.getElementById('theme-toggle');
+      const moon = document.getElementById('moon-icon');
+      const sun = document.getElementById('sun-icon');
+      
+      function apply(theme) {
+        document.body.classList.toggle('dark', theme === 'dark');
+        localStorage.setItem('visa-theme', theme);
+        if (moon && sun) {
+          moon.style.display = theme === 'dark' ? 'none' : 'inline';
+          sun.style.display = theme === 'dark' ? 'inline' : 'none';
+        }
+      }
+      
+      const saved = localStorage.getItem('visa-theme') || 'light';
+      apply(saved);
+      
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          const next = document.body.classList.contains('dark') ? 'light' : 'dark';
+          apply(next);
+        });
+      }
+    })();
+
+    // --- Copy buttons (existing functionality) ---
     document.querySelectorAll('.copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const preBlock = btn.nextElementSibling;
