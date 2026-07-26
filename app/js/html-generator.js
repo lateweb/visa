@@ -33,7 +33,8 @@ function escapeHtml(text) {
  * Helper: Generic fetch wrapper to get text content
  */
 async function fetchAsset(url) {
-  const response = await fetch(url);
+  // Append a cache-buster parameter to ensure we fetch the newest CSS during edits
+  const response = await fetch(`${url}?t=${Date.now()}`);
   if (!response.ok) {
     throw new Error(`Failed to load ${url}: ${response.statusText}`);
   }
@@ -143,8 +144,8 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) 
   <!-- MathJax 4 Library -->
   <script src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 
-  <!-- Highlight.js for syntax coloring -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+  <!-- Highlight.js for syntax coloring (Using Sublime Monokai for richer syntax) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai-sublime.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   
   <style>
@@ -199,6 +200,9 @@ async function generateQuizHtml(lang = 'en') {
     
     // Capture current active theme from the converter site
     const isDark = document.body.classList.contains('dark');
+    
+    // In dev mode, let's clear the assetsPromise to force a re-fetch of CSS/JS
+    assetsPromise = null;
     
     return await createFullHtml(finalTitle, quizOutput.body, lang, isDark);
     
