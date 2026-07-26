@@ -60,7 +60,13 @@ function parseQuizdown(text, lang = 'en') {
         mathStash.push({ token, content: `<div class="math-scroll">$$${p1}$$</div>` });
         return token;
       });
-      // 3. Extract inline math with $...$
+      // 3. Extract inline math with \(...\)
+      str = str.replace(/\\\(([\s\S]*?)\\\)/g, (match, p1) => {
+        const token = `@@MATH_I_${mathStash.length}@@`;
+        mathStash.push({ token, content: `<span class="math-inline">\\(${p1}\\)</span>` });
+        return token;
+      });
+      // 4. Extract inline math with $...$
       str = str.replace(/\$([^\$\n]+?)\$/g, (match, p1) => {
         const token = `@@MATH_I_${mathStash.length}@@`;
         mathStash.push({ token, content: `<span class="math-inline">$${p1}$</span>` });
@@ -108,9 +114,13 @@ function parseQuizdown(text, lang = 'en') {
             return segment;
           }
 
-          const trimmed = segment.trim();
+          let trimmed = segment.trim();
+          // Remove stray <br> tags injected directly before or after display math
+          trimmed = trimmed.replace(/^(?:<br\s*\/?>|\s)+/gi, '');
+          trimmed = trimmed.replace(/(?:<br\s*\/?>|\s)+$/gi, '');
+          
           if (!trimmed) return '';
-          return `<p class="content-text">${segment}</p>`;
+          return `<p class="content-text">${trimmed}</p>`;
         }).join('');
       }).join('');
     }
