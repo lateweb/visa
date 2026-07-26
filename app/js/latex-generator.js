@@ -1,10 +1,13 @@
-// app/js/latex-generator.js
+// visa-main/app/js/latex-generator.js
 /**
  * latex-generator.js
- * Converts Quizdown‑formatted text into a LaTeX document that closely
- * mirrors the one‑column, serif, black‑link style defined in preamble.cls.
- * All previous tcolorbox/fancyvrb/tabularray dependencies are removed;
- * the output relies only on the preamble class and standard LaTeX.
+ * Converts Quizdown‑formatted text into a self‑contained, compilable
+ * LaTeX document.  The one‑column, serif, black‑link baseline
+ * (columns=one, font=serif, linkcolor=black) is hard‑coded – no
+ * external preamble.cls is needed.
+ *
+ * Compact (two‑column) mode is still supported via the isCompact
+ * parameter; its settings are also fully embedded.
  */
 
 (function (global) {
@@ -13,15 +16,15 @@
   // --- 1. Constants & Regex ---
   const SPECIAL_LATEX_MAP = [
     ['\\', '\\textbackslash{}'],
-    ['&', '\\&'],
-    ['%', '\\%'],
-    ['$', '\\$'],
-    ['#', '\\#'],
-    ['_', '\\_'],
-    ['{', '\\{'],
-    ['}', '\\}'],
-    ['~', '\\textasciitilde{}'],
-    ['^', '\\textasciicircum{}'],
+    ['&',  '\\&'],
+    ['%',  '\\%'],
+    ['$',  '\\$'],
+    ['#',  '\\#'],
+    ['_',  '\\_'],
+    ['{',  '\\{'],
+    ['}',  '\\}'],
+    ['~',  '\\textasciitilde{}'],
+    ['^',  '\\textasciicircum{}'],
   ];
 
   const ESCAPE_REGEX = new RegExp(
@@ -44,7 +47,7 @@
     return titleKey ? frontMatter[titleKey] : null;
   };
 
-  // --- 3. Core Parsing Logic (simplified – standard LaTeX only) ---
+  // --- 3. Core Parsing Logic ---
   const parseQuizdownToLatex = (text = '') => {
 
     function applyLatexFormatting(str) {
@@ -55,8 +58,7 @@
       // 1. Extract Display Math
       processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (m, p1) => {
         const token = `PHMATHBLOCK${mathBlocks.length}ENDPH`;
-        const mathContent = p1.trim();
-        mathBlocks.push({ token, content: `\\[\n${mathContent}\n\\]` });
+        mathBlocks.push({ token, content: `\\[\n${p1.trim()}\n\\]` });
         return `\n\n${token}\n\n`;
       });
 
@@ -94,14 +96,12 @@
       const trimmed = content.trim();
       switch (type) {
         case 'code':
-          // Use standard verbatim – no extra packages required
           return `\\begin{verbatim}\n${trimmed}\n\\end{verbatim}\n`;
 
         case 'quote': {
           const lines = trimmed.split('\n');
           let quoteLines = [];
           let attribution = '';
-          // Find first line starting with — or attribution keyword
           const attrIdx = lines.findIndex(line => {
             const t = line.trim();
             return t.startsWith('—') || /^(author|by|source|attribution)\s*:/i.test(t);
@@ -127,20 +127,15 @@
         case 'table': {
           const rows = trimmed.split('\n').map(r => r.trim()).filter(Boolean);
           if (rows.length < 2) return '% Invalid table';
-
-          // Remove separator line (e.g. |---|)
           const dataRows = rows.filter(r => !/^\|?\s*:?-+:?\s*\|?/.test(r));
           if (dataRows.length === 0) return '% Invalid table';
-
-          // Split each row by pipes
           const grid = dataRows.map(r =>
             r.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim())
           );
-
           const numCols = grid[0].length;
           const colSpec = '|' + 'c|'.repeat(numCols);
           let tab = `\\begin{center}\n\\small\n\\begin{tabular}{${colSpec}}\n\\hline\n`;
-          grid.forEach((row, idx) => {
+          grid.forEach(row => {
             const cells = row.map(c => applyLatexFormatting(c));
             tab += cells.join(' & ') + ' \\\\ \\hline\n';
           });
@@ -251,7 +246,9 @@
     return { questions: qLatex, answers: aLatex, frontMatter };
   };
 
-  // --- 4. LaTeX Template (mirrors one‑column, serif, black‑link baseline) ---
+  // --- 4. Stand‑alone LaTeX Document Builder ---
+  // Hardcodes the one‑column, serif, black‑link baseline (from preamble.cls)
+  // so that no external class file is required.
   const generateLatexDocument = (content = '', includeAnswers = false, lang = 'en', isCompact = false) => {
     if (!content.trim()) return null;
     const parsed = parseQuizdownToLatex(content);
@@ -262,19 +259,101 @@
       fi: { q: 'Kysymykset', a: 'Vastaukset', name: 'Nimi', id: 'Op.nro', date: 'Päivämäärä' }
     }[lang] || labels.en;
 
-    const babel = lang === 'fi' ? '\\usepackage[finnish]{babel}' : '';
+    // ---------- Common packages and settings ----------
+    const commonPreamble = `
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}
+${lang === 'fi' ? '\\usepackage[finnish]{babel}' : ''}
+\\usepackage{amsmath,amssymb}
+\\usepackage{microtype}
+\\usepackage{setspace}
+\\usepackage{geometry}
+\\usepackage{fancyhdr}
+\\usepackage{titlesec}
+\\usepackage{enumitem}
+\\usepackage{booktabs}
+\\usepackage[font=small,labelfont={bf},labelsep=period,skip=6pt]{caption}
+\\usepackage{xcolor}
+\\definecolor{wikiblue}{RGB}{0,0,0}
+\\usepackage[colorlinks=true,
+            linkcolor=wikiblue,
+            citecolor=wikiblue,
+            urlcolor=wikiblue,
+            pdfborder={0 0 0}]{hyperref}
+\\usepackage{footmisc}
+\\usepackage{graphicx}
 
-    // Class options: columns, font, linkcolor – taken straight from preamble.cls
-    const classOptions = isCompact
-      ? 'columns=two, font=serif, linkcolor=black'
-      : 'columns=one, font=serif, linkcolor=black';
+% ----- footnotes -----
+\\renewcommand{\\footnoterule}{\\kern -3pt \\hrule width \\columnwidth height 0.4pt \\kern 2.6pt}
+\\addtolength{\\skip\\footins}{10pt}
+\\renewcommand{\\footnotesep}{8pt}
 
-    const docClass = `\\documentclass[${classOptions}]{preamble}`;
+% ----- section titles -----
+\\titleformat{\\section}
+  {\\bfseries\\normalsize\\raggedright}
+  {\\thesection.}{0.5em}{}
+\\titleformat{\\subsection}
+  {\\bfseries\\normalsize\\raggedright}
+  {\\thesubsection.}{0.5em}{}
+\\titleformat{\\subsubsection}
+  {\\bfseries\\normalsize\\raggedright}
+  {\\thesubsubsection.}{0.5em}{}
+\\titlespacing*{\\section}{5pt}{6pt}{2pt}
+\\titlespacing*{\\subsection}{5pt}{4pt}{1pt}
+\\titlespacing*{\\subsubsection}{5pt}{3pt}{0pt}
 
-    // Build the title / header block
-    let documentHeader = '';
+% ----- lists -----
+\\setlist{nosep, labelindent=0pt}
+
+% ----- custom maketitle (from preamble.cls) -----
+\\makeatletter
+\\def\\@maketitle{%
+  \\newpage
+  \\null
+  \\vspace{-2em}%
+  \\begin{center}%
+  \\let \\footnote \\thanks
+    {\\large \\textbf{\\@title} \\par}%
+    \\vskip 0.5em%
+    {\\small
+      \\lineskip .5em%
+      \\begin{tabular}[t]{c}%
+        \\@author
+      \\end{tabular}\\par}%
+    \\vskip 0.5em%
+    {\\small \\@date}%
+  \\end{center}%
+  \\par
+  \\vskip 1em}
+\\makeatother
+
+\\renewcommand{\\UrlFont}{\\normalfont}
+`;
+
+    // ---------- Mode‑specific preamble and header ----------
+    let docStart, docPreamble, docHeader;
+
     if (isCompact) {
-      documentHeader = `
+      // --- Compact (two‑column) ---
+      docStart = '\\documentclass[10pt,a4paper,twocolumn,fleqn]{article}';
+      docPreamble = `
+${commonPreamble}
+\\usepackage{flushend}
+\\geometry{margin=2cm, includehead, headheight=15pt, headsep=5pt}
+\\setlength{\\columnsep}{10pt}
+\\setstretch{0.9}
+\\setlength{\\parindent}{1em}
+\\setlength{\\parskip}{0pt}
+\\microtypesetup{protrusion=true, expansion=true}
+\\usepackage[lining,scosf]{newtxtext}
+\\usepackage{newtxmath}
+\\newcommand{\\pagenumstyle}{\\liningnums{\\thepage}}
+\\fancyhf{}
+\\fancyhead[L]{\\normalfont\\scshape{${escapeLatex(title)}}}
+\\fancyhead[R]{\\normalfont\\pagenumstyle}
+\\pagestyle{fancy}
+`;
+      docHeader = `
 \\twocolumn[{
   \\centering
   {\\LARGE\\bfseries ${escapeLatex(title)} \\par}
@@ -287,7 +366,31 @@
 }]
 `;
     } else {
-      documentHeader = `
+      // --- One‑column, serif, black‑link baseline ---
+      docStart = '\\documentclass[12pt,a4paper]{article}';
+      docPreamble = `
+${commonPreamble}
+\\geometry{top=2.5cm, bottom=2.5cm, left=3cm, right=3cm,
+          includehead, headheight=15pt, headsep=10pt}
+\\onehalfspacing
+\\setlength{\\parskip}{0.5\\baselineskip}
+\\setlength{\\parindent}{0pt}
+\\raggedright
+\\hyphenpenalty=10000
+\\exhyphenpenalty=10000
+\\tolerance=10000
+\\hbadness=10000
+\\setlength{\\emergencystretch}{3em}
+\\microtypesetup{protrusion=true, expansion=true, tracking=false}
+\\usepackage[lining,scosf]{newtxtext}
+\\usepackage{newtxmath}
+\\newcommand{\\pagenumstyle}{\\liningnums{\\thepage}}
+\\fancyhf{}
+\\fancyhead[L]{\\normalfont\\scshape{${escapeLatex(title)}}}
+\\fancyhead[R]{\\normalfont\\pagenumstyle}
+\\pagestyle{fancy}
+`;
+      docHeader = `
 \\title{${escapeLatex(title)}}
 \\author{}
 \\date{}
@@ -300,16 +403,14 @@
 `;
     }
 
-    return `${docClass}
-\\usepackage[T1]{fontenc}
-${babel}
-% No additional packages needed – preamble.cls covers typography,
-% geometry, titles, lists, and hyperlinks.
+    // ---------- Assemble the full document ----------
+    return `${docStart}
+${docPreamble}
 
 \\begin{document}
 \\thispagestyle{plain}
 
-${documentHeader}
+${docHeader}
 
 \\section*{${labels.q}}
 \\begin{enumerate}[leftmargin=*]
