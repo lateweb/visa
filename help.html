@@ -32,6 +32,40 @@
       color: var(--text);
       background-color: var(--bg);
     }
+
+    /* Header bar containing back link and theme toggle */
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2em;
+    }
+
+    .back-link {
+      text-decoration: underline;
+      color: var(--muted);
+      margin-bottom: 0; /* reset old margin */
+    }
+    .back-link:hover {
+      color: var(--text);
+    }
+
+    /* Theme toggle button (no border, no background) */
+    .theme-toggle {
+      background: transparent;
+      border: none;
+      padding: 4px;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.2s;
+    }
+    .theme-toggle:hover {
+      color: var(--text);
+    }
+
     h1, h2, h3 {
       border-bottom: 1px solid var(--border);
       padding-bottom: 10px;
@@ -85,15 +119,6 @@
       border-color: var(--text);
     }
 
-    .back-link {
-      display: inline-block;
-      margin-bottom: 2em;
-      text-decoration: underline;
-      color: var(--muted);
-    }
-    .back-link:hover {
-      color: var(--text);
-    }
     ul {
       list-style-type: disc;
       margin-left: 20px;
@@ -101,35 +126,17 @@
     li {
       margin-bottom: 8px;
     }
-
-    /* Theme toggle button (no border, no background) */
-    .theme-toggle {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: transparent;
-      border: none;
-      padding: 4px;
-      cursor: pointer;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: color 0.2s;
-    }
-    .theme-toggle:hover {
-      color: var(--text);
-    }
   </style>
 </head>
 <body>
 
-  <a href="index.html" class="back-link">← Back to Converter</a>
-
-  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
-    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-  </button>
+  <div class="header-bar">
+    <a href="index.html" class="back-link">← Back to Converter</a>
+    <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+      <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+    </button>
+  </div>
 
   <h1>Documentation</h1>
   
