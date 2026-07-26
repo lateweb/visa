@@ -1,12 +1,10 @@
+// app/js/latex-generator.js
 /**
  * latex-generator.js
- * Purpose: Converts Quizdown-formatted text into a compile-ready LaTeX document.
- * 
- * FIXES: 
- * - Fixed CRITICAL crash in \twocolumn header by replacing fragile 'center' env with \centering.
- * - Wrapped \twocolumn content in braces {} to protect against parsing errors.
- * - Removed fragile \\[0.5em] in header, replaced with robust \par\vspace.
- * - Kept strict B&W styling and Compact Mode sizing logic.
+ * Converts Quizdown‑formatted text into a LaTeX document that closely
+ * mirrors the one‑column, serif, black‑link style defined in preamble.cls.
+ * All previous tcolorbox/fancyvrb/tabularray dependencies are removed;
+ * the output relies only on the preamble class and standard LaTeX.
  */
 
 (function (global) {
@@ -14,20 +12,20 @@
 
   // --- 1. Constants & Regex ---
   const SPECIAL_LATEX_MAP = [
-    ['\\', '\\textbackslash{}'], 
-    ['&', '\\&'], 
-    ['%', '\\%'], 
-    ['$', '\\$'], 
-    ['#', '\\#'], 
-    ['_', '\\_'], 
-    ['{', '\\{'], 
-    ['}', '\\}'], 
-    ['~', '\\textasciitilde{}'], 
+    ['\\', '\\textbackslash{}'],
+    ['&', '\\&'],
+    ['%', '\\%'],
+    ['$', '\\$'],
+    ['#', '\\#'],
+    ['_', '\\_'],
+    ['{', '\\{'],
+    ['}', '\\}'],
+    ['~', '\\textasciitilde{}'],
     ['^', '\\textasciicircum{}'],
   ];
 
   const ESCAPE_REGEX = new RegExp(
-    SPECIAL_LATEX_MAP.map(([k]) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 
+    SPECIAL_LATEX_MAP.map(([k]) => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'),
     'g'
   );
 
@@ -46,19 +44,19 @@
     return titleKey ? frontMatter[titleKey] : null;
   };
 
-  // --- 3. Core Parsing Logic ---
+  // --- 3. Core Parsing Logic (simplified – standard LaTeX only) ---
   const parseQuizdownToLatex = (text = '') => {
-    
+
     function applyLatexFormatting(str) {
       if (!str) return '';
       const mathBlocks = [];
       let processed = str;
 
-      // 1. Extract Display Math 
+      // 1. Extract Display Math
       processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (m, p1) => {
-        const token = `PHMATHBLOCK${mathBlocks.length}ENDPH`; 
-        const mathContent = p1.trim().replace(/\n/g, ' \\\\\n');
-        mathBlocks.push({ token, content: `\\begin{gather*}\n${mathContent}\n\\end{gather*}` });
+        const token = `PHMATHBLOCK${mathBlocks.length}ENDPH`;
+        const mathContent = p1.trim();
+        mathBlocks.push({ token, content: `\\[\n${mathContent}\n\\]` });
         return `\n\n${token}\n\n`;
       });
 
@@ -79,63 +77,79 @@
 
       // 5. Paragraphs
       const paragraphs = processed.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
-      const mapped = paragraphs.map(p => {
+      processed = paragraphs.map(p => {
         if (p.startsWith('PHMATHBLOCK')) return p;
         return p.replace(/\n/g, ' \\\\\n');
-      });
-      processed = mapped.join('@@PARAGRAPHBREAK@@');
+      }).join('\n\n\\par\\vspace{1ex}\n\n');
 
       // 6. Restore Math
       mathBlocks.forEach(m => {
         processed = processed.split(m.token).join(m.content);
       });
 
-      // 7. Formatting Fixes
-      processed = processed
-        .replace(/(\\end\{gather\*\})@@PARAGRAPHBREAK@@(\\begin\{gather\*\})/g, '$1\n$2')
-        .replace(/(\\end\{gather\*\})@@PARAGRAPHBREAK@@/g, '$1\\par\\vspace{-0.5ex}\n')
-        .replace(/@@PARAGRAPHBREAK@@(\\begin\{gather\*\})/g, '\\par\\vspace{-1ex}\n$1')
-        .replace(/@@PARAGRAPHBREAK@@/g, '\\par\\vspace{1ex}\n\n');
-
       return processed;
     }
 
     function parseMaterialBlock(type, content) {
-      const trimmed = content.replace(/^\n+|\n+$/g, '');
+      const trimmed = content.trim();
       switch (type) {
         case 'code':
-          return `\\begin{tcolorbox}[colback=white, colframe=black, boxrule=0.5pt, sharp corners]\n\\begin{Verbatim}[breaklines=true, fontsize=\\small]\n${trimmed}\n\\end{Verbatim}\n\\end{tcolorbox}\n`;
-        
+          // Use standard verbatim – no extra packages required
+          return `\\begin{verbatim}\n${trimmed}\n\\end{verbatim}\n`;
+
         case 'quote': {
-          const parts = trimmed.split(/\n[—-]{1,2}\s*/);
-          let quoteContent = applyLatexFormatting(parts[0].trim());
-          if (parts.length > 1) {
-            quoteContent += `\\par\\vspace{0.8em}\\textbf{---} ${applyLatexFormatting(parts.slice(1).join(' '))}`;
+          const lines = trimmed.split('\n');
+          let quoteLines = [];
+          let attribution = '';
+          // Find first line starting with — or attribution keyword
+          const attrIdx = lines.findIndex(line => {
+            const t = line.trim();
+            return t.startsWith('—') || /^(author|by|source|attribution)\s*:/i.test(t);
+          });
+          if (attrIdx !== -1) {
+            const attrLine = lines[attrIdx].trim();
+            const prefixMatch = attrLine.match(/^(author|by|source|attribution)\s*:\s*(.*)$/i);
+            attribution = prefixMatch ? prefixMatch[2].trim() : attrLine.replace(/^—\s*/, '');
+            quoteLines = lines.slice(0, attrIdx);
+          } else {
+            quoteLines = lines;
           }
-          return `\\begin{tcolorbox}[colback=white, colframe=black, boxrule=0.5pt, sharp corners]\n${quoteContent}\n\\end{tcolorbox}\n`;
+          let body = applyLatexFormatting(quoteLines.join('\n').trim());
+          if (attribution) {
+            body += `\\par\\vspace{0.8em}\\textbf{---} ${escapeLatex(attribution)}`;
+          }
+          return `\\begin{quote}\n${body}\n\\end{quote}\n`;
         }
-        
+
         case 'material':
-          return `\\begin{tcolorbox}[colback=white, colframe=black, boxrule=0.5pt, sharp corners]\n${applyLatexFormatting(trimmed)}\n\\end{tcolorbox}\n`;
-        
+          return `\\begin{quote}\n${applyLatexFormatting(trimmed)}\n\\end{quote}\n`;
+
         case 'table': {
-          const lines = trimmed.split('\n').map(l => l.trim()).filter(Boolean);
-          if (lines.length < 2) return '% Invalid table';
-          const splitRow = row => row.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim());
-          const header = splitRow(lines[0]);
-          let bodyLines = lines.slice(1);
-          if (/^[:\-\s|]+$/.test(lines[1])) bodyLines = lines.slice(2);
-          const body = bodyLines.map(splitRow);
-          const colspec = header.map(() => 'X[c,m]').join(' | ');
-          
-          let table = `\\begin{center}\n\\small\\begin{tblr}{\n  width=\\linewidth,\n  colspec={ ${colspec} },\n  row{1} = {font=\\bfseries, c, m},\n  hlines,\n  vlines,\n}\n`;
-          table += header.map(h => applyLatexFormatting(h)).join(' & ') + ' \\\\\n';
-          body.forEach(row => table += row.map(d => applyLatexFormatting(d)).join(' & ') + ' \\\\\n');
-          table += '\\end{tblr}\n\\end{center}\n';
-          return table;
+          const rows = trimmed.split('\n').map(r => r.trim()).filter(Boolean);
+          if (rows.length < 2) return '% Invalid table';
+
+          // Remove separator line (e.g. |---|)
+          const dataRows = rows.filter(r => !/^\|?\s*:?-+:?\s*\|?/.test(r));
+          if (dataRows.length === 0) return '% Invalid table';
+
+          // Split each row by pipes
+          const grid = dataRows.map(r =>
+            r.replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.trim())
+          );
+
+          const numCols = grid[0].length;
+          const colSpec = '|' + 'c|'.repeat(numCols);
+          let tab = `\\begin{center}\n\\small\n\\begin{tabular}{${colSpec}}\n\\hline\n`;
+          grid.forEach((row, idx) => {
+            const cells = row.map(c => applyLatexFormatting(c));
+            tab += cells.join(' & ') + ' \\\\ \\hline\n';
+          });
+          tab += '\\end{tabular}\n\\end{center}\n';
+          return tab;
         }
-        
-        default: return `\\begin{tcolorbox}[title=${escapeLatex(type)}, colback=white, colframe=black]${trimmed}\\end{tcolorbox}`;
+
+        default:
+          return `% Unsupported material type: ${escapeLatex(type)}\n`;
       }
     }
 
@@ -173,9 +187,17 @@
         }
         if (current === 'question') sections.question.push(line);
         else if (current === 'answer') sections.answer.push(line);
-        else if (current === 'none') { current = 'question'; sections.question.push(line); }
+        else if (current === 'none') {
+          current = 'question';
+          sections.question.push(line);
+        }
       }
-      return { question: sections.question.join('\n').trim(), options: sections.options, answer: sections.answer.join('\n').trim(), points: sections.points };
+      return {
+        question: sections.question.join('\n').trim(),
+        options: sections.options,
+        answer: sections.answer.join('\n').trim(),
+        points: sections.points,
+      };
     }
 
     const frontMatter = {};
@@ -203,116 +225,101 @@
         const pointsStr = s.points ? `\\hfill (\\rule{1cm}{0.4pt} / ${escapeLatex(String(s.points))} p.)` : '';
         const qHeader = `\\textbf{\\large ${i + 1}.}${pointsStr}`;
         const qBody = applyLatexFormatting(s.question);
-        
-        let qItem = `\\item\n\\begin{minipage}[t]{\\linewidth}\n${qHeader} \\\\ \n${qBody}\\par\n${materialLatex}`;
+
+        let qItem = `\\item ${qHeader}\\par\n${qBody}\n${materialLatex}`;
         if (s.options.length > 0) {
-          qItem += `\\begin{enumerate}[label=(\\alph*)]\n`;
+          qItem += `\\begin{enumerate}[label=(\\alph*), leftmargin=*]\n`;
           s.options.forEach(opt => qItem += `\\item ${applyLatexFormatting(opt.text)}\n`);
           qItem += `\\end{enumerate}\n`;
         }
-        qItem += `\\end{minipage}\n`;
         qLatex += qItem;
 
         let aContent = '';
         const correctOptIndex = s.options.findIndex(o => o.correct);
         if (correctOptIndex !== -1) {
-            const letter = String.fromCharCode(97 + correctOptIndex);
-            aContent += `\\textbf{(${letter})} ${applyLatexFormatting(s.options[correctOptIndex].text)}\\\\[0.5em]\n`;
+          const letter = String.fromCharCode(97 + correctOptIndex);
+          aContent += `\\textbf{(${letter})} ${applyLatexFormatting(s.options[correctOptIndex].text)}\\\\[0.5em]\n`;
         }
         if (s.answer) aContent += applyLatexFormatting(s.answer);
-        aLatex += `\\item\n\\textbf{\\large ${i + 1}.} \\\\\n${aContent}\n`;
-      } catch (e) { console.error("Parse error", e); qLatex += `\\item Error parsing question ${i+1}`; }
+        aLatex += `\\item \\textbf{\\large ${i + 1}.} \\par\n${aContent}\n`;
+      } catch (e) {
+        console.error('Parse error in question', i + 1, e);
+        qLatex += `\\item Error parsing question ${i + 1}.\n`;
+      }
     });
+
     return { questions: qLatex, answers: aLatex, frontMatter };
   };
 
-  // --- 4. LaTeX Template ---
+  // --- 4. LaTeX Template (mirrors one‑column, serif, black‑link baseline) ---
   const generateLatexDocument = (content = '', includeAnswers = false, lang = 'en', isCompact = false) => {
     if (!content.trim()) return null;
     const parsed = parseQuizdownToLatex(content);
     const title = findTitleValue(parsed.frontMatter) || 'Quiz';
+
     const labels = {
-        en: { q: 'Questions', a: 'Answer Key', name: 'Name', id: 'ID', date: 'Date' },
-        fi: { q: 'Kysymykset', a: 'Vastaukset', name: 'Nimi', id: 'Op.nro', date: 'Päivämäärä' }
+      en: { q: 'Questions', a: 'Answer Key', name: 'Name', id: 'ID', date: 'Date' },
+      fi: { q: 'Kysymykset', a: 'Vastaukset', name: 'Nimi', id: 'Op.nro', date: 'Päivämäärä' }
     }[lang] || labels.en;
+
     const babel = lang === 'fi' ? '\\usepackage[finnish]{babel}' : '';
 
-    const docClass = isCompact 
-        ? '\\documentclass[10pt, a4paper, twocolumn, fleqn]{article}' 
-        : '\\documentclass[12pt, a4paper, fleqn]{article}';
-    
-    const margin = isCompact ? '0.5in' : '1in';
-    const parskip = isCompact ? '0.4em' : '0.8em';
+    // Class options: columns, font, linkcolor – taken straight from preamble.cls
+    const classOptions = isCompact
+      ? 'columns=two, font=serif, linkcolor=black'
+      : 'columns=one, font=serif, linkcolor=black';
 
-    // Header Construction
-    // CRITICAL FIX: Wrapped in braces {}, used \centering instead of environment to prevent fragility
+    const docClass = `\\documentclass[${classOptions}]{preamble}`;
+
+    // Build the title / header block
     let documentHeader = '';
-    
     if (isCompact) {
-        documentHeader = `
+      documentHeader = `
 \\twocolumn[{
   \\centering
-  {\\Large\\bfseries ${escapeLatex(title)} \\par}
+  {\\LARGE\\bfseries ${escapeLatex(title)} \\par}
   \\vspace{0.8em}
   \\noindent
   \\textbf{${labels.name}:} \\hrulefill \\hspace{1em} 
-  \\textbf{${labels.id}:} \\rule{3cm}{0.4pt} \\hspace{1em} 
-  \\textbf{${labels.date}:} \\rule{3cm}{0.4pt}
+  \\textbf{${labels.id}:} \\hrulefill \\hspace{1em} 
+  \\textbf{${labels.date}:} \\hrulefill
   \\vspace{1cm}
 }]
 `;
     } else {
-        documentHeader = `
-\\begin{center}
-    {\\Huge\\bfseries ${escapeLatex(title)}}\\\\[1cm]
-\\end{center}
+      documentHeader = `
+\\title{${escapeLatex(title)}}
+\\author{}
+\\date{}
+\\maketitle
 \\noindent
-\\begin{tabularx}{\\textwidth}{@{}l X l X@{}}
-\\textbf{${labels.name}:} & \\hrulefill & \\textbf{${labels.date}:} & \\hrulefill \\\\[2em]
-\\textbf{${labels.id}:} & \\hrulefill & & \\\\
-\\end{tabularx}
+\\textbf{${labels.name}:} \\hrulefill \\hspace{1em} 
+\\textbf{${labels.date}:} \\hrulefill \\hspace{1em} 
+\\textbf{${labels.id}:} \\hrulefill
 \\vspace{1cm}
 `;
     }
 
     return `${docClass}
-\\usepackage[utf8]{inputenc}
 \\usepackage[T1]{fontenc}
 ${babel}
-\\usepackage{lmodern}
-\\usepackage{amsmath, amsfonts, amssymb}
-\\usepackage{geometry}
-\\usepackage{enumitem}
-\\usepackage{fancyhdr}
-\\usepackage{tabularx}
-\\usepackage{tabularray}
-\\usepackage{tcolorbox}
-\\usepackage{fancyvrb}
-\\usepackage{fvextra}
-\\usepackage{marvosym}
-\\geometry{a4paper, margin=${margin}}
-\\setlength{\\parindent}{0pt}
-\\setlength{\\parskip}{${parskip}}
-\\setlength{\\mathindent}{0pt}
-\\pagestyle{fancy}
-\\fancyhf{}
-\\lhead{${escapeLatex(title)}}
-\\rhead{\\thepage}
-\\setlist[enumerate,1]{label=, leftmargin=0pt, itemsep=2em} 
-\\setlist[enumerate,2]{label=(\\alph*), leftmargin=*, itemsep=0.5em}
+% No additional packages needed – preamble.cls covers typography,
+% geometry, titles, lists, and hyperlinks.
 
 \\begin{document}
 \\thispagestyle{plain}
 
 ${documentHeader}
+
 \\section*{${labels.q}}
-\\begin{enumerate}
+\\begin{enumerate}[leftmargin=*]
 ${parsed.questions}
 \\end{enumerate}
+
 ${includeAnswers ? `
 \\newpage
 \\section*{${labels.a}}
-\\begin{enumerate}
+\\begin{enumerate}[leftmargin=*]
 ${parsed.answers}
 \\end{enumerate}
 ` : ''}
