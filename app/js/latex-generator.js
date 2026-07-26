@@ -1,4 +1,4 @@
-// visa-main/app/js/latex-generator.js
+// app/js/latex-generator.js
 /**
  * latex-generator.js
  * Converts Quizdown‑formatted text into a self‑contained, compilable
