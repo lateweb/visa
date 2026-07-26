@@ -55,11 +55,9 @@
 
 .code-box pre {
   display: block;
-  background: transparent;
   border: none;
-  color: var(--quiz-text);
-  padding: 1rem 1.5rem;
   margin: 0;
+  padding: 0;
   overflow-x: auto;
   white-space: pre;
   font-family: "Fira Code", monospace;
@@ -70,21 +68,15 @@
 .code-box pre code {
   font-family: inherit;
   font-size: inherit;
-  background: transparent;
-  color: inherit;
   font-feature-settings: "liga" 0, "clig" 0, "calt" 0;
   font-variant-ligatures: none;
 }
 
-/* Highlight.js overrides: keep code box background, no extra padding */
+/* Highlight.js overrides: allow native theme colors and backgrounds, just fix padding */
 .code-box .hljs {
-  background: transparent !important;
-  padding: 0 !important;
+  padding: 1rem 1.5rem !important;
   margin: 0 !important;
-  color: inherit;  /* ensure base text color uses our variable */
 }
-
-/* Let the highlighted tokens use the theme's colors; no need to override */
 
 .content-text {
   font-size: 1.1rem;
@@ -176,5 +168,5 @@ mjx-assistive-mml { display: none !important; }
 @media (max-width: 768px) {
   .material-box { padding: 1rem; }
   .code-box { padding: 0; }
-  .code-box pre { padding: 1rem; }
+  .code-box .hljs { padding: 1rem !important; }
 }
