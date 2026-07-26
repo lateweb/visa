@@ -144,7 +144,7 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) 
   <script src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 
   <!-- Highlight.js for syntax coloring -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   
   <style>
