@@ -1,4 +1,4 @@
-/* quiz/css/content.css */
+/* template/css/content.css */
 .material-box {
   background: var(--quiz-surface);
   border: 1px solid var(--quiz-border);
@@ -16,7 +16,7 @@
 
 .code-box {
   padding: 0;
-  width: fit-content;
+  width: auto;             /* now matches the width of material boxes */
   max-width: 100%;
   border: 1px solid var(--quiz-border);
   background: var(--quiz-surface);
@@ -113,7 +113,7 @@ span.backtick {
   border: none;
   background: transparent;
   overflow-x: auto;
-  width: fit-content;
+  width: fit-content;      /* tables stay “as wide as needed” */
 }
 
 .data-table {
