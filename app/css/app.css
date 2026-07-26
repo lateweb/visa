@@ -31,6 +31,11 @@ body.dark {
   padding: 0;
 }
 
+html, body {
+  overflow-x: hidden; /* prevent horizontal scroll on mobile */
+  width: 100%;
+}
+
 body {
   font-family: var(--font-sans);
   background: var(--bg);
@@ -105,6 +110,7 @@ body {
   flex: 1;
   overflow: hidden;
   height: calc(100vh - 60px);
+  width: 100%;
 }
 
 /* Sidebar */
@@ -266,6 +272,7 @@ body {
   flex-direction: column;
   min-width: 0;
   background: var(--bg);
+  overflow-x: hidden; /* prevent child overflow from causing horizontal scroll */
 }
 
 /* Toolbar */
@@ -277,6 +284,8 @@ body {
   flex-wrap: wrap;
   gap: 15px;
   border-bottom: 1px solid var(--border-color);
+  overflow-x: auto;  /* allow internal scroll if needed, but keep container tight */
+  min-width: 0;
 }
 
 .top-toolbar {
@@ -287,6 +296,8 @@ body {
   border-top: 1px solid var(--border-color);
   border-bottom: none;
   padding: 12px 20px;
+  flex-wrap: wrap;     /* already set in .toolbar, but reinforce */
+  row-gap: 10px;
 }
 
 .language-group {
@@ -295,6 +306,7 @@ body {
   gap: 10px;
   font-size: 14px;
   color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .select-wrapper select {
@@ -313,6 +325,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
 }
 
 textarea#quizdownCode {
@@ -327,6 +340,9 @@ textarea#quizdownCode {
   color: var(--text);
   resize: none;
   outline: none;
+  display: block;
+  max-width: 100%;            /* prevent any overflow beyond parent */
+  box-sizing: border-box;     /* already set globally, but reinforce */
 }
 
 textarea#quizdownCode:focus {
@@ -577,11 +593,17 @@ textarea#quizdownCode:focus {
 
 /* Responsive */
 @media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden;   /* ensure no accidental horizontal scroll */
+  }
+
   .main-container {
     flex-direction: column;
     height: auto;
     overflow: visible;
+    width: 100%;
   }
+
   .storage-sidebar {
     width: 100%;
     max-width: none;
@@ -590,12 +612,50 @@ textarea#quizdownCode:focus {
     border-right: none;
     border-bottom: 1px solid var(--border-color);
   }
+
   .resize-handle { display: none; }
-  .navbar { padding: 0 15px; }
-  .toolbar { padding: 10px 15px; gap: 10px; justify-content: center; }
-  .editor-wrapper { padding: 15px; }
-  .export-separator { display: none; }
-  .export-group { justify-content: center; width: 100%; margin-bottom: 10px; }
-  .primary-actions { display: flex; width: 100%; gap: 10px; }
-  .primary-actions .btn { flex: 1; }
+
+  .navbar {
+    padding: 0 15px;
+  }
+
+  .toolbar {
+    padding: 10px 15px;
+    gap: 10px;
+    justify-content: flex-start; /* leave space for wrapping */
+    overflow-x: hidden;          /* prevent scroll on toolbar itself */
+  }
+
+  .bottom-toolbar {
+    justify-content: flex-start;
+  }
+
+  .editor-wrapper {
+    padding: 15px;
+  }
+
+  .export-separator {
+    display: none;
+  }
+
+  .export-group {
+    justify-content: flex-start;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .primary-actions {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .primary-actions .btn {
+    flex: 1 1 auto;
+  }
+
+  textarea#quizdownCode {
+    padding: 15px;          /* slightly less padding on mobile */
+  }
 }
