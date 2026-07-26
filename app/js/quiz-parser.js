@@ -69,12 +69,25 @@ function parseQuizdown(text, lang = 'en') {
       return str;
     }
 
-    // Helper: Apply Formatting + Restore Math
+    // Helper: Apply Formatting + Restore Math & Code
     function applyFormatting(str) {
       if (!str) return '';
+      
+      // 1. Mask inline code BEFORE math (so math inside backticks renders as raw code)
+      str = str.replace(/`([^`]+)`/g, (match, p1) => {
+        const token = `@@CODE_I_${mathStash.length}@@`;
+        mathStash.push({ token, content: `<code class="backtick">${p1.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code>` });
+        return token;
+      });
+      
+      // 2. Mask Math
       str = maskMath(str);
+      
+      // 3. Apply Markdown text styling
       str = str.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
       str = str.replace(/\*([^\*]+?)\*/g, '<i>$1</i>');
+      
+      // 4. Unmask everything
       mathStash.forEach(m => {
         str = str.split(m.token).join(m.content);
       });
