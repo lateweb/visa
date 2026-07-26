@@ -8,7 +8,6 @@
 let assetsPromise = null;
 
 // DEFINITION: The list of CSS files to merge
-// Updated paths to point to 'template/css' folder
 const CSS_FILES = [
   './template/css/base.css',
   './template/css/sidebar.css',
@@ -33,7 +32,6 @@ function escapeHtml(text) {
  * Helper: Generic fetch wrapper to get text content
  */
 async function fetchAsset(url) {
-  // Append a cache-buster parameter to ensure we fetch the newest CSS during edits
   const response = await fetch(`${url}?t=${Date.now()}`);
   if (!response.ok) {
     throw new Error(`Failed to load ${url}: ${response.statusText}`);
@@ -48,8 +46,6 @@ async function fetchAsset(url) {
 function loadAssets() {
   if (!assetsPromise) {
     const cssPromises = CSS_FILES.map(file => fetchAsset(file));
-    
-    // JS file is located in template/js/
     const jsPromise = fetchAsset('./template/js/script.js');
 
     assetsPromise = Promise.all([...cssPromises, jsPromise])
@@ -103,6 +99,11 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) 
     const [cssContent, jsContent] = await loadAssets();
     const safeTitle = escapeHtml(quizTitle);
 
+    // Choose highlight.js theme based on dark/light mode
+    const highlightCssUrl = isDark
+      ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'
+      : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+
     return `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
@@ -144,10 +145,10 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) 
   <!-- MathJax 4 Library -->
   <script src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 
-  const highlightCss = isDark 
-  ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.0/styles/github-dark.min.css'
-  : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.0/styles/github.min.css';
+  <!-- Syntax highlighting: highlight.js -->
+  <link rel="stylesheet" href="${highlightCssUrl}">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
   
   <style>
 ${cssContent}
@@ -202,7 +203,7 @@ async function generateQuizHtml(lang = 'en') {
     // Capture current active theme from the converter site
     const isDark = document.body.classList.contains('dark');
     
-    // In dev mode, let's clear the assetsPromise to force a re-fetch of CSS/JS
+    // Clear cache so we always get the latest CSS/JS (useful during development)
     assetsPromise = null;
     
     return await createFullHtml(finalTitle, quizOutput.body, lang, isDark);
