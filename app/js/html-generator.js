@@ -148,6 +148,7 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) 
   <link rel="stylesheet" id="hljs-theme-light" href="${highlightCssLight}" ${isDark ? 'disabled' : ''}>
   <link rel="stylesheet" id="hljs-theme-dark" href="${highlightCssDark}" ${isDark ? '' : 'disabled'}>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/tex.min.js"></script>
   <script>hljs.highlightAll();</script>
   
   <style>
