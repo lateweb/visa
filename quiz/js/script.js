@@ -1,3 +1,4 @@
+// quiz/js/script.js
 /**
  * script.js
  * Handles interactive elements, navigation, and robustly manages MathJax interaction.
@@ -20,9 +21,9 @@
     style.textContent = `
       /* Standard Converter Styles */
       .tex-raw-inline { display:inline; white-space:pre-wrap; word-break:break-word; cursor:text; font-family: 'Fira Code', monospace; color: #d63384; }
-      .tex-raw-block { display:block; white-space:pre-wrap; word-break:break-word; cursor:text; margin:0.5em 0; background: #f8f9fa; padding: 0.5em; border-radius: 4px; font-family: 'Fira Code', monospace; color: #d63384; }
+      .tex-raw-block { display:block; white-space:pre-wrap; word-break:break-word; cursor:text; margin:0.5em 0; background: var(--quiz-surface); padding: 0.5em; border-radius: 4px; font-family: 'Fira Code', monospace; color: #d63384; }
       
-      .question-number { cursor: pointer; user-select: none; font-weight: bold; color: #184e77; font-size: 1.2em; display: inline-block; margin-right: 8px; }
+      .question-number { cursor: pointer; user-select: none; font-weight: bold; color: inherit; font-size: 1.2em; display: inline-block; margin-right: 8px; }
       .question-number:hover { text-decoration: underline; }
       
       /* --- MATHJAX 4 OVERRIDES --- */
@@ -290,6 +291,28 @@
     });
   }
 
+  // --- THEME HANDLER ---
+  function initTheme() {
+    const toggle = document.getElementById('theme-toggle');
+    const moon = document.getElementById('moon-icon');
+    const sun = document.getElementById('sun-icon');
+    
+    if (toggle) {
+        toggle.addEventListener('click', () => {
+            const isDark = document.body.classList.contains('dark');
+            const next = isDark ? 'light' : 'dark';
+            document.body.classList.toggle('dark', next === 'dark');
+            
+            try { localStorage.setItem('visa-theme', next); } catch(e) {}
+            
+            if (moon && sun) {
+                moon.style.display = next === 'dark' ? 'none' : 'inline';
+                sun.style.display = next === 'dark' ? 'inline' : 'none';
+            }
+        });
+    }
+  }
+
   // --- SIDEBAR & TIMER ---
 
   function buildTimer(sidebar) {
@@ -458,6 +481,7 @@
     wireQuiz();
     processBackticks();
     autoFormatQuotes(); // <--- Automatically styles quotes
+    initTheme(); // <--- Initialize Theme Toggle
 
     const onMathJaxReady = () => {
        annotateAllMathWithTex();
