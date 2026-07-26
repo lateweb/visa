@@ -62,7 +62,7 @@
   overflow-x: auto;
   white-space: pre;
   font-family: "Fira Code", monospace;
-  font-size: 0.95rem;
+  font-size: 0.85rem;
 }
 
 /* Prevent programming ligatures inside code blocks. 
@@ -116,14 +116,15 @@ figcaption {
   margin-top: 0.5rem;
 }
 
-span.backtick {
+code.backtick {
   font-family: "Fira Code", monospace;
   color: var(--quiz-text);
   background: var(--quiz-surface);
   padding: 0.2em 0.4em;
   border: 1px solid var(--quiz-border);
-  font-size: 0.9em;
+  font-size: 0.82em;
   font-weight: 500;
+  border-radius: 4px;
 }
 
 .single-table-box {
