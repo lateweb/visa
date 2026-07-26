@@ -247,35 +247,6 @@
     }, { capture: true, passive: true });
   }
 
-  function processBackticks() {
-    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    const nodesToProcess = [];
-    while (walker.nextNode()) {
-      if (walker.currentNode.nodeValue.includes('`')) {
-        nodesToProcess.push(walker.currentNode);
-      }
-    }
-    nodesToProcess.forEach(node => {
-      if (node.parentElement.closest('pre, code, script, style')) return;
-
-      const parts = node.nodeValue.split(/(`[^`]+`)/g);
-      if (parts.length <= 1) return;
-
-      const fragment = document.createDocumentFragment();
-      parts.forEach(part => {
-        if (part.startsWith('`') && part.endsWith('`')) {
-          const span = document.createElement('span');
-          span.textContent = part.slice(1, -1);
-          span.className = 'backtick';
-          fragment.appendChild(span);
-        } else {
-          fragment.appendChild(document.createTextNode(part));
-        }
-      });
-      node.parentNode.replaceChild(fragment, node);
-    });
-  }
-
   /**
    * AUTO-FORMAT QUOTES
    * Detects blockquotes inside material-boxes and modifies the container
@@ -495,7 +466,6 @@
 
     buildSidebar();
     wireQuiz();
-    processBackticks();
     autoFormatQuotes();
     setupCodeCopy();
     initTheme();
