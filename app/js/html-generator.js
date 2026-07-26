@@ -110,10 +110,10 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   
-  <!-- Fonts: Open Sans and Fira Code -->
+  <!-- Fonts: Open Sans (incl. 800 weight) and Fira Code -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!-- MathJax 4 Configuration -->
   <script>
