@@ -94,7 +94,7 @@ function preprocessQuizdownContent(content) {
 /**
  * Helper: Constructs the final HTML string.
  */
-async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) {
+async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, extraScripts = '') {
   try {
     const [cssContent, jsContent] = await loadAssets();
     const safeTitle = escapeHtml(quizTitle);
@@ -148,7 +148,7 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) 
   <link rel="stylesheet" id="hljs-theme-light" href="${highlightCssLight}" ${isDark ? 'disabled' : ''}>
   <link rel="stylesheet" id="hljs-theme-dark" href="${highlightCssDark}" ${isDark ? '' : 'disabled'}>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/tex.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/tex.min.js"></script>${extraScripts}
   <script>hljs.highlightAll();</script>
   
   <style>
@@ -164,7 +164,7 @@ ${cssContent}
 ${quizBody}
   <script>
     const quizLang = '${lang}';
-  <\/script>
+  </script>
   
   <!-- Dynamic highlight theme toggle -->
   <script>
@@ -230,13 +230,26 @@ async function generateQuizHtml(lang = 'en') {
     const quizOutput = parseQuizdown(quizdownContent, lang);
     const finalTitle = extractedTitle || quizOutput.title;
     
-    // Capture current active theme from the converter site
     const isDark = document.body.classList.contains('dark');
     
+    // Clever Noticer: Dynamically fetch extra highlighting packages based on requested languages
+    const codeLangs = new Set();
+    for (const match of quizdownContent.matchAll(/\[code:([a-zA-Z0-9_-]+)\]/gi)) {
+        const parsedLang = match[1].toLowerCase();
+        if (parsedLang !== 'text') {
+            codeLangs.add(parsedLang);
+        }
+    }
+    
+    let extraScripts = '';
+    codeLangs.forEach(l => {
+        extraScripts += `\n  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/${l}.min.js"></script>`;
+    });
+
     // Clear cache so we always get the latest CSS/JS (useful during development)
     assetsPromise = null;
     
-    return await createFullHtml(finalTitle, quizOutput.body, lang, isDark);
+    return await createFullHtml(finalTitle, quizOutput.body, lang, isDark, extraScripts);
     
   } catch (error) {
     console.error("Error generating quiz HTML:", error);
