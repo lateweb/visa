@@ -1,3 +1,4 @@
+// converter/js/html-generator.js
 /**
  * html-generator.js
  * Bundles the Quizdown content, CSS, and JS into a single HTML string.
@@ -106,7 +107,7 @@ function preprocessQuizdownContent(content) {
 /**
  * Helper: Constructs the final HTML string.
  */
-async function createFullHtml(quizTitle, quizBody, lang = 'en') {
+async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) {
   try {
     // Wait for assets to load (or pull from cache)
     const [cssContent, jsContent] = await loadAssets();
@@ -119,10 +120,10 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en') {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   
-  <!-- Fonts: Fira Code -->
+  <!-- Fonts: Open Sans and Fira Code -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
 
   <!-- MathJax 4 Configuration -->
   <script>
@@ -159,7 +160,11 @@ ${cssContent}
   </style>
 </head>
 
-<body>
+<body${isDark ? ' class="dark"' : ''}>
+  <button id="theme-toggle" class="theme-toggle-fixed" aria-label="Toggle theme">
+    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: ${isDark ? 'none' : 'inline'};"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: ${isDark ? 'inline' : 'none'};"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+  </button>
 ${quizBody}
   <script>
     const quizLang = '${lang}';
@@ -200,7 +205,10 @@ async function generateQuizHtml(lang = 'en') {
     const quizOutput = parseQuizdown(quizdownContent, lang);
     const finalTitle = extractedTitle || quizOutput.title;
     
-    return await createFullHtml(finalTitle, quizOutput.body, lang);
+    // Capture current active theme from the converter site
+    const isDark = document.body.classList.contains('dark');
+    
+    return await createFullHtml(finalTitle, quizOutput.body, lang, isDark);
     
   } catch (error) {
     console.error("Error generating quiz HTML:", error);
