@@ -1,4 +1,4 @@
-// converter/js/quiz-parser.js
+// app/js/quiz-parser.js
 
 // Utility function to shuffle an array in place
 function shuffleArray(array) {
@@ -97,7 +97,6 @@ function parseQuizdown(text, lang = 'en') {
     // Helper: Interleave materials into formatted text
     function interleaveMaterials(text, materialList) {
       if (!text) return '';
-      // Fix: Prevent splitting text into individual letters when no materials exist
       if (materialList.length === 0) {
         return formatParagraphs(text);
       }
@@ -145,7 +144,7 @@ function parseQuizdown(text, lang = 'en') {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               </button>
             </div>
-            <pre><code>${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
+            <pre><code class="language-${codeLang}">${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
           </div>`;
         } 
         else if (type === 'table') {
