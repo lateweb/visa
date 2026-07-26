@@ -1,403 +1,211 @@
+<!-- help.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Help - Quizdown Converter</title>
+  <title>Documentation - Quizdown Converter</title>
   <style>
-    /* Add some specific styles for the help page to improve readability */
+    :root {
+      --bg: #ffffff;
+      --text: #000000;
+      --border: #cccccc;
+      --muted: #555555;
+      --surface: #f4f4f4;
+    }
+    
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #000000;
+        --text: #ffffff;
+        --border: #444444;
+        --muted: #aaaaaa;
+        --surface: #111111;
+      }
+    }
+
     body {
       line-height: 1.6;
       font-size: 16px;
-      padding: 20px;
+      padding: 40px 20px;
       max-width: 800px;
       margin: 0 auto;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: #333;
-      background-color: #f9f9f9;
-    }
-    .help-container {
-      background-color: #fff;
-      border-radius: 8px;
-      padding: 2em;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      color: var(--text);
+      background-color: var(--bg);
     }
     h1, h2, h3 {
-      border-bottom: 2px solid #f0f0f0;
+      border-bottom: 1px solid var(--border);
       padding-bottom: 10px;
       margin-top: 1.5em;
     }
     h1 {
-      text-align: center;
       border: none;
-      font-size: 2.5em;
+      font-size: 2.2em;
       margin-top: 0;
     }
     h2 {
-      font-size: 1.8em;
-      color: #2c3e50;
+      font-size: 1.5em;
     }
     h3 {
-      font-size: 1.4em;
-      color: #34495e;
+      font-size: 1.2em;
       border-bottom: none;
     }
-    h4 {
-      margin-bottom: 0.5em;
-    }
     
-    /* Code Block Styling */
     .code-wrapper {
       position: relative;
       margin: 20px 0;
     }
     pre {
-      background-color: #f4f4f4;
+      background-color: var(--surface);
       padding: 15px;
-      padding-top: 40px; /* Space for the copy button */
-      border-radius: 5px;
+      padding-top: 40px;
+      border: 1px solid var(--border);
       white-space: pre-wrap;
       word-wrap: break-word;
-      font-size: 13px;
-      border: 1px solid #e0e0e0;
+      font-size: 14px;
       overflow-x: auto;
     }
     code {
       font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
     }
     
-    /* Copy Button Styling */
     .copy-btn {
       position: absolute;
       top: 5px;
       right: 5px;
-      background-color: #e0e0e0;
-      border: none;
-      border-radius: 4px;
+      background-color: transparent;
+      border: 1px solid var(--border);
       padding: 5px 10px;
       font-size: 12px;
       cursor: pointer;
-      font-weight: bold;
-      color: #555;
-      transition: background-color 0.2s, color 0.2s;
+      color: var(--muted);
+      transition: color 0.2s, border-color 0.2s;
     }
     .copy-btn:hover {
-      background-color: #d0d0d0;
-      color: #000;
-    }
-    .copy-btn.copied {
-      background-color: #4CAF50;
-      color: white;
+      color: var(--text);
+      border-color: var(--text);
     }
 
     .back-link {
-      display: block;
-      text-align: center;
-      margin-top: 3em;
-      font-weight: bold;
-      text-decoration: none;
-      color: #3498db;
-      font-size: 1.1em;
+      display: inline-block;
+      margin-bottom: 2em;
+      text-decoration: underline;
+      color: var(--muted);
     }
     .back-link:hover {
-      text-decoration: underline;
+      color: var(--text);
     }
     ul {
-        list-style-type: disc;
-        margin-left: 20px;
+      list-style-type: disc;
+      margin-left: 20px;
     }
     li {
       margin-bottom: 8px;
-    }
-    
-    /* Utility for highlighting the AI prompt section */
-    .ai-instruction-box {
-        background-color: #e8f4fd;
-        border-left: 5px solid #3498db;
-        padding: 15px;
-        margin-bottom: 20px;
     }
   </style>
 </head>
 <body>
 
-  <div class="help-container">
-    <h1>The Ultimate Guide to the Quizdown Suite</h1>
-    
-    <p>Welcome to your all-in-one solution for creating powerful educational materials. This guide covers every feature at your disposal, from writing your first question to generating professional, print-ready exams. Unleash your teaching potential.</p>
+  <a href="index.html" class="back-link">← Back to Converter</a>
 
-    <!-- The Header -->
-    <h2>The Header: Your Quiz's Control Panel</h2>
-    <p>Every great document starts with a great title. Your quiz is no different. Begin every file with a header section enclosed in `---` to control your quiz's metadata. The title is the sole required field in the header section.</p>
-    <div class="code-wrapper">
-      <button class="copy-btn" aria-label="Copy code">Copy</button>
-<pre><code>---
-title: Final Exam
----
-...your questions start here</code></pre>
-    </div>
-    
-    <h3>Building a Professional Cover Page (LaTeX/PDF)</h3>
-    <p>The header is your command center for creating a beautiful, custom cover page for printable exams. The system is designed to be completely intuitive: <strong>what you type is what you get.</strong></p>
+  <h1>Documentation</h1>
+  
+  <p>This tool converts text written in a specific syntax into interactive HTML quizzes or static LaTeX documents.</p>
 
-    <h4>The Mandatory Title</h4>
-    <p>The `Title` key is special. You can type `Title:`, `title:`, or even `TITLE:`, and the system will intelligently use it as the main title for everything: the cover page, the browser tab, and the filename.</p>
-    
-    <h4>Unlimited Custom Fields</h4>
-    <p>For all other information, you have complete freedom. Simply type the label you want, followed by a colon. The converter will use your exact wording and capitalization on the cover page.</p>
-    <p>There are no predefined fields—create exactly what you need.</p>
-    <div class="code-wrapper">
-      <button class="copy-btn" aria-label="Copy code">Copy</button>
+  <h2>File Structure & Metadata</h2>
+  <p>A file must begin with a header block enclosed in <code>---</code>. The <code>title</code> variable is strictly required. Any additional custom fields provided here will be output solely onto the LaTeX cover page.</p>
+  <div class="code-wrapper">
+    <button class="copy-btn" aria-label="Copy code">Copy</button>
 <pre><code>---
-Title: Final Exam
-Instructor: Dr. Evelyn Reed
-Course: Introduction to Physics
-Course Code: PHY-101
+title: Introduction to Physics
+Instructor: Dr. Smith
 Date: October 23, 2025
-Term: Autumn Semester
-Allowed Materials: Non-programmable calculator
 ---
-...your questions start here</code></pre>
-    </div>
+...questions start here</code></pre>
+  </div>
 
-    <!-- Question Formatting -->
-    <h2>The Anatomy of a Question</h2>
-    <p>Separate each question with `---`. Within each question block, you have a flexible set of tools to create the perfect assessment.</p>
-
-    <h3>Question Types</h3>
-    <ul>
-        <li><strong>Multiple-Choice:</strong> The classic question type. Mark the correct answer with `[x]` and incorrect ones with `[ ]`. The options are automatically shuffled in the final quiz to ensure fairness.</li>
-        <li><strong>Open-Ended:</strong> For questions requiring detailed, written answers. The question text starts after `#Q` and the complete explanation starts after `#A`. The answer is hidden behind a "Show/Hide" button in the interactive quiz.</li>
-    </ul>
-
-    <h3>Assigning Points (LaTeX/PDF)</h3>
-    <p>For printable exams, you can assign point values to questions. This adds a score marker (e.g., "___ / 5 p.") to the right of the question number in the generated LaTeX/PDF file. This feature is for print output only and will not appear in the interactive HTML quiz.</p>
-    <p>To assign points, simply add a colon and the number of points after the <code>#Q</code> marker on the same line.</p>
-    <div class="code-wrapper">
-      <button class="copy-btn" aria-label="Copy code">Copy</button>
-<pre><code>#Q:5
+  <h2>Questions</h2>
+  <p>Questions must be separated by <code>---</code>.</p>
+  <ul>
+      <li><strong>Multiple-Choice:</strong> Write the question immediately after the <code>#Q</code> tag. Mark the correct answer with <code>- [x]</code> and incorrect answers with <code>- [ ]</code>. Provide an explanation under the <code>#A</code> tag.</li>
+      <li><strong>Open-Ended:</strong> Omit the multiple choice options. The interactive HTML output will hide the <code>#A</code> block behind a toggle button.</li>
+      <li><strong>Scoring (LaTeX only):</strong> Append a colon and a number to the question marker (e.g., <code>#Q:5</code>) to display a point indicator in the PDF output.</li>
+  </ul>
+  <div class="code-wrapper">
+    <button class="copy-btn" aria-label="Copy code">Copy</button>
+<pre><code>#Q
 What is the capital of France?
 - [x] Paris
 - [ ] London
 - [ ] Berlin
 #A
 Paris is the capital of France.</code></pre>
-    </div>
-    <p>If you use a standard <code>#Q</code> with no points, no marker will be displayed.</p>
-
-    <h3>Text Formatting</h3>
-    <p>Clarity is key. Use these simple markers to format your text.</p>
-    <ul>
-      <li><strong>Bold Text:</strong> Wrap text in double asterisks: `**your bold text**`.</li>
-      <li><strong>Italic Text:</strong> Wrap text in single asterisks: `*your italic text*`.</li>
-    </ul>
-
-    <h3>Mathematical and Scientific Notation (LaTeX)</h3>
-    <p>Write beautiful, crystal-clear mathematical expressions. This feature works perfectly for both on-screen HTML and printed PDF documents.</p>
-    <ul>
-        <li><strong>Inline Math:</strong> For expressions within a sentence, like $E=mc^2$, use single dollar signs: `$E=mc^2$`.</li>
-        <li><strong>Block Math:</strong> For larger, centered equations, use double dollar signs.</li>
-    </ul>
-    <div class="code-wrapper">
-      <button class="copy-btn" aria-label="Copy code">Copy</button>
-<pre><code>$$
-\frac{1}{\sqrt{2\pi\sigma^2}} \exp\left(-\frac{(x-\mu)^2}{2\sigma^2}\right)
-$$</code></pre>
-    </div>
-
-    <!-- Material Blocks -->
-    <h2>Adding Rich Content: The Material Blocks</h2>
-    <p>Go beyond simple text. Embed rich, formatted content directly into your questions to provide context, data, or source material. All material blocks are placed inside the question body (after the `#Q` line).</p>
-    
-    <h3>General Information: `[material]`</h3>
-    <p>Use this for passages of text, instructions, or any general context the student needs to answer the question.</p>
-    <pre><code>[material]
-Read this historical account carefully. It contains clues that will help you answer the questions below.
-[/material]</code></pre>
-
-    <h3>Code Snippets: `[code]`</h3>
-    <p>Perfect for computer science, programming, or logic questions. Code is displayed in a clean, monospaced font, preserving all indentation and spacing.</p>
-    <pre><code>[code]
-function factorial(n) {
-  if (n === 0) {
-    return 1;
-  }
-  return n * factorial(n - 1);
-}
-[/code]</code></pre>
-    
-    <h3>Quotes: `[quote]`</h3>
-    <p>Include quotes from literature, historical figures, or academic sources. You can provide an attribution with a clear label such as <code>Author:</code>, <code>Source:</code>, or <code>By:</code>.</p>
-    <pre><code>[quote]
-The measure of intelligence is the ability to change.
-Author: Albert Einstein
-[/quote]</code></pre>
-
-    <h3>Data Tables: `[table]`</h3>
-    <p>Present structured data cleanly and effectively. Use pipes `|` to separate columns and a `|---|` line to separate the header from the table body. Essential for questions in science, finance, and social studies.</p>
-    <pre><code>[table]
-| Asset Class | Risk Profile | Liquidity |
-|---|---|---|
-| Government Bonds | Low | High |
-| Real Estate | Medium-High | Low |
-[/table]</code></pre>
-
-    <!-- The Output Suite -->
-    <h2>Your Output Suite: From Screen to Print</h2>
-    <p>One quiz file, multiple professional outputs. This is where the magic happens.</p>
-    
-    <h3>1. Interactive HTML Quizzes</h3>
-    <p>The "Generate HTML" button creates a fully interactive, self-contained quiz that runs in any web browser, even offline. It's responsive, accessible, and perfect for online learning. Use the "Language" dropdown to translate the interface buttons (`Check`, `Show/Hide`) into English or Finnish for your audience.</p>
-
-    <h3>2. Professional LaTeX & PDF Documents</h3>
-    <p>The second row of buttons is your gateway to creating print-ready exam papers and answer keys.</p>
-    <ul>
-        <li><strong>Generate Questions:</strong> Creates a LaTeX file (`.tex`) with only the questions, perfectly formatted for a live exam. This includes your professional cover page if you've added the metadata.</li>
-        <li><strong>Generate Questions & Answers:</strong> Creates a complete document with the questions, followed by a separate, clearly marked answer key section. Ideal for grading or creating study guides.</li>
-    </ul>
-    <p>You can copy the LaTeX code directly or download the `.tex` file to compile into a PDF using any standard LaTeX editor.</p>
-
-    <!-- Quiz Library -->
-    <h2>Your Personal Quiz Library</h2>
-    <p>Never lose your work again. The converter includes a powerful library to save, load, and manage all your quizzes directly in your browser.</p>
-    <ul>
-        <li><strong>Save Quiz:</strong> Click to instantly save the entire state of your work—the Quizdown content, the CSS styles, and the JS script. A unique title is generated automatically if a quiz with the same name exists.</li>
-        <li><strong>Load & Manage:</strong> Your saved quizzes appear in a list sorted by date. Click "Load" to instantly bring a quiz back into the editors.</li>
-        <li><strong>Powerful Search:</strong> Use the search bar to find quizzes by title or by any word or phrase *inside the quiz content itself*.</li>
-        <li><strong>Safe Deletion:</strong> Click "Delete" once to prime it, then a second time ("Sure?") to confirm. This prevents accidental deletion of your hard work.</li>
-    </ul>
-
-    <!-- Example Quiz -->
-    <h2>The Ultimate Example Quiz</h2>
-    <p>The best way to learn is by doing. Click the <strong>Copy</strong> button below and paste the text into the converter. It showcases nearly every feature described in this guide. Use it as a reference and a template for your own creations.</p>
-    
-    <div class="code-wrapper">
-      <button class="copy-btn" aria-label="Copy quiz">Copy Quiz</button>
-<pre><code>---
-title: Concise & Robust Quiz Template
----
-#Q 
-Calculate $$\text{EVA} = \text{NOPAT} - \text{Capital} \times \text{WACC}$$ with: $\text{NOPAT} = 500\,000\text{ €}$, $\text{Capital} = 2\,000\,000\text{ €}$, $\text{WACC} = 8\text{ %}$.
-- [x] $340\,000\text{ €}$
-- [ ] $400\,000\text{ €}$
-- [ ] $100\,000\text{ €}$
-- [ ] $160\,000\text{ €}$
-#A 
-EVA is calculated as: $$500\,000\text{ €} - 2\,000\,000\text{ €} \times 0.08 = 500\,000\text{ €} - 160\,000\text{ €} = 340\,000\text{ €}$$
----
-#Q 
-Based on the simplified asset class summary in the table, what is the most reasonable inference?
-[table]
-| Asset Class | General Risk Profile ($\sigma^2$) | Typical Liquidity |
-|---|---|---|
-| Government Bonds | Low | High |
-| Blue-Chip Stocks | Medium | High |
-| Real Estate | Medium-High | Low |
-| Venture Capital | Very High | Very Low |
-[/table]
-- [ ] All assets with high liquidity also have a low risk profile.
-- [x] Higher risk profiles are generally tied to lower liquidity.
-- [ ] Real Estate is presented as the most secure investment type.
-- [ ] There is no apparent relationship between risk and liquidity.
-#A 
-The table shows that as the risk profile increases from Government Bonds (Low) to Venture Capital (Very High), the typical liquidity decreases from High to Very Low. This suggests an inverse relationship where higher risk is associated with lower liquidity.
----
-#Q 
-Prove that $\sqrt{2}$ is irrational.
-#A
-Assume $\sqrt{2}$ is rational, i.e., $\sqrt{2} = \frac{a}{b}$ where $a, b \in \mathbb{Z}$ with no common factors and $b \ne 0$.
-
-
-Then,
-$$2 = \frac{a^2}{b^2} \Rightarrow a^2 = 2b^2$$
-
-
-Since $a^2$ is even, $a$ must be even. Let $a = 2k$ for some integer $k$.
-
-
-Substitute back:
-$$(2k)^2 = 2b^2 \Rightarrow 4k^2 = 2b^2 \Rightarrow b^2 = 2k^2$$
-
-
-So $b^2$ is even, implying $b$ is even.
-
-
-But then both $a$ and $b$ are even, contradicting the assumption.
-
-
-Therefore, $\sqrt{2}$ is irrational.
----
-#Q 
-Analyze the provided materials. Discuss their individual significance and how they relate to the broader context of information presentation and technical communication.
-
-[quote]
-"That's one small step for a man, a giant leap for mankind."
-— Neil Armstrong
-[/quote]
-
-[material]
-This quiz template is designed to provide a flexible and interactive platform for educational assessments. It supports both multiple-choice and open-ended questions, with immediate feedback mechanisms for multiple-choice questions and toggleable answers for open-ended ones. The design prioritizes accessibility, responsiveness, and clean code for offline functionality. Mathematical notation like $x^2 + y^2 = r^2$ can be seamlessly integrated.
-[/material]
-
-[code]
-function calculate(x, y) {
-  let sum = x + y;
-  let product = x * y;
-  return { sum: sum, product: product };
-}
-[/code]
-
-#A
-The Neil Armstrong quote, uttered on July 20, 1969, is historically significant as it encapsulates the profound impact of the Apollo 11 mission. It articulates the dual nature of the event: a personal achievement and a monumental advancement for humanity, symbolizing exploration, innovation, and Cold War era technological superiority.
-
-
-The quiz template's purpose is to serve as a versatile and user-friendly tool for educational assessments, supporting various interactive question formats. Its design emphasizes accessibility, mobile responsiveness, and offline functionality, making it suitable for diverse learning environments. The inclusion of MathJax for rendering mathematical expressions, such as $x^2 + y^2 = r^2$, further enhances its utility for technical or scientific content.
-
-
-The third material presents a JavaScript code snippet. In a technical assessment context, the task is to interpret its logic and predict its output. The `calculate` function takes two inputs, `x` and `y`, computes their sum and product, and returns an object containing both values. For example, `calculate(10, 5)` returns `{ sum: 15, product: 50 }`. The question's code should be presented inside a code block to preserve indentation and line breaks, while inline elements such as `function` or `x` should be enclosed in single backticks. This formatting ensures readability and accurate technical communication.
-
-
-All three examples demonstrate different forms of information and the importance of appropriate presentation. Presenting them in separate, distinct material boxes within the same question allows for clear visual separation of distinct data points while still framing them under a common analytical task. This visual organization enhances readability and comprehension, particularly when dealing with varied or extensive source materials that require specific display conventions. Similarly, long mathematical formulas are automatically wrapped in a scrolling container to prevent overflow on any screen.
-
-
-$$P(x) = x^{20} + 3x^{19} - 2x^{18} + 5x^{17} + x^{16} - 7x^{15} + 4x^{14} + 2x^{13} - 8x^{12} + 6x^{11} + x^{10} - 9x^9 + 3x^8 - 5x^7 + 2x^6 - 10x^5 + 7x^4 + 3x^3 - 6x^2 + x + 100$$
-
-
-Any text, that is not math or code, can be **bolded** only with **double** asterisks and *italicized* with only *single* asterisks. NEVER BOLD OR ITALICIZE MATH.</code></pre>
-    </div>
-
-    <a href="index.html" class="back-link">Back to the Converter</a>
   </div>
 
-<script>
-  // Setup copy buttons
-  document.querySelectorAll('.copy-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      // Find the pre/code block associated with this button
-      // Since the button is inside the wrapper with the pre, we can use nextElementSibling
-      const preBlock = btn.nextElementSibling;
-      
-      if (preBlock && preBlock.tagName === 'PRE') {
-        const textToCopy = preBlock.textContent;
-        
-        navigator.clipboard.writeText(textToCopy).then(() => {
-          // Visual feedback
-          const originalText = btn.textContent;
-          btn.textContent = 'Copied!';
-          btn.classList.add('copied');
-          
-          setTimeout(() => {
-            btn.textContent = originalText;
-            btn.classList.remove('copied');
-          }, 2000);
-        }).catch(err => {
-          console.error('Failed to copy text: ', err);
-          btn.textContent = 'Error';
-        });
-      }
+  <h2>Formatting</h2>
+  <ul>
+    <li>Wrap text in double asterisks for bold: <code>**bold text**</code></li>
+    <li>Wrap text in single asterisks for italic: <code>*italic text*</code></li>
+  </ul>
+
+  <h2>Mathematics</h2>
+  <p>The converter integrates MathJax formatting for equations.</p>
+  <ul>
+      <li><strong>Inline math:</strong> Wrap the expression in single dollar signs: <code>$E=mc^2$</code>.</li>
+      <li><strong>Display math:</strong> Wrap the expression in double dollar signs: <code>$$ a^2 + b^2 = c^2 $$</code>.</li>
+  </ul>
+
+  <h2>Material Blocks</h2>
+  <p>You can embed distinct elements inside a question (after the <code>#Q</code> tag) by using bracketed block syntaxes.</p>
+  
+  <h3>Text Context: <code>[material]</code></h3>
+  <pre><code>[material]
+Read this passage before answering the question.
+[/material]</code></pre>
+
+  <h3>Code: <code>[code:language]</code></h3>
+  <p>Displays a monospaced code block with syntax language specified.</p>
+  <pre><code>[code:javascript]
+function test() { return true; }
+[/code]</code></pre>
+  
+  <h3>Quotes: <code>[quote]</code></h3>
+  <p>Renders a blockquote. Optionally provide an attribution by starting a line with <code>Source:</code> or <code>Author:</code>.</p>
+  <pre><code>[quote]
+To be or not to be.
+Author: William Shakespeare
+[/quote]</code></pre>
+
+  <h3>Tables: <code>[table]</code></h3>
+  <p>Construct tables using pipes (<code>|</code>) and a separator line (<code>|---|</code>) between the header and the body data.</p>
+  <pre><code>[table]
+| Item | Price |
+|---|---|
+| Apple | $1 |
+| Banana | $2 |
+[/table]</code></pre>
+
+  <h2>Outputs</h2>
+  <ul>
+      <li><strong>Generate HTML:</strong> Produces a standalone, interactive HTML file. Works offline. Includes a theme toggle.</li>
+      <li><strong>Generate LaTeX:</strong> Produces a <code>.tex</code> source file to compile into a PDF. Cover page metadata and point values are included. Options exist to generate questions only or include an answer key.</li>
+  </ul>
+
+  <script>
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preBlock = btn.nextElementSibling;
+        if (preBlock && preBlock.tagName === 'PRE') {
+          navigator.clipboard.writeText(preBlock.textContent).then(() => {
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied';
+            setTimeout(() => { btn.textContent = originalText; }, 2000);
+          }).catch(err => { console.error('Copy failed: ', err); });
+        }
+      });
     });
-  });
-</script>
+  </script>
 
 </body>
 </html>
