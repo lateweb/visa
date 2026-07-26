@@ -1,4 +1,4 @@
-// visa-main/app/js/latex-generator.js
+// app/js/latex-generator.js
 /**
  * latex-generator.js
  * Converts Quizdown‑formatted text into a self‑contained, compilable
@@ -55,36 +55,51 @@
       const mathBlocks = [];
       let processed = str;
 
-      // 1. Extract Display Math
+      // Math masking order:
+      // 1. Display math with \[...\] (Quizdown standard)
+      processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (m, p1) => {
+        const token = `PHMATHBLOCK${mathBlocks.length}ENDPH`;
+        mathBlocks.push({ token, content: `\\[\n${p1.trim()}\n\\]` });
+        return `\n\n${token}\n\n`;
+      });
+
+      // 2. Inline math with \(...\) (Quizdown standard)
+      processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (m, p1) => {
+        const token = `PHMATHINLINE${mathBlocks.length}ENDPH`;
+        mathBlocks.push({ token, content: `$${p1.trim()}$` });
+        return token;
+      });
+
+      // 3. Display math with $$...$$
       processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (m, p1) => {
         const token = `PHMATHBLOCK${mathBlocks.length}ENDPH`;
         mathBlocks.push({ token, content: `\\[\n${p1.trim()}\n\\]` });
         return `\n\n${token}\n\n`;
       });
 
-      // 2. Extract Inline Math
+      // 4. Inline math with $...$
       processed = processed.replace(/\$([^\$\n]+?)\$/g, (m, p1) => {
         const token = `PHMATHINLINE${mathBlocks.length}ENDPH`;
         mathBlocks.push({ token, content: `$${p1.trim()}$` });
         return token;
       });
 
-      // 3. Special Characters & Escaping
+      // 5. Special Characters & Escaping (applied to non‑math parts)
       processed = processed.replace(/€/g, '{\\EUR}');
       processed = escapeLatex(processed);
 
-      // 4. Markdown Formatting
+      // 6. Markdown Formatting
       processed = processed.replace(/\*\*(.+?)\*\*/g, '\\textbf{$1}');
       processed = processed.replace(/\*([^*]+?)\*/g, '\\textit{$1}');
 
-      // 5. Paragraphs
+      // 7. Paragraphs
       const paragraphs = processed.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
       processed = paragraphs.map(p => {
         if (p.startsWith('PHMATHBLOCK')) return p;
         return p.replace(/\n/g, ' \\\\\n');
       }).join('\n\n\\par\\vspace{1ex}\n\n');
 
-      // 6. Restore Math
+      // 8. Restore Math
       mathBlocks.forEach(m => {
         processed = processed.split(m.token).join(m.content);
       });
