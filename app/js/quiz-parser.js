@@ -1,4 +1,4 @@
-// app/js/quiz-parser.js
+// converter/js/quiz-parser.js
 
 // Utility function to shuffle an array in place
 function shuffleArray(array) {
@@ -48,11 +48,19 @@ function parseQuizdown(text, lang = 'en') {
     // Helper: Mask Math (Protects pipes | and formatting chars)
     function maskMath(str) {
       if (!str) return '';
+      // 1. Extract display math with \[...\]
+      str = str.replace(/\\\[([\s\S]*?)\\\]/g, (match, p1) => {
+        const token = `@@MATH_D_${mathStash.length}@@`;
+        mathStash.push({ token, content: `<div class="math-scroll">\\[${p1}\\]</div>` });
+        return token;
+      });
+      // 2. Extract display math with $$...$$
       str = str.replace(/\$\$([\s\S]*?)\$\$/g, (match, p1) => {
         const token = `@@MATH_D_${mathStash.length}@@`;
         mathStash.push({ token, content: `<div class="math-scroll">$$${p1}$$</div>` });
         return token;
       });
+      // 3. Extract inline math with $...$
       str = str.replace(/\$([^\$\n]+?)\$/g, (match, p1) => {
         const token = `@@MATH_I_${mathStash.length}@@`;
         mathStash.push({ token, content: `<span class="math-inline">$${p1}$</span>` });
