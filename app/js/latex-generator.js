@@ -2,15 +2,13 @@
 /**
  * latex-generator.js
  * Converts Quizdown‑formatted text into a self‑contained, compilable
- * LaTeX document.  The one‑column, serif, black‑link baseline
- * (columns=one, font=serif, linkcolor=black) is hard‑coded – no
- * external preamble.cls is needed.
+ * LaTeX document. 
  *
  * Compact (two‑column) mode is still supported via the isCompact
  * parameter; its settings are also fully embedded.
  *
- * Updated: front‑matter fields with an empty value become fill‑in lines,
- *          fields with a value become an info block below the title.
+ * Updated: Front-matter populates nicely formatted, centered blocks.
+ *          Code blocks use `listings` package for colorization and formatting.
  */
 
 (function (global) {
@@ -53,17 +51,12 @@
   // --- 3. Core Parsing Logic ---
   const parseQuizdownToLatex = (text = '') => {
 
-    /**
-     * Applies LaTeX formatting: converts markdown italic/bold, handles
-     * math masking, escapes special characters, and formats paragraphs.
-     */
     function applyLatexFormatting(str) {
       if (!str) return '';
       const mathBlocks = [];
       const formattingTokens = [];
       let processed = str;
 
-      // --- 1. Mask math (both display and inline) ---
       processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (m, p1) => {
         const token = `PHMATHBLOCK${mathBlocks.length}ENDPH`;
         mathBlocks.push({ token, content: `\\[\n${p1.trim()}\n\\]` });
@@ -85,22 +78,18 @@
         return token;
       });
 
-      // --- 2. Mask markdown formatting (before escaping) ---
-      // Bold+Italic: ***...***
       processed = processed.replace(/\*\*\*(.+?)\*\*\*/g, (m, p1) => {
         const idx = formattingTokens.length;
         const token = `PHBOLDITALIC${idx}ENDPH`;
         formattingTokens.push({ token, type: 'bolditalic', content: p1 });
         return token;
       });
-      // Bold: **...**
       processed = processed.replace(/\*\*(.+?)\*\*/g, (m, p1) => {
         const idx = formattingTokens.length;
         const token = `PHBOLD${idx}ENDPH`;
         formattingTokens.push({ token, type: 'bold', content: p1 });
         return token;
       });
-      // Italic: *...* (not **)
       processed = processed.replace(/\*([^*]+?)\*/g, (m, p1) => {
         const idx = formattingTokens.length;
         const token = `PHITALIC${idx}ENDPH`;
@@ -108,23 +97,19 @@
         return token;
       });
 
-      // --- 3. Escape remaining special characters ---
       processed = processed.replace(/€/g, '{\\EUR}');
       processed = escapeLatex(processed);
 
-      // --- 4. Paragraph formatting ---
       const paragraphs = processed.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
       processed = paragraphs.map(p => {
         if (p.startsWith('PHMATHBLOCK')) return p;
         return p.replace(/\n/g, ' \\\\\n');
       }).join('\n\n\\par\\vspace{1ex}\n\n');
 
-      // --- 5. Restore math tokens ---
       mathBlocks.forEach(m => {
         processed = processed.split(m.token).join(m.content);
       });
 
-      // --- 6. Restore formatting tokens (bold/italic) with escaped content ---
       formattingTokens.forEach(t => {
         const escapedContent = escapeLatex(t.content);
         let replacement;
@@ -150,9 +135,17 @@
     function parseMaterialBlock(type, content) {
       const trimmed = content.trim();
 
-      // code blocks (with optional language specifier)
+      // code blocks with listings syntax highlighting
       if (type === 'code' || type.startsWith('code:')) {
-        return `\\begin{verbatim}\n${trimmed}\n\\end{verbatim}\n`;
+        let lang = '';
+        if (type.startsWith('code:')) {
+          lang = type.substring(5).trim();
+        }
+        if (lang) {
+          return `\\begin{lstlisting}[language=${lang}]\n${trimmed}\n\\end{lstlisting}\n`;
+        } else {
+          return `\\begin{lstlisting}\n${trimmed}\n\\end{lstlisting}\n`;
+        }
       }
 
       switch (type) {
@@ -206,10 +199,6 @@
       }
     }
 
-    /**
-     * Extracts all material blocks from a string, returning the cleaned
-     * text and the concatenated LaTeX for those materials.
-     */
     function extractMaterials(str) {
       let materialLatex = '';
       const clean = str.replace(
@@ -286,16 +275,14 @@
 
     blocks.forEach((block, i) => {
       try {
-        // --- Split the block into question and answer parts manually ---
         const parts = block.split(/^#A\b/im);
         const questionRaw = parts[0] || '';
-        const answerRaw = parts.slice(1).join('\n#A').trim(); // rejoin if multiple #A? not expected
+        const answerRaw = parts.slice(1).join('\n#A').trim(); 
 
-        // --- Extract materials from the question part ---
         const qExtracted = extractMaterials(questionRaw);
-        // --- Parse question structure after removing materials ---
         const qSections = splitBlockIntoSections(qExtracted.clean);
         const qBody = applyLatexFormatting(qSections.question);
+        
         let qItem = `\\item ${qBody}\n${qExtracted.materialLatex}`;
         if (qSections.points) {
           qItem += `\\par\\vspace{0.5em}\\hfill (\\rule{1cm}{0.4pt} / ${escapeLatex(String(qSections.points))} p.)`;
@@ -307,20 +294,16 @@
         }
         qLatex += qItem;
 
-        // --- Extract materials from the answer part (if any) ---
         let aContent = '';
         if (answerRaw) {
           const aExtracted = extractMaterials(answerRaw);
-          // The answer text after the #A tag may contain a comment; we need to parse it.
-          const aSections = splitBlockIntoSections('#A\n' + aExtracted.clean);  // fake #A to parse
+          const aSections = splitBlockIntoSections('#A\n' + aExtracted.clean);
           aContent += aExtracted.materialLatex;
-          // If there is an answer text (besides materials), format it.
           const answerText = aSections.answer.trim();
           if (answerText) {
             aContent += applyLatexFormatting(answerText);
           }
         }
-        // If multiple choice and there is a correct option, add it to answer
         const correctOptIndex = qSections.options.findIndex(o => o.correct);
         if (correctOptIndex !== -1) {
           const letter = String.fromCharCode(97 + correctOptIndex);
@@ -344,8 +327,7 @@
     const parsed = parseQuizdownToLatex(content);
     const title = findTitleValue(parsed.frontMatter) || 'Quiz';
 
-    // Extract front‑matter fields for dynamic header
-    const inputFields = [];   // keys with empty values → fill‑in lines
+    const inputFields = [];   // keys with empty values → fill-in lines
     const infoFields  = [];   // keys with values → info block
     Object.entries(parsed.frontMatter).forEach(([key, value]) => {
       if (key.toLowerCase() === 'title') return;
@@ -358,13 +340,11 @@
       }
     });
 
-    // Section labels for questions / answer key
     const labels = {
       en: { q: 'Questions', a: 'Answer Key' },
       fi: { q: 'Kysymykset', a: 'Vastaukset' }
     }[lang] || { q: 'Questions', a: 'Answer Key' };
 
-    // ---------- Common packages and settings ----------
     const commonPreamble = `
 \\usepackage[utf8]{inputenc}
 \\usepackage[T1]{fontenc}
@@ -379,6 +359,44 @@ ${lang === 'fi' ? '\\usepackage[finnish]{babel}' : ''}
 \\usepackage{booktabs}
 \\usepackage[font=small,labelfont={bf},labelsep=period,skip=6pt]{caption}
 \\usepackage{xcolor}
+\\usepackage{listings}
+\\definecolor{codegreen}{rgb}{0,0.6,0}
+\\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\\lstdefinestyle{mystyle}{
+    backgroundcolor=\\color{backcolour},
+    commentstyle=\\color{codegreen},
+    keywordstyle=\\color{magenta},
+    numberstyle=\\tiny\\color{codegray},
+    stringstyle=\\color{codepurple},
+    basicstyle=\\ttfamily\\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\\lstset{style=mystyle}
+\\lstdefinelanguage{JavaScript}{
+  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
+  keywordstyle=\\color{magenta}\\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this},
+  ndkeywordstyle=\\color{darkgray}\\bfseries,
+  identifierstyle=\\color{black},
+  sensitive=false,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\\color{codegreen}\\ttfamily,
+  stringstyle=\\color{codepurple}\\ttfamily,
+  morestring=[b]',
+  morestring=[b]"
+}
 \\definecolor{wikiblue}{RGB}{0,0,0}
 \\usepackage[colorlinks=true,
             linkcolor=wikiblue,
@@ -387,7 +405,7 @@ ${lang === 'fi' ? '\\usepackage[finnish]{babel}' : ''}
             pdfborder={0 0 0}]{hyperref}
 \\usepackage{footmisc}
 \\usepackage{graphicx}
-\\usepackage{adjustbox}            % for max width tables
+\\usepackage{adjustbox}
 
 % ----- footnotes -----
 \\renewcommand{\\footnoterule}{\\kern -3pt \\hrule width \\columnwidth height 0.4pt \\kern 2.6pt}
@@ -411,7 +429,7 @@ ${lang === 'fi' ? '\\usepackage[finnish]{babel}' : ''}
 % ----- lists -----
 \\setlist{nosep, labelindent=0pt}
 
-% ----- custom maketitle (from preamble.cls) -----
+% ----- custom maketitle -----
 \\makeatletter
 \\def\\@maketitle{%
   \\newpage
@@ -420,7 +438,7 @@ ${lang === 'fi' ? '\\usepackage[finnish]{babel}' : ''}
   \\begin{center}%
   \\let \\footnote \\thanks
     {\\large \\textbf{\\@title} \\par}%
-    \\vskip 0.5em%
+    \\vskip 0.8em%
     {\\small
       \\lineskip .5em%
       \\begin{tabular}[t]{c}%
@@ -436,7 +454,6 @@ ${lang === 'fi' ? '\\usepackage[finnish]{babel}' : ''}
 \\renewcommand{\\UrlFont}{\\normalfont}
 `;
 
-    // ---------- Mode‑specific preamble and document start ----------
     let docStart, docPreamble;
 
     if (isCompact) {
@@ -485,46 +502,40 @@ ${commonPreamble}
     }
 
     // ---------- Build the dynamic header block ----------
-    const buildInputLine = (key) =>
-      `\\textbf{${escapeLatex(key)}:} \\hrulefill`;
-
     const headerLines = [];
 
+    const buildInfoRow = (f) => `\\textbf{${escapeLatex(f.key)}:} ${escapeLatex(f.value)}`;
+    const buildInputRow = (key) => `\\textbf{${escapeLatex(key)}:} \\makebox[5cm]{\\hrulefill}`;
+
+    let authorLatexContent = '';
+    let authorBlocks = [];
+    
+    if (infoFields.length) {
+      authorBlocks.push(infoFields.map(buildInfoRow).join(' \\\\\n'));
+    }
+    if (inputFields.length) {
+      authorBlocks.push(inputFields.map(buildInputRow).join(' \\\\\n'));
+    }
+    
+    if (authorBlocks.length) {
+      authorLatexContent = authorBlocks.join(' \\\\[0.8em]\n');
+    }
+
     if (isCompact) {
-      // Compact: wrap everything in \twocolumn[ … ]
-      let inside = `  \\centering\n  {\\bfseries ${escapeLatex(title)} \\par}\n  \\vspace{0.8em}\n`;
-      if (inputFields.length) {
-        inside += `  \\noindent\n  ${inputFields.map(buildInputLine).join('\\hspace{1em} ')}\n  \\vspace{0.5cm}\n`;
-      }
-      if (infoFields.length) {
-        const infoLines = infoFields
-          .map(f => `\\textbf{${escapeLatex(f.key)}:} ${escapeLatex(f.value)}`)
-          .join('\\\\[0.5em]\n');
-        inside += `  \\noindent\n  ${infoLines}\n  \\vspace{1cm}\n`;
+      let inside = `  \\centering\n  {\\large\\bfseries ${escapeLatex(title)} \\par}\n  \\vspace{0.8em}\n`;
+      if (authorLatexContent) {
+        inside += `  \\begin{tabular}[t]{c}\n${authorLatexContent}\n  \\end{tabular}\n  \\vspace{0.8em}\n`;
       }
       headerLines.push(`\\twocolumn[{\n${inside}}]`);
     } else {
-      // One‑column: \maketitle + dynamic fields
       headerLines.push(`\\title{${escapeLatex(title)}}`);
-      headerLines.push('\\author{}');
+      headerLines.push(`\\author{${authorLatexContent}}`);
       headerLines.push('\\date{}');
       headerLines.push('\\maketitle');
-      if (inputFields.length) {
-        headerLines.push(`\\noindent\n${inputFields.map(buildInputLine).join('\\hspace{1em} ')}`);
-        headerLines.push('\\vspace{0.5cm}');
-      }
-      if (infoFields.length) {
-        const infoLines = infoFields
-          .map(f => `\\textbf{${escapeLatex(f.key)}:} ${escapeLatex(f.value)}`)
-          .join('\\\\[0.5em]\n');
-        headerLines.push(`\\noindent\n${infoLines}`);
-        headerLines.push('\\vspace{1cm}');
-      }
     }
 
     const docHeader = headerLines.join('\n');
 
-    // ---------- Assemble the full document ----------
     return `${docStart}
 ${docPreamble}
 
