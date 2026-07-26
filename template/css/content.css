@@ -16,7 +16,7 @@
 
 .code-box {
   padding: 0;
-  width: auto;             /* now matches the width of material boxes */
+  width: auto;
   max-width: 100%;
   border: 1px solid var(--quiz-border);
   background: var(--quiz-surface);
@@ -69,6 +69,9 @@
   font-size: 0.95rem;
   background: transparent;
   color: inherit;
+  /* Disable ligatures so that <- displays as two characters */
+  font-feature-settings: "liga" 0;
+  font-variant-ligatures: none;
 }
 
 .content-text {
@@ -113,7 +116,7 @@ span.backtick {
   border: none;
   background: transparent;
   overflow-x: auto;
-  width: fit-content;      /* tables stay “as wide as needed” */
+  width: fit-content;
 }
 
 .data-table {
