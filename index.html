@@ -65,10 +65,6 @@
               </select>
             </div>
           </div>
-          <div class="setting-group" style="display: flex; align-items: center; gap: 6px; border-left: 1px solid var(--border-color); padding-left: 15px;">
-            <input type="checkbox" id="compactMode" style="margin:0; cursor: pointer;">
-            <label for="compactMode" style="margin:0; cursor: pointer; font-size: 0.9rem; user-select: none;">Compact Mode (2‑Col)</label>
-          </div>
         </div>
         <div class="primary-actions">
           <a href="editor.html" id="openBuilderBtn" class="btn btn-secondary" style="text-decoration: none;">
@@ -82,10 +78,6 @@
           <button id="runBtn" class="btn btn-primary" disabled>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
             Generate HTML
-          </button>
-          <button id="runBtnLatex" class="btn btn-primary" disabled>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
-            Generate LaTeX
           </button>
         </div>
       </div>
@@ -114,6 +106,10 @@ What is 2+2?
           <button id="copyBtnQA" class="btn btn-sm">Copy Q&A</button>
           <button id="downloadBtnQ" class="btn btn-sm">DL Questions</button>
           <button id="downloadBtnQA" class="btn btn-sm">DL Q&A</button>
+          <div class="compact-mode-inline" style="display: flex; align-items: center; gap: 6px; margin-left: 8px; border-left: 1px solid var(--border-color); padding-left: 8px;">
+            <input type="checkbox" id="compactMode" style="margin:0; cursor: pointer;">
+            <label for="compactMode" style="margin:0; cursor: pointer; font-size: 0.85rem; user-select: none;">Compact (2‑Col)</label>
+          </div>
         </div>
         <div class="export-separator"></div>
         <div class="export-group">
