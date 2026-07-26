@@ -35,9 +35,6 @@
   font-family: "Fira Code", monospace;
   font-size: 0.85rem;
   color: var(--quiz-muted);
-  /* Disable ligatures on the language label as well (optional, for consistency) */
-  font-feature-settings: "liga" 0, "clig" 0, "calt" 0;
-  font-variant-ligatures: none;
 }
 
 .copy-code-btn {
@@ -56,13 +53,27 @@
   color: var(--quiz-text);
 }
 
-/* Disable programming ligatures inside code blocks */
-.code-box pre,
-.code-box pre code {
-  font-family: "Fira Code", monospace;
+/* The <pre> inside code boxes – keep all layout properties */
+.code-box pre {
+  display: block;
+  background: transparent;
+  border: none;
+  color: var(--quiz-text);
+  padding: 1rem 1.5rem;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  font-family: "Fira Code", monospace;         /* ensure monospace font */
   font-size: 0.95rem;
+}
+
+/* Only the <code> inside <pre> gets ligature disabling */
+.code-box pre code {
+  font-family: inherit;
+  font-size: inherit;
   background: transparent;
   color: inherit;
+  /* Disable programming ligatures so that <- stays as two characters */
   font-feature-settings: "liga" 0, "clig" 0, "calt" 0;
   font-variant-ligatures: none;
 }
