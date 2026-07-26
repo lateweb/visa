@@ -109,9 +109,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // --- Keyboard shortcut: Ctrl+Enter to trigger HTML preview ---
+    // --- Keyboard shortcut: Ctrl+Enter or Ctrl+E to trigger HTML preview ---
     document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.key === 'Enter') {
+        if (e.ctrlKey && (e.key === 'Enter' || e.key.toLowerCase() === 'e')) {
             e.preventDefault();
             if (runBtn && !runBtn.disabled) {
                 runBtn.click();
