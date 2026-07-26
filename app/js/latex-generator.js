@@ -8,7 +8,6 @@
  * parameter; its settings are also fully embedded.
  *
  * Updated: Front-matter populates nicely formatted, centered blocks.
- *          Code blocks use `listings` package for colorization and formatting.
  */
 
 (function (global) {
@@ -135,17 +134,9 @@
     function parseMaterialBlock(type, content) {
       const trimmed = content.trim();
 
-      // code blocks with listings syntax highlighting
+      // code blocks (no listings syntax highlighting)
       if (type === 'code' || type.startsWith('code:')) {
-        let lang = '';
-        if (type.startsWith('code:')) {
-          lang = type.substring(5).trim();
-        }
-        if (lang) {
-          return `\\begin{lstlisting}[language=${lang}]\n${trimmed}\n\\end{lstlisting}\n`;
-        } else {
-          return `\\begin{lstlisting}\n${trimmed}\n\\end{lstlisting}\n`;
-        }
+        return `\\begin{verbatim}\n${trimmed}\n\\end{verbatim}\n`;
       }
 
       switch (type) {
@@ -359,44 +350,6 @@ ${lang === 'fi' ? '\\usepackage[finnish]{babel}' : ''}
 \\usepackage{booktabs}
 \\usepackage[font=small,labelfont={bf},labelsep=period,skip=6pt]{caption}
 \\usepackage{xcolor}
-\\usepackage{listings}
-\\definecolor{codegreen}{rgb}{0,0.6,0}
-\\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\\definecolor{codepurple}{rgb}{0.58,0,0.82}
-\\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
-\\lstdefinestyle{mystyle}{
-    backgroundcolor=\\color{backcolour},
-    commentstyle=\\color{codegreen},
-    keywordstyle=\\color{magenta},
-    numberstyle=\\tiny\\color{codegray},
-    stringstyle=\\color{codepurple},
-    basicstyle=\\ttfamily\\footnotesize,
-    breakatwhitespace=false,
-    breaklines=true,
-    captionpos=b,
-    keepspaces=true,
-    numbers=left,
-    numbersep=5pt,
-    showspaces=false,
-    showstringspaces=false,
-    showtabs=false,
-    tabsize=2
-}
-\\lstset{style=mystyle}
-\\lstdefinelanguage{JavaScript}{
-  keywords={typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break},
-  keywordstyle=\\color{magenta}\\bfseries,
-  ndkeywords={class, export, boolean, throw, implements, import, this},
-  ndkeywordstyle=\\color{darkgray}\\bfseries,
-  identifierstyle=\\color{black},
-  sensitive=false,
-  comment=[l]{//},
-  morecomment=[s]{/*}{*/},
-  commentstyle=\\color{codegreen}\\ttfamily,
-  stringstyle=\\color{codepurple}\\ttfamily,
-  morestring=[b]',
-  morestring=[b]"
-}
 \\definecolor{wikiblue}{RGB}{0,0,0}
 \\usepackage[colorlinks=true,
             linkcolor=wikiblue,
