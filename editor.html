@@ -1,4 +1,86 @@
+<!-- editor.html -->
 <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz Builder | Visual Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="converter/css/converter-styles.css">
+  <link rel="icon" type="image/png" href="image/icon.png">
+</head>
+<body class="editor-page">
+
+  <nav class="navbar">
+    <div class="brand">
+      <h1>Quiz Builder</h1>
+    </div>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+      </button>
+      <a href="index.html" class="btn btn-secondary" style="text-decoration: none; margin-right: 10px;">
+        &larr; Converter
+      </a>
+      <a href="help.html" target="_blank" class="help-link">Help</a>
+    </div>
+  </nav>
+
+  <div class="main-container">
+    <aside class="storage-sidebar" id="storageSidebar">
+      <div class="sidebar-header">
+        <h3>My Library</h3>
+        <span class="badge" id="savedCount">0</span>
+      </div>
+      <div class="saved-quizzes-container">
+        <div class="search-container">
+          <input type="text" id="searchInput" placeholder="Search saved quizzes...">
+        </div>
+        <div id="savedQuizzesList"></div>
+      </div>
+      <div class="resize-handle" id="resizeHandle"></div>
+    </aside>
+
+    <main class="content-area builder-area">
+      <div class="toolbar top-toolbar sticky-toolbar">
+        <div class="primary-actions">
+          <button id="saveBtn" class="btn btn-primary">
+            Save Progress
+          </button>
+        </div>
+        <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;"></div>
+      </div>
+
+      <div class="builder-canvas">
+        <div class="visual-card metadata-card">
+          <h3>Quiz Settings</h3>
+          <div class="form-group">
+            <label>Quiz Title</label>
+            <input type="text" id="visual-title" placeholder="Enter quiz title" style="font-size:1.1rem; padding:10px;">
+          </div>
+          <textarea id="quizdownCode" style="display:none;"></textarea>
+        </div>
+        <div id="visual-questions-container"></div>
+        <div class="add-question-wrapper">
+          <button class="btn btn-primary btn-large" onclick="window.visualAddQuestion()">
+            + Add New Question
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+  <script src="converter/js/quiz-parser.js"></script>
+  <script src="editor/js/visual-editor.js"></script>
+  <script src="converter/js/storage.js"></script>
+  <script src="editor/js/builder.js"></script>
+  <script src="js/theme.js"></script>
+</body>
+</html><!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
