@@ -127,7 +127,12 @@ function parseQuizdown(text, lang = 'en') {
         let materialHtml = '';
 
         if (type === 'code') {
-          materialHtml = `<div class="material-box"><pre><code>${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre></div>`;
+          materialHtml = `<div class="material-box code-box">
+            <button class="copy-code-btn" aria-label="Copy code" title="Copy code">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            </button>
+            <pre><code>${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
+          </div>`;
         } 
         else if (type === 'table') {
           const protectedContent = maskMath(content);
@@ -217,7 +222,7 @@ function parseQuizdown(text, lang = 'en') {
         html += '<fieldset><div class="options" role="radiogroup">';
         options.forEach((opt, i) => {
           const val = String.fromCharCode(97 + i);
-          html += `<label><input type="radio" name="${qId}" value="${val}"> ${opt.text}</label>`;
+          html += `<label><input type="radio" name="${qId}" value="${val}"> <span>${opt.text}</span></label>`;
         });
         html += `</div></fieldset><button class="check-button" aria-controls="${qId}-feedback ${qId}-explanation">${translations.check[lang]}</button><div class="feedback" id="${qId}-feedback" role="alert" aria-live="polite"></div><div class="explanation" id="${qId}-explanation" aria-live="polite">${answer}</div>`;
       } else if (answer) {
