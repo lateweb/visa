@@ -1,4 +1,4 @@
-/* content.css */
+/* quiz/css/content.css */
 .material-box {
   background: var(--quiz-surface);
   border: 1px solid var(--quiz-border);
@@ -12,6 +12,34 @@
   background: transparent;
   border: none;
   padding: 0;
+}
+
+.code-box {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
+  padding-right: 3.5rem;
+}
+
+.copy-code-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: var(--quiz-bg);
+  border: 1px solid var(--quiz-border);
+  color: var(--quiz-text);
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.copy-code-btn:hover {
+  background: var(--quiz-text);
+  color: var(--quiz-bg);
 }
 
 .content-text {
@@ -74,6 +102,7 @@ span.backtick {
   border: none;
   background: transparent;
   overflow-x: auto;
+  width: fit-content;
 }
 
 .data-table {
@@ -120,4 +149,5 @@ mjx-assistive-mml { display: none !important; }
 
 @media (max-width: 768px) {
   .material-box { padding: 1rem; }
+  .code-box { padding-right: 3.5rem; }
 }
