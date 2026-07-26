@@ -53,7 +53,6 @@
   color: var(--quiz-text);
 }
 
-/* The <pre> inside code boxes – keep all layout properties */
 .code-box pre {
   display: block;
   background: transparent;
@@ -63,20 +62,29 @@
   margin: 0;
   overflow-x: auto;
   white-space: pre;
-  font-family: "Fira Code", monospace;         /* ensure monospace font */
+  font-family: "Fira Code", monospace;
   font-size: 0.95rem;
 }
 
-/* Only the <code> inside <pre> gets ligature disabling */
+/* Prevent programming ligatures inside code blocks */
 .code-box pre code {
   font-family: inherit;
   font-size: inherit;
   background: transparent;
   color: inherit;
-  /* Disable programming ligatures so that <- stays as two characters */
   font-feature-settings: "liga" 0, "clig" 0, "calt" 0;
   font-variant-ligatures: none;
 }
+
+/* Highlight.js overrides: keep code box background, no extra padding */
+.code-box .hljs {
+  background: transparent !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  color: inherit;  /* ensure base text color uses our variable */
+}
+
+/* Let the highlighted tokens use the theme's colors; no need to override */
 
 .content-text {
   font-size: 1.1rem;
