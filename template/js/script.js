@@ -499,6 +499,15 @@
     setupCodeCopy();
     initTheme();
 
+    // Syntax highlighting initialization with fallback protection
+    if (typeof hljs !== 'undefined') {
+      try {
+        hljs.highlightAll();
+      } catch (err) {
+        console.warn("Syntax highlighting failed to initialize", err);
+      }
+    }
+
     const onMathJaxReady = () => {
        annotateAllMathWithTex();
     };
