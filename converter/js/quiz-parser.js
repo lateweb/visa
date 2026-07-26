@@ -122,15 +122,29 @@ function parseQuizdown(text, lang = 'en') {
 
       // PARSE MATERIALS – store html in list, replace with tokens
       let materialList = [];
-      block = block.replace(/\[(code|quote|table|material|plot)\]\n?([\s\S]*?)\n?\[\/(?:code|quote|table|material|plot)\]/gs, (match, type, content) => {
+      block = block.replace(/\[(code(?::[a-zA-Z0-9_-]+)?|quote|table|material|plot)\]\n?([\s\S]*?)\n?\[\/(?:code|quote|table|material|plot)\]/gi, (match, typeRaw, content) => {
         content = content.trim();
         let materialHtml = '';
+        
+        let type = typeRaw.toLowerCase();
+        let codeLang = 'text';
+
+        if (type.startsWith('code')) {
+            const parts = type.split(':');
+            type = 'code';
+            if (parts.length > 1) {
+                codeLang = parts[1];
+            }
+        }
 
         if (type === 'code') {
           materialHtml = `<div class="material-box code-box">
-            <button class="copy-code-btn" aria-label="Copy code" title="Copy code">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-            </button>
+            <div class="code-header">
+              <span class="code-lang">${codeLang}</span>
+              <button class="copy-code-btn" aria-label="Copy code" title="Copy code">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+              </button>
+            </div>
             <pre><code>${content.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>
           </div>`;
         } 
