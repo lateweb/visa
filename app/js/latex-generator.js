@@ -1,4 +1,4 @@
-// app/js/latex-generator.js
+// visa-main/app/js/latex-generator.js
 /**
  * latex-generator.js
  * Converts Quizdown‑formatted text into a self‑contained, compilable
@@ -50,58 +50,81 @@
   // --- 3. Core Parsing Logic ---
   const parseQuizdownToLatex = (text = '') => {
 
+    /**
+     * Applies LaTeX formatting: converts markdown italic/bold, handles
+     * math masking, escapes special characters, and formats paragraphs.
+     */
     function applyLatexFormatting(str) {
       if (!str) return '';
       const mathBlocks = [];
+      const formattingTokens = [];
       let processed = str;
 
-      // Math masking order:
-      // 1. Display math with \[...\] (Quizdown standard)
+      // --- 1. Mask math (both display and inline) ---
       processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (m, p1) => {
         const token = `PHMATHBLOCK${mathBlocks.length}ENDPH`;
         mathBlocks.push({ token, content: `\\[\n${p1.trim()}\n\\]` });
         return `\n\n${token}\n\n`;
       });
 
-      // 2. Inline math with \(...\) (Quizdown standard)
       processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (m, p1) => {
         const token = `PHMATHINLINE${mathBlocks.length}ENDPH`;
         mathBlocks.push({ token, content: `$${p1.trim()}$` });
         return token;
       });
 
-      // 3. Display math with $$...$$
       processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (m, p1) => {
         const token = `PHMATHBLOCK${mathBlocks.length}ENDPH`;
         mathBlocks.push({ token, content: `\\[\n${p1.trim()}\n\\]` });
         return `\n\n${token}\n\n`;
       });
 
-      // 4. Inline math with $...$
       processed = processed.replace(/\$([^\$\n]+?)\$/g, (m, p1) => {
         const token = `PHMATHINLINE${mathBlocks.length}ENDPH`;
         mathBlocks.push({ token, content: `$${p1.trim()}$` });
         return token;
       });
 
-      // 5. Special Characters & Escaping (applied to non‑math parts)
+      // --- 2. Mask markdown formatting (before escaping to preserve * and **) ---
+      // Bold: **...**
+      processed = processed.replace(/\*\*(.+?)\*\*/g, (m, p1) => {
+        const idx = formattingTokens.length;
+        const token = `PHBOLD${idx}ENDPH`;
+        formattingTokens.push({ token, type: 'bold', content: p1 });
+        return token;
+      });
+
+      // Italic: *...* (but not **, already handled)
+      processed = processed.replace(/\*([^*]+?)\*/g, (m, p1) => {
+        const idx = formattingTokens.length;
+        const token = `PHITALIC${idx}ENDPH`;
+        formattingTokens.push({ token, type: 'italic', content: p1 });
+        return token;
+      });
+
+      // --- 3. Escape remaining special characters ---
       processed = processed.replace(/€/g, '{\\EUR}');
       processed = escapeLatex(processed);
 
-      // 6. Markdown Formatting (bold first, then italics)
-      processed = processed.replace(/\*\*(.+?)\*\*/g, '\\textbf{$1}');
-      processed = processed.replace(/\*([^*]+?)\*/g, '\\textit{$1}');
-
-      // 7. Paragraphs
+      // --- 4. Paragraph formatting ---
       const paragraphs = processed.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
       processed = paragraphs.map(p => {
         if (p.startsWith('PHMATHBLOCK')) return p;
         return p.replace(/\n/g, ' \\\\\n');
       }).join('\n\n\\par\\vspace{1ex}\n\n');
 
-      // 8. Restore Math
+      // --- 5. Restore math tokens ---
       mathBlocks.forEach(m => {
         processed = processed.split(m.token).join(m.content);
+      });
+
+      // --- 6. Restore formatting tokens (bold/italic) with escaped content ---
+      formattingTokens.forEach(t => {
+        const escapedContent = escapeLatex(t.content);
+        const replacement = t.type === 'bold'
+          ? `\\textbf{${escapedContent}}`
+          : `\\textit{${escapedContent}}`;
+        processed = processed.split(t.token).join(replacement);
       });
 
       return processed;
@@ -131,7 +154,8 @@
           }
           let body = applyLatexFormatting(quoteLines.join('\n').trim());
           if (attribution) {
-            body += `\\par\\vspace{0.8em}\\textbf{---} ${escapeLatex(attribution)}`;
+            // Process the attribution with full formatting to support *italic* and **bold**
+            body += `\\par\\vspace{0.8em}\\textbf{---} ${applyLatexFormatting(attribution)}`;
           }
           return `\\begin{quote}\n${body}\n\\end{quote}\n`;
         }
@@ -149,7 +173,6 @@
           );
           const numCols = grid[0].length;
           const colSpec = '|' + 'c|'.repeat(numCols);
-          // Wrap in \resizebox to make the table fit the text width
           let tab = `\\begin{center}\n\\small\n\\resizebox{\\textwidth}{!}{%\n\\begin{tabular}{${colSpec}}\n\\hline\n`;
           grid.forEach(row => {
             const cells = row.map(c => applyLatexFormatting(c));
@@ -237,7 +260,6 @@
         const pointsStr = s.points ? `\\hfill (\\rule{1cm}{0.4pt} / ${escapeLatex(String(s.points))} p.)` : '';
         const qBody = applyLatexFormatting(s.question);
 
-        // No manual numbering – let enumerate handle it.
         let qItem = `\\item ${qBody}\n${materialLatex}`;
         if (pointsStr) {
           qItem += `\\par\\vspace{0.5em}${pointsStr}`;
@@ -249,7 +271,6 @@
         }
         qLatex += qItem;
 
-        // Answer block (no manual numbering)
         let aContent = '';
         const correctOptIndex = s.options.findIndex(o => o.correct);
         if (correctOptIndex !== -1) {
@@ -375,7 +396,7 @@ ${commonPreamble}
       docHeader = `
 \\twocolumn[{
   \\centering
-  {\\LARGE\\bfseries ${escapeLatex(title)} \\par}
+  {\\bfseries ${escapeLatex(title)} \\par}
   \\vspace{0.8em}
   \\noindent
   \\textbf{${labels.name}:} \\hrulefill \\hspace{1em} 
