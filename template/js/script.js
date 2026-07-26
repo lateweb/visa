@@ -82,8 +82,9 @@
         -webkit-overflow-scrolling: touch;
       }
       
-      /* Ensure display math inside scroll box doesn't try to be clever */
+      /* Ensure display math inside scroll box can grow freely, enabling horizontal scroll */
       .math-scroll mjx-container {
+         max-width: none !important;         /* CRITICAL: override mjx-container max-width to allow scrolling */
          white-space: nowrap !important;
          display: inline-block !important;
          min-width: 100%;
@@ -137,12 +138,12 @@
         const root = math.typesetRoot;
         if (!root) continue;
         const container = root.tagName.toLowerCase() === 'mjx-container' ? root : (root.closest('mjx-container') || root);
-        
+
         if (!container.hasAttribute('data-tex')) {
           const tex = texFromMathObj(math);
           if (tex) container.setAttribute('data-tex', tex);
         }
-        
+
         // Default to auto, but CSS rule for labels will override this to 'none'
         container.style.pointerEvents = 'auto'; 
         container.style.cursor = 'default';
@@ -154,7 +155,7 @@
     if (!qBlock) return;
 
     const rendered = Array.from(qBlock.querySelectorAll('[data-tex]'));
-    
+
     if (rendered.length > 0) {
       for (const rn of rendered) {
         const tex = rn.getAttribute('data-tex');
@@ -230,7 +231,7 @@
         if (path.some(isInteractiveEl)) return;
 
         const qNumberClicked = path.find(el => el?.classList?.contains('question-number'));
-        
+
         if (qNumberClicked) {
           const qBlock = qNumberClicked.closest('.question-block');
           if (qBlock) {
@@ -245,7 +246,7 @@
       } catch (e) { console.error(e); }
     }, { capture: true, passive: true });
   }
-  
+
   function processBackticks() {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
     const nodesToProcess = [];
@@ -256,10 +257,10 @@
     }
     nodesToProcess.forEach(node => {
       if (node.parentElement.closest('pre, code, script, style')) return;
-      
+
       const parts = node.nodeValue.split(/(`[^`]+`)/g);
       if (parts.length <= 1) return;
-      
+
       const fragment = document.createDocumentFragment();
       parts.forEach(part => {
         if (part.startsWith('`') && part.endsWith('`')) {
@@ -295,15 +296,15 @@
     const toggle = document.getElementById('theme-toggle');
     const moon = document.getElementById('moon-icon');
     const sun = document.getElementById('sun-icon');
-    
+
     if (toggle) {
         toggle.addEventListener('click', () => {
             const isDark = document.body.classList.contains('dark');
             const next = isDark ? 'light' : 'dark';
             document.body.classList.toggle('dark', next === 'dark');
-            
+
             try { localStorage.setItem('visa-theme', next); } catch(e) {}
-            
+
             if (moon && sun) {
                 moon.style.display = next === 'dark' ? 'none' : 'inline';
                 sun.style.display = next === 'dark' ? 'inline' : 'none';
@@ -343,11 +344,11 @@
 
     const timerContainer = document.createElement('div');
     timerContainer.className = 'quiz-timer-container';
-    
+
     const timerValue = document.createElement('div');
     timerValue.className = 'quiz-timer-value';
     timerValue.textContent = "00:00:00";
-    
+
     const timerLabel = document.createElement('div');
     timerLabel.className = 'quiz-timer-label';
     timerLabel.textContent = labels.time;
@@ -385,7 +386,7 @@
     sidebar.className = 'quiz-nav-sidebar';
     sidebar.innerHTML = '<h3>Questions</h3><ul class="quiz-nav-list"></ul>';
     const list = sidebar.querySelector('ul');
-    
+
     const toggleBtn = document.createElement('button');
     toggleBtn.className = 'nav-toggle-btn';
     toggleBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
@@ -400,7 +401,7 @@
     const questions = document.querySelectorAll('.question-block');
     questions.forEach((q, index) => {
       if (!q.id) q.id = `question-${index + 1}`;
-      
+
       const numEl = q.querySelector('.question-number');
       const numberStr = numEl ? numEl.innerText.trim() : `${index + 1}`;
 
@@ -441,7 +442,7 @@
         }
       });
     }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
-    
+
     questions.forEach(q => observer.observe(q));
   }
 
@@ -469,12 +470,12 @@
           if (explanation) explanation.style.display = 'none';
           return;
         }
-        
+
         if (selected.value === qBlock.dataset.correctAnswer) {
           feedback.textContent = (t.correct[lang] || t.correct.en);
           feedback.className = "feedback correct";
           if (explanation) explanation.style.display = 'block';
-          
+
           const navLink = document.querySelector(`.quiz-nav-item a[href="#${qBlock.id}"]`);
           if (navLink) navLink.classList.add('completed-nav');
         } else {
@@ -491,7 +492,7 @@
   function initializePage() {
     preventMathInteraction();
     installQuestionNumberClickHandler();
-    
+
     buildSidebar();
     wireQuiz();
     processBackticks();
