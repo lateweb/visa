@@ -13,7 +13,7 @@ body.dark {
   --quiz-bg: #000000;
   --quiz-text: #ffffff;
   --quiz-muted: #aaaaaa;
-  --quiz-border: #444444; /* softened border for dark mode */
+  --quiz-border: #ffffff;   /* brighter border for visibility */
   --quiz-surface: #111111;
 }
 
