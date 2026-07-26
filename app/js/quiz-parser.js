@@ -1,4 +1,4 @@
-// converter/js/quiz-parser.js
+// app/js/quiz-parser.js
 
 // Utility function to shuffle an array in place
 function shuffleArray(array) {
