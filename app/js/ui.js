@@ -1,5 +1,6 @@
+// app/js/ui.js
+
 /**
- * ui.js
  * Manages button clicks, UI interactions, and Navigation.
  */
 document.addEventListener('DOMContentLoaded', () => {
@@ -14,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBtn = document.getElementById('downloadBtn');
     
     // LaTeX Buttons
-    const runBtnLatex = document.getElementById('runBtnLatex'); 
     const copyBtnQ = document.getElementById('copyBtnQ');
     const copyBtnQA = document.getElementById('copyBtnQA');
     const downloadBtnQ = document.getElementById('downloadBtnQ');
@@ -45,13 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
         quizInput.addEventListener('input', () => {
             const hasText = quizInput.value.trim().length > 0;
             if (runBtn) runBtn.disabled = !hasText;
-            if (runBtnLatex) runBtnLatex.disabled = !hasText;
+            // No LaTeX preview button anymore; but keep compact mode functional
         });
         
         // Initial check
         const hasText = quizInput.value.trim().length > 0;
         if (runBtn) runBtn.disabled = !hasText;
-        if (runBtnLatex) runBtnLatex.disabled = !hasText;
     }
     
     // --- SIDEBAR RESIZE LOGIC ---
@@ -105,10 +104,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('Error generating preview.', 'error');
             } finally {
                 runBtn.innerHTML = btnText;
-                runBtn.disabled = false;
+                runBtn.disabled = !quizInput.value.trim().length;
             }
         });
     }
+    
+    // --- Keyboard shortcut: Ctrl+Enter to trigger HTML preview ---
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            if (runBtn && !runBtn.disabled) {
+                runBtn.click();
+            }
+        }
+    });
     
     // Copy HTML Code
     if (copyBtn) {
@@ -166,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function getLatex(withAnswers) {
         const lang = langSelect ? langSelect.value : 'en';
         
-        // Check for Compact Mode checkbox
+        // Check for Compact Mode checkbox (now in bottom toolbar)
         const compactCheckbox = document.getElementById('compactMode');
         const isCompact = compactCheckbox ? compactCheckbox.checked : false;
 
@@ -177,35 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    // 2. Button Handlers
-    if (runBtnLatex) {
-        runBtnLatex.addEventListener('click', async () => {
-            const btnText = runBtnLatex.innerHTML;
-            runBtnLatex.innerHTML = 'Processing...';
-            runBtnLatex.disabled = true;
-
-            try {
-                // Generate just questions by default for preview
-                const latex = await getLatex(false);
-                
-                if (latex) {
-                    // Open as a text file in a new tab
-                    const blob = new Blob([latex], { type: 'text/plain;charset=utf-8' });
-                    const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
-                } else {
-                    showToast('No content to generate.', 'warning');
-                }
-            } catch (err) {
-                console.error("Error generating LaTeX:", err);
-                showToast('Error generating LaTeX.', 'error');
-            } finally {
-                runBtnLatex.innerHTML = btnText;
-                runBtnLatex.disabled = false;
-            }
-        });
-    }
-
+    // 2. Button Handlers (no preview button; only copy/download)
     async function handleClipboardLatex(withAnswers, successMsg, emptyMsg, failMsg, uiButton) {
         const originalText = uiButton.innerHTML;
         uiButton.textContent = '...';
