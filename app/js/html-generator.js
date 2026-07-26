@@ -144,7 +144,9 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) 
   <!-- MathJax 4 Library -->
   <script src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.0/styles/github.min.css">
+  const highlightCss = isDark 
+  ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.0/styles/github-dark.min.css'
+  : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.7.0/styles/github.min.css';
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   
   <style>
