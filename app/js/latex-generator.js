@@ -1,4 +1,4 @@
-// app/js/latex-generator.js
+// visa-main/app/js/latex-generator.js
 /**
  * latex-generator.js
  * Converts Quizdown‑formatted text into a self‑contained, compilable
@@ -232,11 +232,16 @@
           return '';
         });
         const s = splitBlockIntoSections(cleanBlock);
+
+        // Points string (if any) will be placed after the question body, right-aligned.
         const pointsStr = s.points ? `\\hfill (\\rule{1cm}{0.4pt} / ${escapeLatex(String(s.points))} p.)` : '';
-        const qHeader = `\\textbf{\\large ${i + 1}.}${pointsStr}`;
         const qBody = applyLatexFormatting(s.question);
 
-        let qItem = `\\item ${qHeader}\\par\n${qBody}\n${materialLatex}`;
+        // NO manual number – let enumerate handle the numbering.
+        let qItem = `\\item ${qBody}\n${materialLatex}`;
+        if (pointsStr) {
+          qItem += `\\par\\vspace{0.5em}${pointsStr}`;
+        }
         if (s.options.length > 0) {
           qItem += `\\begin{enumerate}[label=(\\alph*), leftmargin=*]\n`;
           s.options.forEach(opt => qItem += `\\item ${applyLatexFormatting(opt.text)}\n`);
@@ -244,6 +249,7 @@
         }
         qLatex += qItem;
 
+        // Answer block
         let aContent = '';
         const correctOptIndex = s.options.findIndex(o => o.correct);
         if (correctOptIndex !== -1) {
@@ -251,7 +257,7 @@
           aContent += `\\textbf{(${letter})} ${applyLatexFormatting(s.options[correctOptIndex].text)}\\\\[0.5em]\n`;
         }
         if (s.answer) aContent += applyLatexFormatting(s.answer);
-        aLatex += `\\item \\textbf{\\large ${i + 1}.} \\par\n${aContent}\n`;
+        aLatex += `\\item ${aContent}\n`;
       } catch (e) {
         console.error('Parse error in question', i + 1, e);
         qLatex += `\\item Error parsing question ${i + 1}.\n`;
