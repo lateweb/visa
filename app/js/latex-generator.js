@@ -56,6 +56,15 @@
       const formattingTokens = [];
       let processed = str;
 
+      // --- 0. Mask inline code (run BEFORE math masking) ---
+      processed = processed.replace(/`([^`]+)`/g, (m, p1) => {
+        const idx = formattingTokens.length;
+        const token = `PHCODE${idx}ENDPH`;
+        formattingTokens.push({ token, type: 'code', content: p1 });
+        return token;
+      });
+
+      // --- 1. Mask math (both display and inline) ---
       processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (m, p1) => {
         const token = `PHMATHBLOCK${mathBlocks.length}ENDPH`;
         mathBlocks.push({ token, content: `\\[\n${p1.trim()}\n\\]` });
@@ -77,6 +86,7 @@
         return token;
       });
 
+      // --- 2. Mask markdown formatting ---
       processed = processed.replace(/\*\*\*(.+?)\*\*\*/g, (m, p1) => {
         const idx = formattingTokens.length;
         const token = `PHBOLDITALIC${idx}ENDPH`;
@@ -109,10 +119,14 @@
         processed = processed.split(m.token).join(m.content);
       });
 
+      // --- 6. Restore formatting tokens (code/bold/italic) with escaped content ---
       formattingTokens.forEach(t => {
         const escapedContent = escapeLatex(t.content);
         let replacement;
         switch (t.type) {
+          case 'code':
+            replacement = `\\texttt{${escapedContent}}`;
+            break;
           case 'bolditalic':
             replacement = `\\textbf{\\textit{${escapedContent}}}`;
             break;
