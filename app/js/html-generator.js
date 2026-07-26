@@ -99,10 +99,9 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) 
     const [cssContent, jsContent] = await loadAssets();
     const safeTitle = escapeHtml(quizTitle);
 
-    // Choose highlight.js theme based on dark/light mode
-    const highlightCssUrl = isDark
-      ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'
-      : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+    // Highlight.js themes (both included, one disabled initially)
+    const highlightCssLight = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+    const highlightCssDark = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
 
     return `<!DOCTYPE html>
 <html lang="${lang}">
@@ -146,7 +145,8 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false) 
   <script src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
 
   <!-- Syntax highlighting: highlight.js -->
-  <link rel="stylesheet" href="${highlightCssUrl}">
+  <link rel="stylesheet" id="hljs-theme-light" href="${highlightCssLight}" ${isDark ? 'disabled' : ''}>
+  <link rel="stylesheet" id="hljs-theme-dark" href="${highlightCssDark}" ${isDark ? '' : 'disabled'}>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
   <script>hljs.highlightAll();</script>
   
@@ -164,6 +164,35 @@ ${quizBody}
   <script>
     const quizLang = '${lang}';
   <\/script>
+  
+  <!-- Dynamic highlight theme toggle -->
+  <script>
+    (function() {
+      const lightLink = document.getElementById('hljs-theme-light');
+      const darkLink = document.getElementById('hljs-theme-dark');
+      
+      function updateHighlightTheme() {
+        const isDark = document.body.classList.contains('dark');
+        lightLink.disabled = isDark;
+        darkLink.disabled = !isDark;
+      }
+      
+      // Sync on load (in case the script runs after the body class is set)
+      updateHighlightTheme();
+      
+      // Watch for class changes on body (e.g. from the theme toggle)
+      const observer = new MutationObserver(function(mutations) {
+        for (let mutation of mutations) {
+          if (mutation.attributeName === 'class') {
+            updateHighlightTheme();
+            break;
+          }
+        }
+      });
+      observer.observe(document.body, { attributes: true });
+    })();
+  </script>
+  
   <script>
 ${jsContent}
   </script>
