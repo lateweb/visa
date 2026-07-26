@@ -13,7 +13,7 @@ body.dark {
   --quiz-bg: #000000;
   --quiz-text: #ffffff;
   --quiz-muted: #aaaaaa;
-  --quiz-border: #ffffff;
+  --quiz-border: #444444; /* softened border for dark mode */
   --quiz-surface: #111111;
 }
 
@@ -45,23 +45,22 @@ body {
 
 .theme-toggle-fixed {
   position: fixed;
-  top: 1rem;
+  top: 1.1rem;
   right: 1.5rem;
-  background: var(--quiz-bg);
-  color: var(--quiz-text);
-  border: 1px solid var(--quiz-border);
-  padding: 6px 10px;
+  background: transparent;
+  color: var(--quiz-muted);
+  border: none;
+  padding: 4px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  font-family: inherit;
+  transition: color 0.2s;
 }
 
 .theme-toggle-fixed:hover {
-  background: var(--quiz-text);
-  color: var(--quiz-bg);
+  color: var(--quiz-text);
 }
 
 h1 {
