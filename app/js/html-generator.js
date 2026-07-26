@@ -147,8 +147,7 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, 
   <!-- Syntax highlighting: highlight.js -->
   <link rel="stylesheet" id="hljs-theme-light" href="${highlightCssLight}" ${isDark ? 'disabled' : ''}>
   <link rel="stylesheet" id="hljs-theme-dark" href="${highlightCssDark}" ${isDark ? '' : 'disabled'}>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/tex.min.js"></script>${extraScripts}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>${extraScripts}
   <script>hljs.highlightAll();</script>
   
   <style>
@@ -234,8 +233,28 @@ async function generateQuizHtml(lang = 'en') {
     
     // Clever Noticer: Dynamically fetch extra highlighting packages based on requested languages
     const codeLangs = new Set();
+    
+    // Alias map for common language abbreviations that highlight.js expects under a different name
+    const langAliases = {
+        'tex': 'latex',
+        'js': 'javascript',
+        'ts': 'typescript',
+        'py': 'python',
+        'rb': 'ruby',
+        'sh': 'bash',
+        'html': 'xml',
+        'vue': 'xml',
+        'react': 'javascript'
+    };
+
     for (const match of quizdownContent.matchAll(/\[code:([a-zA-Z0-9_-]+)\]/gi)) {
-        const parsedLang = match[1].toLowerCase();
+        let parsedLang = match[1].toLowerCase();
+        
+        // Map to highlight.js official language filename if alias exists
+        if (langAliases[parsedLang]) {
+            parsedLang = langAliases[parsedLang];
+        }
+        
         if (parsedLang !== 'text') {
             codeLangs.add(parsedLang);
         }
