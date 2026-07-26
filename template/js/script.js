@@ -76,7 +76,7 @@
         overflow-x: auto;
         overflow-y: hidden;
         max-width: 100%;
-        margin: 1em 0;
+        margin: 0.5em 0;
         white-space: nowrap !important; /* Enforce non-breaking on the wrapper too */
         cursor: default;
         -webkit-overflow-scrolling: touch;
