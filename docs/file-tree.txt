@@ -1,33 +1,30 @@
 Project Root/
 │
 ├── index.html                 # The Main Converter Tool
-├── visual-editor.html                # The Visual Builder Page
-├── help.html                  # Help Page
+├── editor.html                # The Visual Builder Page
+├── help.html                  # Documentation & Syntax Reference
 │
-├── ARCHIVE/                   # Old files
-│
-├── converter/                 # Logic for the Text-to-HTML Tool
+├── app/                       # Global application logic (UI & functionality)
 │   ├── css/
-│   │   └── converter-styles.css
+│   │   └── app.css            # Styles for Converter and Editor
 │   └── js/
-│       ├── html-generator.js
-│       ├── latex-generator.js
-│       ├── quiz-parser.js
-│       ├── storage.js
-│       └── ui.js
+│       ├── builder.js         # Visual Editor state management
+│       ├── html-generator.js  # Compiles Quizdown to raw HTML file
+│       ├── latex-generator.js # Compiles Quizdown to LaTeX document
+│       ├── quiz-parser.js     # Parses syntax into objects/strings
+│       ├── storage.js         # LocalStorage management
+│       ├── theme.js           # Light/Dark mode toggling
+│       ├── ui.js              # Interactivity for index.html
+│       └── visual-editor.js   # HTML renderer for the visual builder
 │
-├── editor/                    # Logic for the Visual Builder
-│   └── js/
-│       ├── builder.js         # The Controller
-│       └── visual-editor.js   # The Rendering Logic
-│
-├── quiz/                      # The "Template" injected into downloaded quizzes
+├── template/                  # Styles & logic injected into generated HTML files
 │   ├── css/
-│   │   ├── base.css
-│   │   ├── content.css
-│   │   ├── layout.css
-│   │   └── sidebar.css
+│   │   ├── base.css           # Body styling, fonts, and theme logic
+│   │   ├── content.css        # Blocks (tables, code, quotes, math)
+│   │   ├── layout.css         # Quiz structure, inputs, spacing
+│   │   └── sidebar.css        # Interactive side navigation menu
 │   └── js/
-│       └── script.js
+│       └── script.js          # Injected logic (grading, mathjax config, etc)
 │
-└── docs/                      # Documentation
+└── docs/                      
+    └── file-tree.txt          # Current file structure representation
