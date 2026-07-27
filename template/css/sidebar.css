@@ -99,13 +99,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;   /* number sticks to top */
-  padding: 10px 4px 4px 4px;     /* increased top padding to shift number up */
+  padding: 2px 4px 4px 4px;      /* minimal top padding to bring number up */
   text-decoration: none;
   color: var(--quiz-text);
   background: var(--quiz-surface);
   border: 1px solid var(--quiz-border);
   font-weight: 500;
   font-size: 0.9em;
+  line-height: 1.2;              /* prevent extra line spacing */
   transition: background 0.2s, color 0.2s;
   position: relative;
   min-height: 3.5rem;
@@ -134,7 +135,7 @@
   border-color: #c62828;
 }
 
-/* Hover effect – subtle darkening (skip for graded states?) */
+/* Hover effect – subtle darkening */
 .quiz-nav-item a:hover {
   filter: brightness(0.9);
 }
