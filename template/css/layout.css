@@ -142,7 +142,7 @@ summary::-webkit-details-marker { display: none; }
 
 .explanation { display: none; }
 
-/* Open answer textarea for exam mode – matches answer box styling */
+/* Open answer textarea for exam mode – matches answer box styling, auto‑expands, no resize handle */
 .open-answer-textarea {
   display: block;
   width: 100%;
@@ -154,7 +154,8 @@ summary::-webkit-details-marker { display: none; }
   font-size: inherit;
   line-height: 1.6;
   color: var(--quiz-text);
-  resize: vertical;
+  resize: none;
+  overflow: hidden;
   min-height: 6rem;
   outline: none;
 }
