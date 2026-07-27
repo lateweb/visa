@@ -329,6 +329,8 @@
     if (!id) return;
     const link = document.querySelector(`.quiz-nav-item a[href="#${id}"]`);
     if (!link) return;
+    // Remove the 'answered' class so the half‑grey style is replaced
+    link.classList.remove('answered');
     // Add class for correct/incorrect styling
     link.classList.add(isCorrect ? 'q-correct' : 'q-incorrect');
     // Set the status icon text
