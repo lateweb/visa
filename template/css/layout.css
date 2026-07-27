@@ -1,4 +1,4 @@
-/* quiz/css/layout.css */
+/* template/css/layout.css */
 .quiz-section {
   max-width: 750px;
   margin: 0 auto;
@@ -9,6 +9,7 @@
 }
 
 .question-block {
+  position: relative;               /* anchor for absolute point badge */
   padding: 1.5rem 2rem;
   background: var(--quiz-bg);
   border: 1px solid var(--quiz-border);
@@ -108,6 +109,11 @@ summary::-webkit-details-marker { display: none; }
   color: var(--quiz-text);
 }
 
+/* Remove empty feedback (no user answer yet) – eliminates bottom gap in exam mode */
+.question-block .feedback:empty {
+  display: none;
+}
+
 .correct {
   color: var(--quiz-text);
 }
@@ -128,6 +134,24 @@ summary::-webkit-details-marker { display: none; }
 }
 
 .explanation { display: none; }
+
+/* Points badge – visible only in exam mode */
+.points-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--quiz-surface);
+  border: 1px solid var(--quiz-border);
+  padding: 0.2rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--quiz-muted);
+  display: none;
+}
+
+body.exam-mode .points-badge {
+  display: block;
+}
 
 /* Hide individual check buttons in exam mode (if any remain) */
 body.exam-mode .check-button:not(.finish-quiz-btn) {
