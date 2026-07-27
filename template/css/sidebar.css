@@ -95,10 +95,11 @@
 .quiz-nav-item { list-style: none; }
 
 .quiz-nav-item a {
-  display: flex;                /* flex for left‑aligned number */
+  display: flex;                /* flex column for vertical layout */
+  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;  /* number on left */
-  padding: 8px 10px;
+  justify-content: center;
+  padding: 8px 4px;
   text-decoration: none;
   color: var(--quiz-text);
   background: var(--quiz-surface);
@@ -107,12 +108,12 @@
   font-size: 0.9em;
   transition: background 0.2s, color 0.2s;
   position: relative;
-  min-height: 2.4rem;
+  min-height: 2.8rem;           /* enough height for top/bottom split */
 }
 
-/* ----- ANSWERED STATE: grey on the right half only ----- */
+/* ----- ANSWERED STATE: grey on the bottom half ----- */
 .quiz-nav-item a.answered {
-  background: linear-gradient(to right, transparent 50%, #d0d0d0 50%);
+  background: linear-gradient(to bottom, transparent 50%, #d0d0d0 50%);
   color: var(--quiz-text);
   border-color: var(--quiz-border);
 }
@@ -141,7 +142,7 @@
   content: none;
 }
 
-/* Hide status icon entirely (we use only colour) */
+/* Hide status icon entirely – we use only colour */
 .quiz-nav-item a .status-icon {
   display: none;
 }
