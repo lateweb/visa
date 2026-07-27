@@ -312,7 +312,9 @@
       if (!qBlock || !qBlock.id) return;
       const key = `open-answer-${qBlock.id}`;
       try {
-        localStorage.setItem(key, div.innerHTML);
+        // Save empty string if div is effectively empty
+        const content = div.innerText.trim() === '' ? '' : div.innerHTML;
+        localStorage.setItem(key, content);
       } catch (e) {
         // storage full or disabled – ignore silently
       }
@@ -329,7 +331,45 @@
           autoResize(div);
         }
       });
+      syncAllAnswerMarks(); // update sidebar after restoring
     };
+
+    // Check if the div is effectively empty (no visible text, no images)
+    const isEmpty = (div) => {
+      const imgs = div.querySelectorAll('img');
+      if (imgs.length > 0) return false; // has image → not empty
+      return div.innerText.trim() === '';
+    };
+
+    // Clean up any stray <br> that would prevent :empty from working
+    const normalizeEmptyDiv = (div) => {
+      if (isEmpty(div)) {
+        // Remove all child nodes to make the div truly empty for :empty CSS
+        div.innerHTML = '';
+      }
+    };
+
+    // Sidebar helpers
+    const markUnanswered = (qBlock) => {
+      const id = qBlock.id;
+      if (!id) return;
+      const link = document.querySelector(`.quiz-nav-item a[href="#${id}"]`);
+      if (link) link.classList.remove('answered');
+    };
+
+    // Sync all open-answer divs with sidebar marks
+    const syncAllAnswerMarks = () => {
+      document.querySelectorAll('.open-answer-textarea[contenteditable="true"]').forEach(div => {
+        const qBlock = div.closest('.question-block');
+        if (!qBlock) return;
+        if (isEmpty(div)) {
+          markUnanswered(qBlock);
+        } else {
+          markQuestionAsAnswered(qBlock); // reuse existing
+        }
+      });
+    };
+    window._syncAllAnswerMarks = syncAllAnswerMarks; // for any external use
 
     const debouncedSave = debounce((div) => {
       saveAnswer(div);
@@ -369,6 +409,7 @@
             // Trigger resize and save
             autoResize(e.target);
             saveAnswer(e.target);
+            // Mark as answered (image means not empty)
             markQuestionAsAnswered(e.target.closest('.question-block'));
           };
           reader.readAsDataURL(blob);
@@ -378,11 +419,25 @@
     };
 
     answerDivs.forEach(div => {
-      // Auto‑resize on input
-      div.addEventListener('input', () => {
+      // Unified input handler: resize, save, sync sidebar based on emptiness
+      const onInput = () => {
         autoResize(div);
         debouncedSave(div);
-      });
+        
+        const qBlock = div.closest('.question-block');
+        if (!qBlock) return;
+        
+        // Check if empty after this input
+        if (isEmpty(div)) {
+          markUnanswered(qBlock);
+          // Ensure div becomes truly empty for placeholder to show
+          normalizeEmptyDiv(div);
+        } else {
+          markQuestionAsAnswered(qBlock);
+        }
+      };
+
+      div.addEventListener('input', onInput);
 
       // Save on blur
       div.addEventListener('blur', () => saveAnswer(div));
@@ -390,15 +445,12 @@
       // Paste handler for images
       div.addEventListener('paste', handlePaste);
 
-      // Initial resize
+      // Initial resize and sidebar sync (in case of pre‑filled content from server)
       autoResize(div);
-
-      // Mark as answered on first input
-      div.addEventListener('input', function markAnsweredOnce() {
-        const qBlock = div.closest('.question-block');
-        if (qBlock) markQuestionAsAnswered(qBlock);
-        div.removeEventListener('input', markAnsweredOnce); // only once
-      });
+      normalizeEmptyDiv(div); // clean up empty state
+      if (!isEmpty(div)) {
+        markQuestionAsAnswered(div.closest('.question-block'));
+      }
     });
 
     // Restore any previously saved answers
@@ -625,7 +677,7 @@
       });
     });
 
-    // Mark open‑ended as answered on first input (already handled in setupOpenAnswerAutosave)
+    // Mark open‑ended as answered on first input (handled in setupOpenAnswerAutosave)
 
     finishBtn.addEventListener('click', () => {
       const confirmMsg = translations.confirmFinish[lang] || translations.confirmFinish.en;
@@ -728,7 +780,7 @@
     autoFormatQuotes();
     setupCodeCopy();
     initTheme();
-    setupOpenAnswerAutosave();   // auto‑save, auto‑expand, image paste for open‑answer divs
+    setupOpenAnswerAutosave();   // auto‑save, auto‑expand, image paste, sidebar unmark on empty
 
     if (typeof hljs !== 'undefined') {
       try {
