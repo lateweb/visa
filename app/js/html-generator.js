@@ -94,7 +94,7 @@ function preprocessQuizdownContent(content) {
 /**
  * Helper: Constructs the final HTML string.
  */
-async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, extraScripts = '') {
+async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, examMode = false, extraScripts = '') {
   try {
     const [cssContent, jsContent] = await loadAssets();
     const safeTitle = escapeHtml(quizTitle);
@@ -155,7 +155,7 @@ ${cssContent}
   </style>
 </head>
 
-<body${isDark ? ' class="dark"' : ''}>
+<body${isDark ? ' class="dark"' : ''}${examMode ? ' class="exam-mode"' : ''}>
   <button id="theme-toggle" class="theme-toggle-fixed" aria-label="Toggle theme">
     <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: ${isDark ? 'none' : 'inline'};"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
     <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: ${isDark ? 'inline' : 'none'};"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
@@ -163,6 +163,7 @@ ${cssContent}
 ${quizBody}
   <script>
     const quizLang = '${lang}';
+    const examMode = ${examMode};
   </script>
   
   <!-- Dynamic highlight theme toggle -->
@@ -209,7 +210,7 @@ ${jsContent}
 /**
  * Main Function called by ui.js
  */
-async function generateQuizHtml(lang = 'en') {
+async function generateQuizHtml(lang = 'en', examMode = false) {
   const codeElement = document.getElementById("quizdownCode");
   
   if (!codeElement) {
@@ -226,7 +227,7 @@ async function generateQuizHtml(lang = 'en') {
   try {
     quizdownContent = preprocessQuizdownContent(quizdownContent);
     const extractedTitle = extractTitleFromFrontMatter(quizdownContent);
-    const quizOutput = parseQuizdown(quizdownContent, lang);
+    const quizOutput = parseQuizdown(quizdownContent, lang, examMode); // pass examMode to parser
     const finalTitle = extractedTitle || quizOutput.title;
     
     const isDark = document.body.classList.contains('dark');
@@ -268,7 +269,7 @@ async function generateQuizHtml(lang = 'en') {
     // Clear cache so we always get the latest CSS/JS (useful during development)
     assetsPromise = null;
     
-    return await createFullHtml(finalTitle, quizOutput.body, lang, isDark, extraScripts);
+    return await createFullHtml(finalTitle, quizOutput.body, lang, isDark, examMode, extraScripts);
     
   } catch (error) {
     console.error("Error generating quiz HTML:", error);
