@@ -99,7 +99,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;   /* number sticks to top */
-  padding: 2px 4px 4px 4px;      /* minimal top padding to bring number up */
+  padding: 4px 4px 4px 4px;      /* minimal top padding to bring number up */
   text-decoration: none;
   color: var(--quiz-text);
   background: var(--quiz-surface);
