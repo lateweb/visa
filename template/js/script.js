@@ -386,7 +386,9 @@
     const translations = {
       selectAnswer: { en: "⚠ Please select an answer", fi: "⚠ Valitse vastaus" },
       correct: { en: "✓ Correct", fi: "✓ Oikein" },
-      incorrect: { en: "✖ Incorrect", fi: "✖ Väärin" }
+      incorrect: { en: "✖ Incorrect", fi: "✖ Väärin" },
+      finish: { en: "Finish Quiz", fi: "Palauta" },
+      score: { en: "Your Score", fi: "Pisteesi" }
     };
 
     if (typeof examMode !== 'undefined' && examMode) {
@@ -428,11 +430,13 @@
   }
 
   function wireExamMode(translations) {
+    const lang = typeof quizLang !== 'undefined' ? quizLang : 'en';
+
     // Create finish button
     const quizSection = document.querySelector('.quiz-section');
     const finishBtn = document.createElement('button');
     finishBtn.className = 'check-button finish-quiz-btn';
-    finishBtn.textContent = 'Finish Quiz';
+    finishBtn.textContent = translations.finish[lang] || translations.finish.en;
     finishBtn.style.display = 'block';
     finishBtn.style.margin = '2rem auto 0';
     quizSection.appendChild(finishBtn);
@@ -444,10 +448,10 @@
       const questionBlocks = document.querySelectorAll('.question-block');
       let totalPoints = 0;
       let earnedPoints = 0;
-      const results = [];
 
       questionBlocks.forEach((qBlock) => {
-        const points = parseInt(qBlock.dataset.points, 10) || 0;
+        // Points fallback: use 1 if attribute missing or invalid
+        const points = parseInt(qBlock.dataset.points, 10) || 1;
         totalPoints += points;
 
         const isMcq = qBlock.querySelector('.options') !== null;
@@ -458,19 +462,20 @@
         if (isMcq) {
           const selected = qBlock.querySelector(`input[name="${qBlock.id}"]:checked`);
           const correctAnswer = qBlock.dataset.correctAnswer;
+
           if (selected && selected.value === correctAnswer) {
             earnedPoints += points;
             if (feedback) {
-              feedback.textContent = translations.correct[quizLang] || '✓ Correct';
+              feedback.textContent = translations.correct[lang] || '✓ Correct';
               feedback.className = 'feedback correct';
             }
             qBlock.classList.add('correct');
           } else {
             if (feedback) {
               if (!selected) {
-                feedback.textContent = (translations.selectAnswer[quizLang] || '⚠ Please select an answer');
+                feedback.textContent = (translations.selectAnswer[lang] || '⚠ Please select an answer');
               } else {
-                feedback.textContent = (translations.incorrect[quizLang] || '✖ Incorrect');
+                feedback.textContent = (translations.incorrect[lang] || '✖ Incorrect');
               }
               feedback.className = 'feedback incorrect';
             }
@@ -488,7 +493,8 @@
       resultDiv.id = 'exam-result';
       resultDiv.style.cssText = 'text-align: center; margin: 2rem 0; padding: 1rem; border: 2px solid var(--quiz-border); background: var(--quiz-surface);';
       const percentage = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
-      resultDiv.innerHTML = `<h2>Your Score: ${earnedPoints} / ${totalPoints} (${percentage}%)</h2>`;
+      const scoreLabel = translations.score[lang] || translations.score.en;
+      resultDiv.innerHTML = `<h2>${scoreLabel}: ${earnedPoints} / ${totalPoints} (${percentage}%)</h2>`;
       quizSection.insertBefore(resultDiv, quizSection.firstChild);
 
       // Scroll to result
