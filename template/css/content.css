@@ -65,8 +65,6 @@
   font-size: 0.85rem;
 }
 
-/* Prevent programming ligatures inside code blocks. 
-   CRITICAL FIX: Removed all color/background inherit overrides here */
 .code-box pre code {
   font-family: inherit;
   font-size: inherit;
@@ -74,14 +72,12 @@
   font-variant-ligatures: none;
 }
 
-/* Apply proper padding once Highlight.js adds .hljs */
 .code-box pre code.hljs {
   padding: 1rem 1.5rem;
   display: block;
   margin: 0;
 }
 
-/* Fallback if Highlight.js fails to load or isn't present */
 .code-box pre code:not(.hljs) {
   padding: 1rem 1.5rem;
   display: block;
@@ -163,16 +159,14 @@ code.backtick {
   display: block;
   width: 100%;
   overflow-x: auto;
-  margin: 0;                     /* no extra vertical space */
+  margin: 0;
   text-align: left;
 }
 
-/* offset preceding paragraph's bottom margin */
 .content-text + .math-scroll {
   margin-top: -1rem;
 }
 
-/* remove MathJax's default 1em margins */
 mjx-container[display="true"] {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
@@ -186,7 +180,6 @@ mjx-container[display="true"] {
   min-width: 0;
   max-width: none !important;
   white-space: nowrap !important;
-  /* font-size: inherit; – let it match the surrounding text size (now uniform) */
 }
 
 mjx-container[display="true"],
@@ -200,9 +193,120 @@ mjx-container[display="true"],
 
 mjx-assistive-mml { display: none !important; }
 
+/* --- FEEDBACK & BUTTON COLORS --- */
+
+/* Check button – solid block with hover */
+.check-button {
+  background: var(--quiz-border);
+  color: var(--quiz-bg);
+  border: none;
+  padding: 0.65rem 1.8rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+.check-button:hover {
+  opacity: 0.85;
+}
+.check-button:active {
+  transform: scale(0.98);
+}
+
+/* Feedback messages */
+.feedback {
+  font-weight: 600;
+  font-size: 1.2rem;
+  display: inline-block;
+  margin-left: 10px;
+  margin-top: 0.5rem;
+}
+
+.feedback.correct {
+  color: #2e7d32;   /* deep green */
+}
+
+.feedback.incorrect {
+  color: #c62828;   /* deep red */
+}
+
+.feedback.warning {
+  color: #e65100;   /* deep orange – for "please select an answer" */
+}
+
+/* Hazard / warning icon (used in sidebar or elsewhere) */
+.hazard-icon,
+.warning-icon {
+  color: #e65100;   /* orange */
+}
+
+/* Remove empty feedback (no user answer yet) – eliminates bottom gap in exam mode */
+.feedback:empty {
+  display: none;
+}
+
+/* Explanation / answer box – keep neutral */
+.explanation,
+.answer-box {
+  margin-top: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--quiz-surface);
+  border: 1px solid var(--quiz-border);
+  font-size: inherit;
+  color: var(--quiz-text);
+  line-height: 1.6;
+}
+
+.explanation { display: none; }
+
+/* Points badge – visible only in exam mode */
+.points-badge {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: var(--quiz-surface);
+  border: 1px solid var(--quiz-border);
+  padding: 0.2rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--quiz-text);
+  display: none;
+}
+
+body.exam-mode .points-badge {
+  display: block;
+}
+
+body.exam-mode .check-button:not(.finish-quiz-btn) {
+  display: none;
+}
+
+body.exam-mode details summary {
+  display: none;
+}
+
+body.exam-mode details .answer-box {
+  display: block;
+}
+
+.finish-quiz-btn {
+  display: block;
+  margin: 2rem auto 0;
+  width: auto;
+  padding: 0.8rem 2rem;
+  font-size: 1.2rem;
+}
+
 @media (max-width: 768px) {
   .material-box { padding: 1rem; }
   .code-box { padding: 0; }
   .code-box pre code.hljs,
   .code-box pre code:not(.hljs) { padding: 1rem; }
+  .question-block { padding: 1.2rem 0.75rem; border-left-width: 6px; }
+  .points-badge { top: 0.2rem; right: 0.2rem; font-size: 0.75rem; padding: 0.1rem 0.4rem; }
+  .check-button, summary { width: 100%; text-align: center; padding: 0.6rem 1.2rem !important; font-size: 1rem !important; }
+}
+
+@media (max-width: 480px) {
+  .question-title { font-size: 1.15rem !important; }
 }
