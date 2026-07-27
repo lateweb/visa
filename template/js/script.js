@@ -389,6 +389,12 @@
       incorrect: { en: "✖ Incorrect", fi: "✖ Väärin" }
     };
 
+    if (typeof examMode !== 'undefined' && examMode) {
+      wireExamMode(translations);
+      return;
+    }
+
+    // Standard mode: individual check buttons
     document.querySelectorAll('.check-button').forEach(button => {
       button.addEventListener('click', () => {
         const qBlock = button.closest('.question-block');
@@ -418,6 +424,75 @@
           if (explanation) explanation.style.display = 'none';
         }
       });
+    });
+  }
+
+  function wireExamMode(translations) {
+    // Create finish button
+    const quizSection = document.querySelector('.quiz-section');
+    const finishBtn = document.createElement('button');
+    finishBtn.className = 'check-button finish-quiz-btn';
+    finishBtn.textContent = 'Finish Quiz';
+    finishBtn.style.display = 'block';
+    finishBtn.style.margin = '2rem auto 0';
+    quizSection.appendChild(finishBtn);
+
+    finishBtn.addEventListener('click', () => {
+      // Prevent double submission
+      finishBtn.disabled = true;
+
+      const questionBlocks = document.querySelectorAll('.question-block');
+      let totalPoints = 0;
+      let earnedPoints = 0;
+      const results = [];
+
+      questionBlocks.forEach((qBlock) => {
+        const points = parseInt(qBlock.dataset.points, 10) || 0;
+        totalPoints += points;
+
+        const isMcq = qBlock.querySelector('.options') !== null;
+        const feedback = qBlock.querySelector('.feedback');
+        const explanation = qBlock.querySelector('.explanation');
+        const answerBox = qBlock.querySelector('.answer-box');
+
+        if (isMcq) {
+          const selected = qBlock.querySelector(`input[name="${qBlock.id}"]:checked`);
+          const correctAnswer = qBlock.dataset.correctAnswer;
+          if (selected && selected.value === correctAnswer) {
+            earnedPoints += points;
+            if (feedback) {
+              feedback.textContent = translations.correct[quizLang] || '✓ Correct';
+              feedback.className = 'feedback correct';
+            }
+            qBlock.classList.add('correct');
+          } else {
+            if (feedback) {
+              if (!selected) {
+                feedback.textContent = (translations.selectAnswer[quizLang] || '⚠ Please select an answer');
+              } else {
+                feedback.textContent = (translations.incorrect[quizLang] || '✖ Incorrect');
+              }
+              feedback.className = 'feedback incorrect';
+            }
+            qBlock.classList.add('incorrect');
+          }
+          if (explanation) explanation.style.display = 'block';
+        } else {
+          // Open-ended: not graded, just show answer
+          if (answerBox) answerBox.style.display = 'block';
+        }
+      });
+
+      // Show result summary
+      const resultDiv = document.createElement('div');
+      resultDiv.id = 'exam-result';
+      resultDiv.style.cssText = 'text-align: center; margin: 2rem 0; padding: 1rem; border: 2px solid var(--quiz-border); background: var(--quiz-surface);';
+      const percentage = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
+      resultDiv.innerHTML = `<h2>Your Score: ${earnedPoints} / ${totalPoints} (${percentage}%)</h2>`;
+      quizSection.insertBefore(resultDiv, quizSection.firstChild);
+
+      // Scroll to result
+      resultDiv.scrollIntoView({ behavior: 'smooth' });
     });
   }
 
