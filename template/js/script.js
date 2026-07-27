@@ -287,10 +287,16 @@
     });
   }
 
-  // --- OPEN ANSWER AUTOSAVE (exam mode only) ---
+  // --- OPEN ANSWER AUTOSAVE & AUTO‑EXPAND (exam mode only) ---
   function setupOpenAnswerAutosave() {
     const textareas = document.querySelectorAll('.open-answer-textarea');
     if (textareas.length === 0) return;
+
+    // Auto‑expand: adjust height to content
+    const autoResize = (textarea) => {
+      textarea.style.height = 'auto';
+      textarea.style.height = textarea.scrollHeight + 'px';
+    };
 
     // Debounce helper
     const debounce = (fn, delay) => {
@@ -320,16 +326,28 @@
         const saved = localStorage.getItem(key);
         if (saved !== null) {
           textarea.value = saved;
+          // Auto‑resize after restoring content
+          autoResize(textarea);
         }
       });
     };
 
-    const debouncedSave = debounce((textarea) => saveAnswer(textarea), 500);
+    const debouncedSave = debounce((textarea) => {
+      saveAnswer(textarea);
+    }, 500);
 
     textareas.forEach(textarea => {
-      textarea.addEventListener('input', () => debouncedSave(textarea));
-      // Also save on blur to catch final state
+      // Auto‑resize on input
+      textarea.addEventListener('input', () => {
+        autoResize(textarea);
+        debouncedSave(textarea);
+      });
+
+      // Save on blur
       textarea.addEventListener('blur', () => saveAnswer(textarea));
+
+      // Initial auto‑resize in case of pre‑filled content (e.g. from restore)
+      autoResize(textarea);
     });
 
     // Restore any previously saved answers
@@ -654,7 +672,7 @@
     autoFormatQuotes();
     setupCodeCopy();
     initTheme();
-    setupOpenAnswerAutosave();   // <-- new autosave for open answers
+    setupOpenAnswerAutosave();   // auto‑save + auto‑expand for open‑answer textareas
 
     if (typeof hljs !== 'undefined') {
       try {
