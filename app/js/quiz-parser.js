@@ -9,8 +9,8 @@ function shuffleArray(array) {
   return array;
 }
 
-// The main parser function, now with language support
-function parseQuizdown(text, lang = 'en') {
+// The main parser function, now with language support and exam mode
+function parseQuizdown(text, lang = 'en', examMode = false) {
   text = text.replace(/\r\n/g, '\n');
   let quizTitle = "Generated Quiz";
   let questionText = text;
@@ -228,13 +228,17 @@ function parseQuizdown(text, lang = 'en') {
       const lines = block.trim().split('\n');
       const questionLines = [], options = [], answerLines = [];
       let currentSection = 'none';
+      let points = null; // default points
 
       for (const line of lines) {
         const trimmedLine = line.trim();
         if (trimmedLine.startsWith('#Q')) {
           currentSection = 'question';
-          const qMatch = trimmedLine.match(/^#Q(?::\s*\d+)?\s*(.*)$/i);
-          if (qMatch && qMatch[1].trim()) questionLines.push(qMatch[1].trim());
+          const qMatch = trimmedLine.match(/^#Q(?::\s*(\d+))?\s*(.*)$/i);
+          if (qMatch) {
+            if (qMatch[1]) points = parseInt(qMatch[1], 10);
+            if (qMatch[2]) questionLines.push(qMatch[2].trim());
+          }
         } else if (trimmedLine.startsWith('- [')) {
           currentSection = 'options';
           options.push({ correct: trimmedLine.startsWith('- [x]'), text: applyFormatting(trimmedLine.substring(5).trim()) });
@@ -253,13 +257,17 @@ function parseQuizdown(text, lang = 'en') {
       const answerRaw = answerLines.join('\n').trim();
       const questionTitle = interleaveMaterials(questionRaw, materialList);
       const answer = answerRaw ? interleaveMaterials(answerRaw, materialList) : '';
+      // Default points to 1 if not specified
+      const questionPoints = points !== null ? points : 1;
 
       if (options.length > 2) shuffleArray(options);
       if (!questionTitle) return '';
 
       const isMcq = options.length > 0;
       const qId = `q${qNum}`;
-      let html = `<section class="question-block" id="${qId}" ${isMcq ? `data-correct-answer="${String.fromCharCode(97 + options.findIndex(opt => opt.correct))}"` : ''} aria-labelledby="${qId}-title">`;
+      const correctAnswerLetter = isMcq ? String.fromCharCode(97 + options.findIndex(opt => opt.correct)) : '';
+
+      let html = `<section class="question-block" id="${qId}" data-points="${questionPoints}" ${isMcq ? `data-correct-answer="${correctAnswerLetter}"` : ''} aria-labelledby="${qId}-title">`;
       html += `<p class="question-number" id="${qId}-number">${qNum}.</p><div class="question-title" id="${qId}-title">${questionTitle}</div>`;
 
       if (isMcq) {
@@ -268,9 +276,18 @@ function parseQuizdown(text, lang = 'en') {
           const val = String.fromCharCode(97 + i);
           html += `<label><input type="radio" name="${qId}" value="${val}"> <span>${opt.text}</span></label>`;
         });
-        html += `</div></fieldset><button class="check-button" aria-controls="${qId}-feedback ${qId}-explanation">${translations.check[lang]}</button><div class="feedback" id="${qId}-feedback" role="alert" aria-live="polite"></div><div class="explanation" id="${qId}-explanation" aria-live="polite">${answer}</div>`;
-      } else if (answer) {
-        html += `<details><summary>${translations.showHide[lang]}</summary><div class="answer-box">${answer}</div></details>`;
+        html += `</div></fieldset>`;
+        if (!examMode) {
+          html += `<button class="check-button" aria-controls="${qId}-feedback ${qId}-explanation">${translations.check[lang]}</button>`;
+        }
+        html += `<div class="feedback" id="${qId}-feedback" role="alert" aria-live="polite"></div><div class="explanation" id="${qId}-explanation" aria-live="polite">${answer}</div>`;
+      } else {
+        if (!examMode) {
+          html += `<details><summary>${translations.showHide[lang]}</summary><div class="answer-box">${answer}</div></details>`;
+        } else {
+          // In exam mode, hide answer until finish
+          html += `<div class="answer-box" style="display:none;">${answer}</div>`;
+        }
       }
       html += '</section>';
       return html;
