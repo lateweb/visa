@@ -20,7 +20,7 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
     check: { en: 'Check', fi: 'Tarkista' },
     showHide: { en: 'Show/Hide', fi: 'Näytä/Piilota' },
     pointsLabel: { en: ' pts.', fi: ' p.' },   // e.g. "5 pts." / "5 p."
-    answerPlaceholder: { en: 'Write your answer here...', fi: 'Kirjoita vastauksesi tähän...' }
+    answerPlaceholder: { en: 'Write your answer here…', fi: 'Kirjoita vastauksesi tähän…' }
   };
 
   // 1. Header Parsing
@@ -297,9 +297,9 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
         if (!examMode) {
           html += `<details><summary>${translations.showHide[lang]}</summary><div class="answer-box">${answer}</div></details>`;
         } else {
-          // In exam mode: show a blank textarea for student's answer, hide the model answer
+          // In exam mode: a contenteditable div for rich answer (text + images)
           const placeholderText = translations.answerPlaceholder[lang] || translations.answerPlaceholder.en;
-          html += `<textarea class="open-answer-textarea" placeholder="${placeholderText}"></textarea>`;
+          html += `<div class="open-answer-textarea" contenteditable="true" data-placeholder="${placeholderText}"></div>`;
           html += `<div class="answer-box" style="display:none;">${answer}</div>`;
         }
       }
