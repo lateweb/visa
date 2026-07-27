@@ -145,6 +145,45 @@
     }
   }
 
+  // --- COPY HANDLER: always copy LaTeX source from rendered math ---
+  function setupMathCopyHandler() {
+    document.addEventListener('copy', (e) => {
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+
+      const range = selection.getRangeAt(0);
+      const start = range.startContainer;
+      const end = range.endContainer;
+
+      // Find the common ancestor mjx-container that has data-tex
+      const mathContainer = findMathContainer(start) || findMathContainer(end);
+      if (!mathContainer) return;
+
+      // Verify that both start and end are within the same math container
+      const startContainer = start.nodeType === Node.TEXT_NODE ? start.parentElement : start;
+      const endContainer = end.nodeType === Node.TEXT_NODE ? end.parentElement : end;
+      if (!startContainer || !endContainer) return;
+      if (!mathContainer.contains(startContainer) || !mathContainer.contains(endContainer)) return;
+
+      const tex = mathContainer.getAttribute('data-tex');
+      if (tex) {
+        e.clipboardData.setData('text/plain', tex);
+        e.preventDefault();
+      }
+    });
+
+    function findMathContainer(node) {
+      let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+      while (el) {
+        if (el.hasAttribute && el.hasAttribute('data-tex') && el.tagName.toLowerCase() === 'mjx-container') {
+          return el;
+        }
+        el = el.parentElement;
+      }
+      return null;
+    }
+  }
+
   // --- INTERACTION HANDLERS ---
 
   function isInteractiveEl(el) {
@@ -540,6 +579,7 @@
   function initializePage() {
     preventMathInteraction();
     installQuestionNumberClickHandler();
+    setupMathCopyHandler();  // <-- new copy handler for LaTeX source
 
     buildSidebar();
     wireQuiz();
