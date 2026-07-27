@@ -388,7 +388,8 @@
       correct: { en: "✓ Correct", fi: "✓ Oikein" },
       incorrect: { en: "✖ Incorrect", fi: "✖ Väärin" },
       finish: { en: "Finish Quiz", fi: "Palauta" },
-      score: { en: "Your Score", fi: "Pisteesi" }
+      score: { en: "Your Score", fi: "Pisteesi" },
+      confirmFinish: { en: "Are you sure you want to finish? You can't change your answers after this.", fi: "Haluatko varmasti palauttaa? Et voi muuttaa vastauksiasi tämän jälkeen." }
     };
 
     if (typeof examMode !== 'undefined' && examMode) {
@@ -442,6 +443,12 @@
     quizSection.appendChild(finishBtn);
 
     finishBtn.addEventListener('click', () => {
+      // Confirmation dialog
+      const confirmMsg = translations.confirmFinish[lang] || translations.confirmFinish.en;
+      if (!confirm(confirmMsg)) {
+        return; // user cancelled
+      }
+
       // Prevent double submission
       finishBtn.disabled = true;
 
