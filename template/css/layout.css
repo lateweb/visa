@@ -19,7 +19,13 @@
 }
 
 .question-block p { margin-bottom: 1.2rem; }
-.question-title { font-weight: 600; font-size: 1.25rem; color: var(--quiz-text); }
+
+.question-title { 
+  font-weight: 600; 
+  font-size: 1.25rem; 
+  color: var(--quiz-text); 
+  padding-right: 4rem;              /* reserves space for the points badge */
+}
 
 .options label {
   display: flex;
@@ -140,12 +146,12 @@ summary::-webkit-details-marker { display: none; }
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
-  background: var(--quiz-surface);
+  background: var(--quiz-surface);    /* grayish background */
   border: 1px solid var(--quiz-border);
   padding: 0.2rem 0.5rem;
   font-size: 0.85rem;
   font-weight: 600;
-  color: var(--quiz-muted);
+  color: var(--quiz-text);            /* black in light, white in dark – not muted */
   display: none;
 }
 
@@ -179,6 +185,8 @@ body.exam-mode details .answer-box {
 
 @media (max-width: 768px) {
   .question-block { padding: 1.2rem 0.75rem; border-left-width: 6px; }
+  .points-badge { top: 0.2rem; right: 0.2rem; font-size: 0.75rem; padding: 0.1rem 0.4rem; }
+  .question-title { padding-right: 3.5rem; }   /* slightly less on mobile */
   .check-button, summary { width: 100%; text-align: center; padding: 0.6rem 1.2rem !important; font-size: 1rem !important; }
 }
 
