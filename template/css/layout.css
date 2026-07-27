@@ -142,7 +142,7 @@ summary::-webkit-details-marker { display: none; }
 
 .explanation { display: none; }
 
-/* Open answer textarea for exam mode – matches answer box styling, auto‑expands, no resize handle */
+/* Open answer area – styled like the answer box, supports images, auto‑expands, no resize handle */
 .open-answer-textarea {
   display: block;
   width: 100%;
@@ -155,9 +155,11 @@ summary::-webkit-details-marker { display: none; }
   line-height: 1.6;
   color: var(--quiz-text);
   resize: none;
-  overflow: hidden;
+  overflow-y: auto;
   min-height: 6rem;
   outline: none;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .open-answer-textarea:focus {
@@ -165,9 +167,29 @@ summary::-webkit-details-marker { display: none; }
   outline-offset: -1px;
 }
 
-.open-answer-textarea[readonly] {
+/* Locked state after finishing */
+.open-answer-textarea[contenteditable="false"] {
   background: var(--quiz-surface);
   cursor: default;
+  opacity: 0.9;
+}
+
+/* Placeholder styling for contenteditable divs */
+.open-answer-textarea[contenteditable="true"]:empty:before {
+  content: attr(data-placeholder);
+  color: var(--quiz-muted);
+  font-style: italic;
+  pointer-events: none;
+  display: block; /* For Firefox */
+}
+
+/* Pasted images inside the answer area */
+.open-answer-textarea img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0.5rem 0;
+  border-radius: 4px;
 }
 
 /* Points badge – absolute top‑right (old style) */
