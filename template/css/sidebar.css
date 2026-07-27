@@ -95,9 +95,10 @@
 .quiz-nav-item { list-style: none; }
 
 .quiz-nav-item a {
-  display: block;
-  text-align: center;
-  padding: 8px 4px;
+  display: flex;                /* flex for left‑aligned number */
+  align-items: center;
+  justify-content: flex-start;  /* number on left */
+  padding: 8px 10px;
   text-decoration: none;
   color: var(--quiz-text);
   background: var(--quiz-surface);
@@ -106,46 +107,43 @@
   font-size: 0.9em;
   transition: background 0.2s, color 0.2s;
   position: relative;
+  min-height: 2.4rem;
 }
 
-/* ----- ANSWERED STATE (solid block, no diagonals) ----- */
+/* ----- ANSWERED STATE: grey on the right half only ----- */
 .quiz-nav-item a.answered {
-  background: #e0e0e0;          /* light grey – visible in both themes */
+  background: linear-gradient(to right, transparent 50%, #d0d0d0 50%);
   color: var(--quiz-text);
   border-color: var(--quiz-border);
 }
 
-/* ----- CORRECT (green block) ----- */
+/* ----- CORRECT: solid green block ----- */
 .quiz-nav-item a.q-correct {
   background: #2e7d32;          /* deep green */
-  color: #ffffff;               /* white text */
+  color: #ffffff;
   border-color: #2e7d32;
 }
 
-/* ----- INCORRECT (red block) ----- */
+/* ----- INCORRECT: solid red block ----- */
 .quiz-nav-item a.q-incorrect {
   background: #c62828;          /* deep red */
-  color: #ffffff;               /* white text */
+  color: #ffffff;
   border-color: #c62828;
 }
 
-/* Keep hover style – use a dark overlay or invert */
+/* Hover effect – subtle darkening */
 .quiz-nav-item a:hover {
-  filter: brightness(0.85);
+  filter: brightness(0.9);
 }
 
-/* Remove any pseudo‑elements – we use pure backgrounds */
+/* Remove any pseudo‑elements */
 .quiz-nav-item a::after {
   content: none;
 }
 
-/* Status icon – visible only after grading */
+/* Hide status icon entirely (we use only colour) */
 .quiz-nav-item a .status-icon {
-  display: inline-block;
-  margin-left: 4px;
-  font-size: 0.85em;
-  vertical-align: middle;
-  line-height: 1;
+  display: none;
 }
 
 .sidebar-overlay {
