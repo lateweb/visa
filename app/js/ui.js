@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Elements
     const quizInput = document.getElementById('quizdownCode');
     const langSelect = document.getElementById('language-select');
+    const examModeCheckbox = document.getElementById('examModeCheckbox');
     const openBuilderBtn = document.getElementById('openBuilderBtn');
    
     // HTML Buttons
@@ -90,7 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 if (typeof generateQuizHtml !== 'function') throw new Error("HTML Generator not loaded");
                
-                const html = await generateQuizHtml(langSelect.value);
+                const examMode = examModeCheckbox ? examModeCheckbox.checked : false;
+                const html = await generateQuizHtml(langSelect.value, examMode);
                
                 if (html) {
                     const blob = new Blob([html], { type: 'text/html' });
@@ -127,7 +129,8 @@ document.addEventListener('DOMContentLoaded', () => {
            
             try {
                 if (typeof generateQuizHtml !== 'function') throw new Error("HTML Generator not loaded");
-                const html = await generateQuizHtml(langSelect.value);
+                const examMode = examModeCheckbox ? examModeCheckbox.checked : false;
+                const html = await generateQuizHtml(langSelect.value, examMode);
                 if (html) {
                     await navigator.clipboard.writeText(html);
                     showStatusMessage(copyBtn, 'Copied!', 'success');
@@ -150,7 +153,8 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadBtn.textContent = '...';
             try {
                 if (typeof generateQuizHtml !== 'function') throw new Error("HTML Generator not loaded");
-                const html = await generateQuizHtml(langSelect.value);
+                const examMode = examModeCheckbox ? examModeCheckbox.checked : false;
+                const html = await generateQuizHtml(langSelect.value, examMode);
                 if (html) {
                     const match = quizInput.value.match(/^title:\s*(.+)$/m);
                     const title = match ? match[1].trim() : 'quiz';
