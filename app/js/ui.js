@@ -34,7 +34,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const compressed = LZString.compressToBase64(text);
                 window.location.href = `editor.html#quiz=${encodeURIComponent(compressed)}`;
             } else {
-                // If empty, just go to the editor
+                // If text is intentionally empty, clear the draft to ensure a fresh start
+                localStorage.removeItem('quiz_autosave_draft');
                 window.location.href = 'editor.html';
             }
         });
@@ -45,7 +46,6 @@ document.addEventListener('DOMContentLoaded', () => {
         quizInput.addEventListener('input', () => {
             const hasText = quizInput.value.trim().length > 0;
             if (runBtn) runBtn.disabled = !hasText;
-            // No LaTeX preview button anymore; but keep compact mode functional
         });
         
         // Initial check
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    // 2. Button Handlers (no preview button; only copy/download)
+    // 2. Button Handlers
     async function handleClipboardLatex(withAnswers, successMsg, emptyMsg, failMsg, uiButton) {
         const originalText = uiButton.innerHTML;
         uiButton.textContent = '...';
@@ -278,16 +278,54 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- INIT ---
+    // --- INIT & AUTOSAVE ---
     const urlParams = new URLSearchParams(window.location.search);
     const encodedQuiz = urlParams.get('quiz');
+    
+    let loadedFromUrl = false;
+
     if (encodedQuiz) {
         const decoded = decodeQuizFromUrl(encodedQuiz);
         if (decoded) {
             quizInput.value = decoded;
             quizInput.dispatchEvent(new Event('input'));
             showToast('Quiz loaded!', 'success');
+            loadedFromUrl = true;
+            
+            // Remove the URL query param so a subsequent refresh doesn't overwrite a newer draft
+            const newUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, newUrl);
         }
+    }
+    
+    // Auto-restore shared draft
+    if (!loadedFromUrl && quizInput) {
+        const draft = localStorage.getItem('quiz_autosave_draft');
+        if (draft && draft.trim().length > 10) {
+            quizInput.value = draft;
+            quizInput.dispatchEvent(new Event('input'));
+            showToast('Unsaved draft restored', 'success');
+        }
+    }
+
+    // Auto-save on input for Converter (syncs with Visual Builder perfectly)
+    if (quizInput) {
+        quizInput.addEventListener('input', () => {
+            const raw = quizInput.value;
+            if (raw.trim().length > 10) {
+                localStorage.setItem('quiz_autosave_draft', raw);
+            } else if (raw.trim().length === 0) {
+                localStorage.removeItem('quiz_autosave_draft');
+            }
+        });
+        
+        // Interval fallback
+        setInterval(() => {
+            const raw = quizInput.value;
+            if (raw.trim().length > 10) {
+                localStorage.setItem('quiz_autosave_draft', raw);
+            }
+        }, 5000);
     }
     
     const savedQuizzes = JSON.parse(localStorage.getItem('savedQuizzes') || '[]');
