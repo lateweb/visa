@@ -726,12 +726,16 @@
             badge.innerText = `${earned} / ${points}${pointsSuffix}`;
           }
         } else {
-          // Open‑ended: lock the answer area and reveal model answer
+          // Open‑ended: lock the answer area, reveal labels and model answer
           if (openAnswerDiv) {
             openAnswerDiv.setAttribute('contenteditable', 'false');
             // Trigger a final save just in case
             saveAnswerOnFinish(openAnswerDiv);
           }
+          const openLabel = qBlock.querySelector('.open-answer-label');
+          const modelLabel = qBlock.querySelector('.model-answer-label');
+          if (openLabel) openLabel.style.display = 'block';
+          if (modelLabel) modelLabel.style.display = 'block';
           if (answerBox) {
             answerBox.style.display = 'block';
           }
@@ -765,14 +769,14 @@
   function initializePage() {
     preventMathInteraction();
     installQuestionNumberClickHandler();
-    setupMathCopyHandler();   // <-- updated: now works with mixed selections
+    setupMathCopyHandler();
 
     buildSidebar();
     wireQuiz();
     autoFormatQuotes();
     setupCodeCopy();
     initTheme();
-    setupOpenAnswerAutosave();   // auto‑save, auto‑expand, image paste, sidebar unmark on empty
+    setupOpenAnswerAutosave();
 
     if (typeof hljs !== 'undefined') {
       try {
