@@ -122,7 +122,7 @@ summary::-webkit-details-marker { display: none; }
   padding: 1rem 1.5rem;
   background: var(--quiz-surface);
   border: 1px solid var(--quiz-border);
-  font-size: 1rem;
+  font-size: inherit;              /* now matches surrounding text (1.15rem) */
   color: var(--quiz-text);
   line-height: 1.6;
 }
