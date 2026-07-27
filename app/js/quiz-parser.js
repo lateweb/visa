@@ -274,12 +274,14 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
       // Build question block HTML
       let html = `<section class="question-block" id="${qId}" data-points="${questionPoints}" ${isMcq ? `data-correct-answer="${correctAnswerLetter}"` : ''} aria-labelledby="${qId}-title">`;
       
-      // Points badge for exam mode
+      // Question number with optional points badge (now inline, not absolute)
       if (examMode) {
-        html += `<span class="points-badge">${questionPoints}${pointsSuffix}</span>`;
+        html += `<p class="question-number" id="${qId}-number">${qNum}. <span class="points-badge">${questionPoints}${pointsSuffix}</span></p>`;
+      } else {
+        html += `<p class="question-number" id="${qId}-number">${qNum}.</p>`;
       }
       
-      html += `<p class="question-number" id="${qId}-number">${qNum}.</p><div class="question-title" id="${qId}-title">${questionTitle}</div>`;
+      html += `<div class="question-title" id="${qId}-title">${questionTitle}</div>`;
 
       if (isMcq) {
         html += '<fieldset><div class="options" role="radiogroup">';
