@@ -142,6 +142,33 @@ summary::-webkit-details-marker { display: none; }
 
 .explanation { display: none; }
 
+/* Open answer textarea for exam mode – matches answer box styling */
+.open-answer-textarea {
+  display: block;
+  width: 100%;
+  margin-top: 1rem;
+  padding: 1rem 1.5rem;
+  background: var(--quiz-surface);
+  border: 1px solid var(--quiz-border);
+  font-family: inherit;
+  font-size: inherit;
+  line-height: 1.6;
+  color: var(--quiz-text);
+  resize: vertical;
+  min-height: 6rem;
+  outline: none;
+}
+
+.open-answer-textarea:focus {
+  outline: 2px solid var(--quiz-text);
+  outline-offset: -1px;
+}
+
+.open-answer-textarea[readonly] {
+  background: var(--quiz-surface);
+  cursor: default;
+}
+
 /* Points badge – now inline with question number, not absolute */
 .points-badge {
   display: inline;
