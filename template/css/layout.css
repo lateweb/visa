@@ -167,11 +167,10 @@ summary::-webkit-details-marker { display: none; }
   outline-offset: -1px;
 }
 
-/* Locked state after finishing */
+/* Locked state after finishing – no opacity change, just prevent editing */
 .open-answer-textarea[contenteditable="false"] {
   background: var(--quiz-surface);
   cursor: default;
-  opacity: 0.9;
 }
 
 /* Placeholder styling for contenteditable divs */
