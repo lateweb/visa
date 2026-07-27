@@ -11,7 +11,6 @@
   // --- STATE MANAGEMENT ---
   const ORIG_BY_SOURCE = new WeakMap();
   const PAGE_LOAD_TIME = new Date();
-  let timerInterval = null; // holds the interval ID for the exam timer
 
   // --- CSS INJECTION (MathJax Layout & Overrides) ---
   const styleId = 'tex-inline-style';
@@ -146,7 +145,7 @@
     }
   }
 
-  // --- COPY HANDLER: always copy LaTeX source from rendered math ---
+  // --- COPY HANDLER: always copy LaTeX source from rendered math, no script/style leakage ---
   function setupMathCopyHandler() {
     document.addEventListener('copy', (e) => {
       const selection = window.getSelection();
@@ -155,7 +154,14 @@
       const range = selection.getRangeAt(0);
       const fragment = range.cloneContents();
 
-      // Find all math containers in the selected fragment
+      // Remove <style>, <script>, sidebar, and toggle button from the fragment
+      const removeNodes = (root, selector) => {
+        root.querySelectorAll(selector).forEach(el => el.remove());
+      };
+      removeNodes(fragment, 'style, script, link[rel="stylesheet"]');
+      removeNodes(fragment, '.quiz-nav-sidebar, .nav-toggle-btn, .theme-toggle-fixed, .finish-quiz-btn, .check-button');
+
+      // Find math containers
       const mathContainers = fragment.querySelectorAll
         ? fragment.querySelectorAll('mjx-container[data-tex]')
         : [];
@@ -171,7 +177,32 @@
         }
       });
 
-      const plainText = fragment.textContent;
+      // Convert fragment to nicely formatted plain text
+      const blockTags = new Set([
+        'div', 'section', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'blockquote', 'pre', 'table', 'ul', 'ol', 'li', 'br', 'hr',
+        'figure', 'figcaption', 'fieldset', 'details', 'summary'
+      ]);
+
+      function fragmentToText(node) {
+        if (node.nodeType === Node.TEXT_NODE) return node.textContent;
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          const tag = node.tagName ? node.tagName.toLowerCase() : '';
+          const isBlock = blockTags.has(tag);
+          let result = '';
+          for (let child = node.firstChild; child; child = child.nextSibling) {
+            result += fragmentToText(child);
+          }
+          if (isBlock) result = '\n' + result.trim() + '\n';
+          return result;
+        }
+        return '';
+      }
+
+      let plainText = fragmentToText(fragment);
+      // Clean up excessive newlines
+      plainText = plainText.replace(/\n{3,}/g, '\n\n').trim();
+
       e.clipboardData.setData('text/plain', plainText);
       e.preventDefault();
     });
@@ -492,21 +523,14 @@
     }
 
     const startTime = PAGE_LOAD_TIME.getTime();
-    timerInterval = setInterval(() => {
-      const now = Date.now();
-      const diff = Math.floor((now - startTime) / 1000);
-      const h = Math.floor(diff / 3600).toString().padStart(2, '0');
-      const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
-      const s = (diff % 60).toString().padStart(2, '0');
-      timerValue.textContent = `${h}:${m}:${s}`;
+    setInterval(() => {
+        const now = Date.now();
+        const diff = Math.floor((now - startTime) / 1000);
+        const h = Math.floor(diff / 3600).toString().padStart(2, '0');
+        const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+        const s = (diff % 60).toString().padStart(2, '0');
+        timerValue.textContent = `${h}:${m}:${s}`;
     }, 1000);
-  }
-
-  function stopTimer() {
-    if (timerInterval) {
-      clearInterval(timerInterval);
-      timerInterval = null;
-    }
   }
 
   /**
@@ -684,9 +708,6 @@
       if (!confirm(confirmMsg)) {
         return;
       }
-
-      // Stop the timer when finishing the quiz
-      stopTimer();
 
       finishBtn.disabled = true;
       finishBtn.style.display = 'none';
