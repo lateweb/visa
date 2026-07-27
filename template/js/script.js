@@ -145,7 +145,7 @@
     }
   }
 
-  // --- COPY HANDLER: always copy LaTeX source from rendered math, no script/style leakage ---
+  // --- COPY HANDLER: copy LaTeX source, no script/style leakage ---
   function setupMathCopyHandler() {
     document.addEventListener('copy', (e) => {
       const selection = window.getSelection();
@@ -154,57 +154,35 @@
       const range = selection.getRangeAt(0);
       const fragment = range.cloneContents();
 
-      // Remove <style>, <script>, sidebar, and toggle button from the fragment
-      const removeNodes = (root, selector) => {
-        root.querySelectorAll(selector).forEach(el => el.remove());
-      };
-      removeNodes(fragment, 'style, script, link[rel="stylesheet"]');
-      removeNodes(fragment, '.quiz-nav-sidebar, .nav-toggle-btn, .theme-toggle-fixed, .finish-quiz-btn, .check-button');
-
-      // Find math containers
+      // Find all math containers in the selected fragment
       const mathContainers = fragment.querySelectorAll
         ? fragment.querySelectorAll('mjx-container[data-tex]')
         : [];
 
-      if (mathContainers.length === 0) return; // no math, let default copy happen
+      // Remove all <style> and <script> blocks from the fragment to prevent leakage
+      fragment.querySelectorAll('style, script, link[rel="stylesheet"]').forEach(el => el.remove());
 
-      // Replace each math container with its LaTeX source
-      mathContainers.forEach(container => {
-        const tex = container.getAttribute('data-tex');
-        if (tex) {
-          const textNode = document.createTextNode(tex);
-          container.parentNode.replaceChild(textNode, container);
-        }
-      });
-
-      // Convert fragment to nicely formatted plain text
-      const blockTags = new Set([
-        'div', 'section', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        'blockquote', 'pre', 'table', 'ul', 'ol', 'li', 'br', 'hr',
-        'figure', 'figcaption', 'fieldset', 'details', 'summary'
-      ]);
-
-      function fragmentToText(node) {
-        if (node.nodeType === Node.TEXT_NODE) return node.textContent;
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          const tag = node.tagName ? node.tagName.toLowerCase() : '';
-          const isBlock = blockTags.has(tag);
-          let result = '';
-          for (let child = node.firstChild; child; child = child.nextSibling) {
-            result += fragmentToText(child);
+      if (mathContainers.length > 0) {
+        // Replace each math container with its LaTeX source
+        mathContainers.forEach(container => {
+          const tex = container.getAttribute('data-tex');
+          if (tex) {
+            const textNode = document.createTextNode(tex);
+            container.parentNode.replaceChild(textNode, container);
           }
-          if (isBlock) result = '\n' + result.trim() + '\n';
-          return result;
-        }
-        return '';
+        });
       }
 
-      let plainText = fragmentToText(fragment);
-      // Clean up excessive newlines
-      plainText = plainText.replace(/\n{3,}/g, '\n\n').trim();
+      // Use the browser's own text serialisation of the cleaned fragment
+      const plainText = fragment.textContent || '';
 
-      e.clipboardData.setData('text/plain', plainText);
-      e.preventDefault();
+      if (plainText.trim()) {
+        e.clipboardData.setData('text/plain', plainText);
+        e.preventDefault();
+      } else {
+        // If the fragment is empty (shouldn't happen), let the default copy occur
+        return;
+      }
     });
   }
 
