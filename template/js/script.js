@@ -11,6 +11,7 @@
   // --- STATE MANAGEMENT ---
   const ORIG_BY_SOURCE = new WeakMap();
   const PAGE_LOAD_TIME = new Date();
+  let timerInterval = null; // holds the interval ID for the exam timer
 
   // --- CSS INJECTION (MathJax Layout & Overrides) ---
   const styleId = 'tex-inline-style';
@@ -501,14 +502,21 @@
     }
 
     const startTime = PAGE_LOAD_TIME.getTime();
-    setInterval(() => {
-        const now = Date.now();
-        const diff = Math.floor((now - startTime) / 1000);
-        const h = Math.floor(diff / 3600).toString().padStart(2, '0');
-        const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
-        const s = (diff % 60).toString().padStart(2, '0');
-        timerValue.textContent = `${h}:${m}:${s}`;
+    timerInterval = setInterval(() => {
+      const now = Date.now();
+      const diff = Math.floor((now - startTime) / 1000);
+      const h = Math.floor(diff / 3600).toString().padStart(2, '0');
+      const m = Math.floor((diff % 3600) / 60).toString().padStart(2, '0');
+      const s = (diff % 60).toString().padStart(2, '0');
+      timerValue.textContent = `${h}:${m}:${s}`;
     }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
   }
 
   /**
@@ -686,6 +694,9 @@
       if (!confirm(confirmMsg)) {
         return;
       }
+
+      // Stop the timer when finishing the quiz
+      stopTimer();
 
       finishBtn.disabled = true;
       finishBtn.style.display = 'none';
