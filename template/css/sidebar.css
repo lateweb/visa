@@ -105,6 +105,29 @@
   font-weight: 500;
   font-size: 0.9em;
   transition: background 0.2s, color 0.2s;
+  position: relative;
+}
+
+.quiz-nav-item a::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: transparent;
+  transition: background 0.2s;
+}
+
+/* Answered state – gray bar at bottom */
+.quiz-nav-item a.answered::after {
+  background: var(--quiz-muted);
+}
+
+/* Completed (standard mode correct) – keep legacy if needed */
+.quiz-nav-item a.completed-nav {
+  background: var(--quiz-text);
+  color: var(--quiz-bg);
 }
 
 .quiz-nav-item a:hover {
@@ -112,9 +135,22 @@
   color: var(--quiz-bg);
 }
 
-.quiz-nav-item a.completed-nav {
-  background: var(--quiz-text);
-  color: var(--quiz-bg);
+/* Graded states: colored bar + status icon */
+.quiz-nav-item a.q-correct::after {
+  background: #2e7d32; /* green */
+}
+
+.quiz-nav-item a.q-incorrect::after {
+  background: #c62828; /* red */
+}
+
+/* Status icon (checkmark / cross) */
+.quiz-nav-item a .status-icon {
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.85em;
+  vertical-align: middle;
+  line-height: 1;
 }
 
 .sidebar-overlay {
