@@ -27,38 +27,6 @@
       .question-number:hover { text-decoration: underline; }
       
       /* --- MATHJAX 4 OVERRIDES --- */
-      
-      /* 1. CONTAINER: Default behavior */
-      mjx-container {
-        display: inline-block !important;
-        white-space: nowrap !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        line-height: inherit !important;
-        font-size: 1.05em !important;
-        width: auto !important;
-        max-width: 100% !important;
-        
-        /* Interaction Disabling */
-        cursor: default !important;
-        outline: none !important;
-        user-select: none; 
-      }
-
-      /* 2. INLINE SPECIFIC: Let the browser break equations naturally */
-      .math-inline mjx-container,
-      .math-inline mjx-container mjx-math,
-      .math-inline mjx-container mjx-mrow {
-        display: inline !important;
-        white-space: normal !important;
-      }
-      
-      /* 3. ATOMIC TERMS: Prevent breaking inside math tokens (variables, operators, numbers) */
-      .math-inline mjx-container mjx-mi,
-      .math-inline mjx-container mjx-mn,
-      .math-inline mjx-container mjx-mo {
-        white-space: nowrap !important;
-      }
 
       mjx-assistive-mml { display: none !important; }
 
