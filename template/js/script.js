@@ -389,7 +389,8 @@
       incorrect: { en: "✖ Incorrect", fi: "✖ Väärin" },
       finish: { en: "Finish Quiz", fi: "Palauta" },
       score: { en: "Your Score", fi: "Pisteesi" },
-      confirmFinish: { en: "Are you sure you want to finish? You can't change your answers after this.", fi: "Haluatko varmasti palauttaa? Et voi muuttaa vastauksiasi tämän jälkeen." }
+      confirmFinish: { en: "Are you sure you want to finish? You can't change your answers after this.", fi: "Haluatko varmasti palauttaa? Et voi muuttaa vastauksiasi tämän jälkeen." },
+      pointsLabel: { en: ' pts.', fi: ' p.' }   // used for per-question score badge update
     };
 
     if (typeof examMode !== 'undefined' && examMode) {
@@ -432,6 +433,7 @@
 
   function wireExamMode(translations) {
     const lang = typeof quizLang !== 'undefined' ? quizLang : 'en';
+    const pointsSuffix = (translations.pointsLabel[lang] || translations.pointsLabel.en);
 
     // Create finish button
     const quizSection = document.querySelector('.quiz-section');
@@ -457,16 +459,16 @@
       let earnedPoints = 0;
 
       questionBlocks.forEach((qBlock) => {
-        // Points fallback: use 1 if attribute missing or invalid
         const points = parseInt(qBlock.dataset.points, 10) || 1;
-        totalPoints += points;
 
         const isMcq = qBlock.querySelector('.options') !== null;
         const feedback = qBlock.querySelector('.feedback');
         const explanation = qBlock.querySelector('.explanation');
         const answerBox = qBlock.querySelector('.answer-box');
+        const badge = qBlock.querySelector('.points-badge');
 
         if (isMcq) {
+          totalPoints += points;   // only MCQ points count toward total
           const selected = qBlock.querySelector(`input[name="${qBlock.id}"]:checked`);
           const correctAnswer = qBlock.dataset.correctAnswer;
 
@@ -488,10 +490,18 @@
             }
             qBlock.classList.add('incorrect');
           }
+
           if (explanation) explanation.style.display = 'block';
+
+          // Update points badge to show earned/max
+          if (badge) {
+            const earned = (selected && selected.value === correctAnswer) ? points : 0;
+            badge.innerText = `${earned} / ${points}${pointsSuffix}`;
+          }
         } else {
-          // Open-ended: not graded, just show answer
+          // Open-ended: not graded, leave badge unchanged (shows max points)
           if (answerBox) answerBox.style.display = 'block';
+          // No points added to total, no badge update
         }
       });
 
