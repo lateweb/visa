@@ -126,7 +126,7 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, 
         packages: {'[+]': ['noerrors', 'action']}
       },
       chtml: {
-        matchFontHeight: true,    // ensures display math uses the same ex-height as surrounding text
+        matchFontHeight: false,   // let us manually size display math via CSS
         scale: 1,
         minScale: 0.5,
         linebreaks: {
