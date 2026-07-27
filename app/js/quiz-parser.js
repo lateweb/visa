@@ -19,8 +19,10 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
   const translations = {
     check: { en: 'Check', fi: 'Tarkista' },
     showHide: { en: 'Show/Hide', fi: 'Näytä/Piilota' },
-    pointsLabel: { en: ' pts.', fi: ' p.' },   // e.g. "5 pts." / "5 p."
-    answerPlaceholder: { en: 'Write your answer here…', fi: 'Kirjoita vastauksesi tähän…' }
+    pointsLabel: { en: ' pts.', fi: ' p.' },
+    answerPlaceholder: { en: 'Write your answer here…', fi: 'Kirjoita vastauksesi tähän…' },
+    yourAnswer: { en: 'Your answer:', fi: 'Vastauksesi:' },
+    modelAnswer: { en: 'Model answer:', fi: 'Mallivastaus:' }
   };
 
   // 1. Header Parsing
@@ -297,9 +299,12 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
         if (!examMode) {
           html += `<details><summary>${translations.showHide[lang]}</summary><div class="answer-box">${answer}</div></details>`;
         } else {
-          // In exam mode: a contenteditable div for rich answer (text + images)
-          const placeholderText = translations.answerPlaceholder[lang] || translations.answerPlaceholder.en;
-          html += `<div class="open-answer-textarea" contenteditable="true" data-placeholder="${placeholderText}"></div>`;
+          // In exam mode: answer area with labels (hidden until finish)
+          const yourAnswerLabel = translations.yourAnswer[lang] || translations.yourAnswer.en;
+          const modelAnswerLabel = translations.modelAnswer[lang] || translations.modelAnswer.en;
+          html += `<div class="open-answer-label" style="display:none;">${yourAnswerLabel}</div>`;
+          html += `<div class="open-answer-textarea" contenteditable="true" data-placeholder="${translations.answerPlaceholder[lang] || translations.answerPlaceholder.en}"></div>`;
+          html += `<div class="model-answer-label" style="display:none;">${modelAnswerLabel}</div>`;
           html += `<div class="answer-box" style="display:none;">${answer}</div>`;
         }
       }
