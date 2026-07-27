@@ -1,4 +1,4 @@
-/* storage.js */
+// app/js/storage.js
 
 let isSaving = false;
 
@@ -77,7 +77,6 @@ function saveQuiz() {
     }
 
     const quizdownContent = quizInput.value;
-    // Handle cases where CSS/JS inputs might not exist (e.g., in editor.html)
     const cssContent = cssInput ? cssInput.value : "";
     const jsContent = jsInput ? jsInput.value : "";
     
@@ -95,7 +94,6 @@ function saveQuiz() {
     
     const savedQuizzes = JSON.parse(localStorage.getItem('savedQuizzes') || '[]');
     
-    // Always create new quiz entry
     const quizItem = {
         id: uniqueId,
         title: quizTitle,
@@ -115,16 +113,13 @@ function saveQuiz() {
     const saveBtn = document.getElementById('saveBtn');
     if (saveBtn) {
         const originalText = saveBtn.textContent;
-        // Check if we are in builder or converter for button text
         saveBtn.textContent = 'Saved!';
         
-        // Use a generic toast if available
         if(typeof showToast === 'function') {
             showToast("Quiz saved to Library!", "success");
         }
         
         setTimeout(() => {
-            // Restore original text based on context
             saveBtn.innerHTML = originalText.includes('Progress') ? 'Save Progress' : (originalText.includes('<svg') ? originalText : 'Save Quiz');
             isSaving = false;
         }, 1000);
@@ -178,8 +173,6 @@ function loadSavedQuizzes() {
         savedQuizzesList.appendChild(quizItem);
     });
     
-    // Add event listeners to buttons using Delegation or direct attachment
-    // Direct attachment for clarity:
     document.querySelectorAll('.load-btn').forEach(button => {
         button.addEventListener('click', (e) => {
             const quizId = e.currentTarget.dataset.id;
@@ -218,10 +211,13 @@ function loadQuiz(quizId) {
             window.renderVisualEditor();
         }
         
+        // Explicitly sync the shared draft so a refresh doesn't revert to the old draft
+        localStorage.setItem('quiz_autosave_draft', quiz.quizdown);
+        
         // Show loaded message
         const saveBtn = document.getElementById('saveBtn');
         if (saveBtn) {
-            const originalText = saveBtn.innerHTML; // Keep icon
+            const originalText = saveBtn.innerHTML; 
             saveBtn.textContent = 'Loaded!';
             setTimeout(() => {
                 saveBtn.innerHTML = originalText;
@@ -271,7 +267,7 @@ function searchQuizzes() {
     });
 }
 
-// Helper for UI status (kept for compatibility with index.html)
+// Helper for UI status 
 function showStatusMessage(button, message, type) {
     const status = document.createElement('span');
     status.className = `status-message ${type}`;
@@ -279,7 +275,6 @@ function showStatusMessage(button, message, type) {
     status.style.marginLeft = '10px';
     status.style.fontSize = '12px';
     
-    // Quick simple styling in case CSS class missing
     status.style.color = type === 'warning' ? '#b45309' : '#047857';
     
     button.parentNode.appendChild(status);
@@ -288,17 +283,13 @@ function showStatusMessage(button, message, type) {
 
 // Initialize saved quizzes on load
 document.addEventListener('DOMContentLoaded', () => {
-    // Add search event listener
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('input', searchQuizzes);
     }
     
-    // Initial load of the sidebar
     loadSavedQuizzes();
     
-    // Add save button event listener if it exists
-    // Note: builder.js might also attach one, which is fine (multiple listeners)
     const saveBtn = document.getElementById('saveBtn');
     if (saveBtn) {
         saveBtn.addEventListener('click', saveQuiz);
