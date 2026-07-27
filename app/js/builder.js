@@ -1,4 +1,4 @@
-/* builder.js */
+// app/js/builder.js
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -6,14 +6,59 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleInput = document.getElementById('visual-title');
     const hiddenCode = document.getElementById('quizdownCode'); 
 
-    // 1. Initialization Logic
-    if(window.visualState.questions.length === 0 && !window.visualState.header) {
-        // Default state
+    let loadedContent = null;
+
+    // 1. Load from URL (if opened from index.html)
+    const fragment = window.location.hash.substring(1); // remove #
+    const params = new URLSearchParams(fragment);
+    const encodedQuiz = params.get("quiz");
+    
+    if (encodedQuiz) {
+        try {
+            // Verify LZString exists
+            if(typeof LZString === 'undefined') {
+                console.error("LZString library missing");
+            } else {
+                const decoded = LZString.decompressFromBase64(encodedQuiz);
+                if (decoded && decoded.trim().length > 0) {
+                    loadedContent = decoded;
+                    // Strip hash from URL so a page refresh doesn't overwrite a newer auto-saved draft
+                    window.history.replaceState(null, null, 'editor.html');
+                }
+            }
+        } catch (e) {
+            console.error("Failed to load quiz from URL", e);
+        }
+    }
+
+    // 2. Restore Draft if no URL data was provided (Survives Refreshes & Crashes)
+    if (!loadedContent) {
+        const draft = localStorage.getItem('quiz_autosave_draft');
+        if (draft && draft.trim().length > 10) {
+            loadedContent = draft;
+            
+            // Show a quick visual indicator that draft was restored
+            setTimeout(() => {
+                const saveBtn = document.getElementById('saveBtn');
+                if (saveBtn) {
+                    const origText = saveBtn.textContent;
+                    saveBtn.textContent = 'Draft Restored';
+                    setTimeout(() => saveBtn.textContent = origText, 2500);
+                }
+            }, 500);
+        }
+    }
+
+    // 3. Initialization Logic
+    if (loadedContent) {
+        window.parseRawToVisual(loadedContent);
+        hiddenCode.value = loadedContent;
+    } else if(window.visualState.questions.length === 0 && !window.visualState.header) {
+        // Default empty state
         window.visualState = {
             header: "title: My New Quiz\n",
             questions: []
         };
-        // If no questions, add one empty one
         window.visualAddQuestion(); 
     }
 
@@ -22,31 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.renderVisualEditor();
     }
 
-    // 2. Load from URL (if opened from index.html)
-    const urlParams = new URLSearchParams(window.location.search);
-    // const encodedQuiz = urlParams.get('quiz');
-    const fragment = window.location.hash.substring(1); // remove #
-    const params = new URLSearchParams(fragment);
-    const encodedQuiz = params.get("quiz");
-    if (encodedQuiz) {
-        try {
-            // Verify LZString exists
-            if(typeof LZString === 'undefined') {
-                console.error("LZString library missing");
-            } else {
-                const decoded = LZString.decompressFromBase64(encodedQuiz);
-                if (decoded) {
-                    window.parseRawToVisual(decoded);
-                    window.renderVisualEditor();
-                    hiddenCode.value = decoded;
-                }
-            }
-        } catch (e) {
-            console.error("Failed to load quiz from URL", e);
-        }
-    }
-
-    // 3. SYNCHRONIZATION: Visual -> Hidden Textarea
+    // 4. SYNCHRONIZATION: Visual -> Hidden Textarea
     // We listen to changes on the BODY to catch all inputs bubbling up
     document.body.addEventListener('input', (e) => {
         // Only trigger if interaction happens in the visual container or title
@@ -54,6 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
             updateHeaderFromInput(); // Ensure title matches
             const raw = window.generateRawFromVisual();
             hiddenCode.value = raw;
+            
+            // Immediate autosave to prevent data loss
+            if(raw.length > 10) {
+                localStorage.setItem('quiz_autosave_draft', raw);
+            } else {
+                localStorage.removeItem('quiz_autosave_draft');
+            }
         }
     });
 
@@ -71,11 +99,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if(titleInput) {
         titleInput.addEventListener('input', () => {
             updateHeaderFromInput();
-            hiddenCode.value = window.generateRawFromVisual();
+            const raw = window.generateRawFromVisual();
+            hiddenCode.value = raw;
+            
+            if(raw.length > 10) {
+                localStorage.setItem('quiz_autosave_draft', raw);
+            }
         });
     }
 
-    // 4. Save Button
+    // 5. Save Button
     const saveBtn = document.getElementById('saveBtn');
     if(saveBtn) {
         saveBtn.addEventListener('click', () => {
@@ -92,22 +125,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5. Auto-Save Draft (Every 10 seconds)
+    // 6. Auto-Save Draft (Every 5 seconds fallback)
     setInterval(() => {
         const raw = hiddenCode.value;
-        if(raw.length > 10) {
+        if(raw && raw.length > 10) {
             localStorage.setItem('quiz_autosave_draft', raw);
         }
-    }, 10000);
-
-    // Check for autosave on load if empty
-    if(!encodedQuiz && localStorage.getItem('quiz_autosave_draft')) {
-        // Optional: you could ask user if they want to restore
-        // For now, we ignore to not annoy them, but the data is safe.
-    }
+    }, 5000);
     
-    // Add this to your builder.js or a script tag
-    document.addEventListener('DOMContentLoaded', function() {
+    // Toolbar spacing
     const toolbar = document.querySelector('.sticky-toolbar');
     const contentArea = document.querySelector('.builder-canvas');
     
@@ -116,11 +142,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const toolbarHeight = toolbar.offsetHeight;
         contentArea.style.marginTop = toolbarHeight + 20 + 'px';
         
-        // Optional: handle window resize
         window.addEventListener('resize', function() {
             const newHeight = toolbar.offsetHeight;
             contentArea.style.marginTop = newHeight + 20 + 'px';
         });
     }
-});
 });
