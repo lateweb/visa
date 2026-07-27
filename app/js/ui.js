@@ -121,11 +121,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Copy HTML Code
+    // Copy HTML Code – now changes button text to "Copied!" instead of side popup
     if (copyBtn) {
         copyBtn.addEventListener('click', async () => {
             const originalText = copyBtn.innerHTML;
-            copyBtn.textContent = '...';
+            copyBtn.textContent = 'Copying...';
            
             try {
                 if (typeof generateQuizHtml !== 'function') throw new Error("HTML Generator not loaded");
@@ -133,15 +133,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const html = await generateQuizHtml(langSelect.value, examMode);
                 if (html) {
                     await navigator.clipboard.writeText(html);
-                    showStatusMessage(copyBtn, 'Copied!', 'success');
+                    copyBtn.textContent = 'Copied!';
                 } else {
-                    showStatusMessage(copyBtn, 'No content', 'warning');
+                    copyBtn.textContent = 'No content';
                 }
             } catch (error) {
                 console.error("Error copying HTML:", error);
-                showStatusMessage(copyBtn, 'Failed', 'error');
+                copyBtn.textContent = 'Failed';
             } finally {
-                copyBtn.innerHTML = originalText;
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalText;
+                }, 2000);
             }
         });
     }
@@ -160,15 +162,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const title = match ? match[1].trim() : 'quiz';
                     const filename = title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '.html';
                     downloadString(html, filename, 'text/html');
-                    showStatusMessage(downloadBtn, 'Downloaded', 'success');
+                    downloadBtn.textContent = 'Downloaded';
                 } else {
-                    showStatusMessage(downloadBtn, 'No content', 'warning');
+                    downloadBtn.textContent = 'No content';
                 }
             } catch (error) {
                 console.error("Error downloading HTML:", error);
-                showStatusMessage(downloadBtn, 'Failed', 'error');
+                downloadBtn.textContent = 'Failed';
             } finally {
-                downloadBtn.innerHTML = originalText;
+                setTimeout(() => {
+                    downloadBtn.innerHTML = originalText;
+                }, 2000);
             }
         });
     }
@@ -190,8 +194,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    // 2. Button Handlers
-    async function handleClipboardLatex(withAnswers, successMsg, emptyMsg, failMsg, uiButton) {
+    // 2. Button Handlers – change text to "Copied!" / "Downloaded" / "Failed" inside the button
+    async function handleClipboardLatex(withAnswers, uiButton) {
         const originalText = uiButton.innerHTML;
         uiButton.textContent = '...';
         uiButton.disabled = true;
@@ -199,21 +203,23 @@ document.addEventListener('DOMContentLoaded', () => {
             const latex = await getLatex(withAnswers);
             if (latex) {
                 await navigator.clipboard.writeText(latex);
-                showStatusMessage(uiButton, successMsg, 'success');
+                uiButton.textContent = 'Copied!';
             } else {
-                showStatusMessage(uiButton, emptyMsg, 'warning');
+                uiButton.textContent = 'No content';
             }
         } catch (error) {
             console.error("Error copying LaTeX:", error);
-            showStatusMessage(uiButton, failMsg, 'error');
+            uiButton.textContent = 'Failed';
         } finally {
-            uiButton.innerHTML = originalText;
-            uiButton.disabled = false;
+            setTimeout(() => {
+                uiButton.innerHTML = originalText;
+                uiButton.disabled = false;
+            }, 2000);
         }
     }
     
-    if (copyBtnQ) copyBtnQ.addEventListener('click', () => handleClipboardLatex(false, 'Copied!', 'No content', 'Failed', copyBtnQ));
-    if (copyBtnQA) copyBtnQA.addEventListener('click', () => handleClipboardLatex(true, 'Copied!', 'No content', 'Failed', copyBtnQA));
+    if (copyBtnQ) copyBtnQ.addEventListener('click', () => handleClipboardLatex(false, copyBtnQ));
+    if (copyBtnQA) copyBtnQA.addEventListener('click', () => handleClipboardLatex(true, copyBtnQA));
     
     if (downloadBtnQ) {
         downloadBtnQ.addEventListener('click', async () => {
@@ -224,16 +230,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const latex = await getLatex(false);
                 if (latex) {
                     downloadString(latex, 'quiz_questions.tex', 'application/x-tex');
-                    showStatusMessage(downloadBtnQ, 'Downloaded', 'success');
+                    downloadBtnQ.textContent = 'Downloaded';
                 } else {
-                    showStatusMessage(downloadBtnQ, 'No content', 'warning');
+                    downloadBtnQ.textContent = 'No content';
                 }
             } catch (error) {
                 console.error("Error downloading LaTeX questions:", error);
-                showStatusMessage(downloadBtnQ, 'Failed', 'error');
+                downloadBtnQ.textContent = 'Failed';
             } finally {
-                downloadBtnQ.innerHTML = originalText;
-                downloadBtnQ.disabled = false;
+                setTimeout(() => {
+                    downloadBtnQ.innerHTML = originalText;
+                    downloadBtnQ.disabled = false;
+                }, 2000);
             }
         });
     }
@@ -247,16 +255,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 const latex = await getLatex(true);
                 if (latex) {
                     downloadString(latex, 'quiz_questions_answers.tex', 'application/x-tex');
-                    showStatusMessage(downloadBtnQA, 'Downloaded', 'success');
+                    downloadBtnQA.textContent = 'Downloaded';
                 } else {
-                    showStatusMessage(downloadBtnQA, 'No content', 'warning');
+                    downloadBtnQA.textContent = 'No content';
                 }
             } catch (error) {
                 console.error("Error downloading LaTeX Q&A:", error);
-                showStatusMessage(downloadBtnQA, 'Failed', 'error');
+                downloadBtnQA.textContent = 'Failed';
             } finally {
-                downloadBtnQA.innerHTML = originalText;
-                downloadBtnQA.disabled = false;
+                setTimeout(() => {
+                    downloadBtnQA.innerHTML = originalText;
+                    downloadBtnQA.disabled = false;
+                }, 2000);
             }
         });
     }
@@ -276,9 +286,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (document.getElementById('copy-share-link')) {
         document.getElementById('copy-share-link').addEventListener('click', () => {
-            document.getElementById('share-link').select();
+            const linkInput = document.getElementById('share-link');
+            linkInput.select();
             document.execCommand('copy');
-            showStatusMessage(document.getElementById('copy-share-link'), 'Copied!', 'success');
+            const btn = document.getElementById('copy-share-link');
+            const originalText = btn.innerHTML;
+            btn.textContent = 'Copied!';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+            }, 2000);
         });
     }
 
@@ -360,6 +376,7 @@ function showToast(message, type = 'success') {
 }
 
 function showStatusMessage(button, message, type = 'success') {
+    // This function is no longer used by the main copy buttons, kept for compatibility
     const existing = button.parentNode.querySelector('.status-message');
     if (existing) existing.remove();
     const status = document.createElement('span');
