@@ -322,9 +322,7 @@
     if (!id) return;
     const link = document.querySelector(`.quiz-nav-item a[href="#${id}"]`);
     if (!link) return;
-    // Remove answered state and any other grading classes
     link.classList.remove('answered', 'q-correct', 'q-incorrect');
-    // Add the appropriate solid colour class
     link.classList.add(isCorrect ? 'q-correct' : 'q-incorrect');
   }
 
@@ -356,7 +354,6 @@
       li.className = 'quiz-nav-item';
       const a = document.createElement('a');
       a.href = `#${q.id}`;
-      // Only the number – no status icons (colour does the job)
       a.textContent = numberStr;
       li.appendChild(a);
       list.appendChild(li);
@@ -427,20 +424,22 @@
           feedback.textContent = (t.selectAnswer[lang] || t.selectAnswer.en);
           feedback.className = "feedback warning";
           if (explanation) explanation.style.display = 'none';
+          // Do NOT change sidebar – stays as answered or ungraded.
           return;
         }
 
-        // Mark as answered (triggers the top/bottom split in the sidebar)
-        markQuestionAsAnswered(qBlock);
-
-        if (selected.value === qBlock.dataset.correctAnswer) {
+        // Check the answer and update sidebar with correct/incorrect
+        const isCorrect = (selected.value === qBlock.dataset.correctAnswer);
+        if (isCorrect) {
           feedback.textContent = (t.correct[lang] || t.correct.en);
           feedback.className = "feedback correct";
           if (explanation) explanation.style.display = 'block';
+          markQuestionAsGraded(qBlock, true);
         } else {
           feedback.textContent = (t.incorrect[lang] || t.incorrect.en);
           feedback.className = "feedback incorrect";
           if (explanation) explanation.style.display = 'none';
+          markQuestionAsGraded(qBlock, false);
         }
       });
     });
@@ -499,7 +498,6 @@
               feedback.textContent = translations.correct[lang] || '✓ Correct';
               feedback.className = 'feedback correct';
             }
-            // Graded correct → solid green block
             markQuestionAsGraded(qBlock, true);
           } else {
             if (feedback) {
@@ -511,7 +509,6 @@
                 feedback.className = 'feedback incorrect';
               }
             }
-            // Graded incorrect → solid red block
             markQuestionAsGraded(qBlock, false);
           }
 
@@ -522,7 +519,6 @@
             badge.innerText = `${earned} / ${points}${pointsSuffix}`;
           }
         } else {
-          // Open-ended: just show the answer, no grading in sidebar
           if (answerBox) answerBox.style.display = 'block';
         }
       });
