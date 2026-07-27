@@ -13,24 +13,19 @@
   const PAGE_LOAD_TIME = new Date();
 
   // --- CSS INJECTION (MathJax Layout & Overrides) ---
-  // Injected via JS to ensure it takes precedence over MathJax's internal styles
   const styleId = 'tex-inline-style';
   if (!document.getElementById(styleId)) {
     const style = document.createElement('style');
     style.id = styleId;
     style.textContent = `
-      /* Standard Converter Styles */
       .tex-raw-inline { display:inline; white-space:pre-wrap; word-break:break-word; cursor:text; font-family: 'Fira Code', monospace; color: #d63384; font-size: 1.05em; }
       .tex-raw-block { display:block; white-space:pre-wrap; word-break:break-word; cursor:text; margin:0.5em 0; background: var(--quiz-surface); padding: 0.5em; border-radius: 4px; font-family: 'Fira Code', monospace; color: #d63384; font-size: 1.05em; }
       
       .question-number { cursor: pointer; user-select: none; font-weight: bold; color: inherit; font-size: 1.2em; display: inline-block; margin-right: 8px; }
       .question-number:hover { text-decoration: underline; }
       
-      /* --- MATHJAX 4 OVERRIDES --- */
-
       mjx-assistive-mml { display: none !important; }
 
-      /* Block Math Scrolling */
       .math-scroll {
         overflow-x: auto;
         overflow-y: hidden;
@@ -41,7 +36,6 @@
         -webkit-overflow-scrolling: touch;
       }
       
-      /* FIX: Perfectly equalize the gap above display math by neutralizing text margin */
       .content-text + .math-scroll {
         margin-top: -0.5em;
       }
@@ -60,7 +54,6 @@
         visibility: visible !important;
       }
 
-      /* CRITICAL: ANSWER OPTION FIX */
       label mjx-container,
       .options label mjx-container,
       label .tex-raw-inline {
@@ -107,7 +100,6 @@
           if (tex) container.setAttribute('data-tex', tex);
         }
 
-        // Default to auto, but CSS rule for labels will override this to 'none'
         container.style.pointerEvents = 'auto'; 
         container.style.cursor = 'default';
       }
@@ -160,11 +152,6 @@
     return Boolean(el.closest('button, input, label, summary, a, textarea, select, .check-button'));
   }
 
-  /**
-   * NUCLEAR OPTION: Global Click Interceptor for Math
-   * Prevents MathJax elements from stealing focus or events
-   * unless they are inside interactive form elements.
-   */
   function preventMathInteraction() {
     window.addEventListener('click', (ev) => {
       const target = ev.target;
@@ -210,11 +197,6 @@
     }, { capture: true, passive: true });
   }
 
-  /**
-   * AUTO-FORMAT QUOTES
-   * Detects blockquotes inside material-boxes and modifies the container
-   * to remove background/borders, mimicking Wikipedia citation style.
-   */
   function autoFormatQuotes() {
     const quotes = document.querySelectorAll('.material-box blockquote');
     quotes.forEach(quote => {
@@ -329,15 +311,9 @@
     if (!id) return;
     const link = document.querySelector(`.quiz-nav-item a[href="#${id}"]`);
     if (!link) return;
-    // Remove the 'answered' class so the half‑grey style is replaced
     link.classList.remove('answered');
-    // Add class for correct/incorrect styling
     link.classList.add(isCorrect ? 'q-correct' : 'q-incorrect');
-    // Set the status icon text
-    const iconSpan = link.querySelector('.status-icon');
-    if (iconSpan) {
-      iconSpan.textContent = isCorrect ? '✓' : '✗';
-    }
+    // No status icon – colour is enough
   }
 
   function buildSidebar() {
@@ -368,7 +344,7 @@
       li.className = 'quiz-nav-item';
       const a = document.createElement('a');
       a.href = `#${q.id}`;
-      a.innerHTML = `${numberStr} <span class="status-icon"></span>`;
+      a.textContent = numberStr;   // no status icon span
       li.appendChild(a);
       list.appendChild(li);
     });
@@ -376,7 +352,6 @@
     document.body.appendChild(sidebar);
     document.body.appendChild(toggleBtn);
 
-    // Open sidebar by default on wide screens (≥ 768px)
     if (window.innerWidth >= 768) {
       sidebar.classList.add('open');
     }
@@ -387,7 +362,6 @@
 
     toggleBtn.addEventListener('click', toggleSidebar);
 
-    // Link clicks NO LONGER close the sidebar – allowing the quiz area to remain usable
     list.querySelectorAll('a').forEach(link => {
       link.addEventListener('click', (e) => {
         // do nothing – sidebar stays open
@@ -418,7 +392,7 @@
       finish: { en: "Finish Quiz", fi: "Palauta" },
       score: { en: "Your Score", fi: "Pisteesi" },
       confirmFinish: { en: "Are you sure you want to finish? You can't change your answers after this.", fi: "Haluatko varmasti palauttaa? Et voi muuttaa vastauksiasi tämän jälkeen." },
-      pointsLabel: { en: ' pts.', fi: ' p.' }   // used for per-question score badge update
+      pointsLabel: { en: ' pts.', fi: ' p.' }
     };
 
     if (typeof examMode !== 'undefined' && examMode) {
@@ -426,7 +400,6 @@
       return;
     }
 
-    // Standard mode: individual check buttons
     document.querySelectorAll('.check-button').forEach(button => {
       button.addEventListener('click', () => {
         const qBlock = button.closest('.question-block');
@@ -438,7 +411,7 @@
 
         if (!selected) {
           feedback.textContent = (t.selectAnswer[lang] || t.selectAnswer.en);
-          feedback.className = "feedback incorrect";
+          feedback.className = "feedback warning";
           if (explanation) explanation.style.display = 'none';
           return;
         }
@@ -449,9 +422,6 @@
           feedback.textContent = (t.correct[lang] || t.correct.en);
           feedback.className = "feedback correct";
           if (explanation) explanation.style.display = 'block';
-
-          const navLink = document.querySelector(`.quiz-nav-item a[href="#${qBlock.id}"]`);
-          if (navLink) navLink.classList.add('completed-nav');
         } else {
           feedback.textContent = (t.incorrect[lang] || t.incorrect.en);
           feedback.className = "feedback incorrect";
@@ -465,7 +435,6 @@
     const lang = typeof quizLang !== 'undefined' ? quizLang : 'en';
     const pointsSuffix = (translations.pointsLabel[lang] || translations.pointsLabel.en);
 
-    // Create finish button
     const quizSection = document.querySelector('.quiz-section');
     const finishBtn = document.createElement('button');
     finishBtn.className = 'check-button finish-quiz-btn';
@@ -474,7 +443,6 @@
     finishBtn.style.margin = '2rem auto 0';
     quizSection.appendChild(finishBtn);
 
-    // Add live “answered” tracking for radio inputs
     document.querySelectorAll('.question-block input[type="radio"]').forEach(radio => {
       radio.addEventListener('change', function () {
         const qBlock = this.closest('.question-block');
@@ -483,13 +451,11 @@
     });
 
     finishBtn.addEventListener('click', () => {
-      // Confirmation dialog
       const confirmMsg = translations.confirmFinish[lang] || translations.confirmFinish.en;
       if (!confirm(confirmMsg)) {
-        return; // user cancelled
+        return;
       }
 
-      // Prevent double submission and hide the button
       finishBtn.disabled = true;
       finishBtn.style.display = 'none';
 
@@ -507,7 +473,7 @@
         const badge = qBlock.querySelector('.points-badge');
 
         if (isMcq) {
-          totalPoints += points;   // only MCQ points count toward total
+          totalPoints += points;
           const selected = qBlock.querySelector(`input[name="${qBlock.id}"]:checked`);
           const correctAnswer = qBlock.dataset.correctAnswer;
 
@@ -522,29 +488,26 @@
             if (feedback) {
               if (!selected) {
                 feedback.textContent = (translations.selectAnswer[lang] || '⚠ Please select an answer');
+                feedback.className = 'feedback warning';
               } else {
                 feedback.textContent = (translations.incorrect[lang] || '✖ Incorrect');
+                feedback.className = 'feedback incorrect';
               }
-              feedback.className = 'feedback incorrect';
             }
             markQuestionAsGraded(qBlock, false);
           }
 
           if (explanation) explanation.style.display = 'block';
 
-          // Update points badge to show earned/max
           if (badge) {
             const earned = (selected && selected.value === correctAnswer) ? points : 0;
             badge.innerText = `${earned} / ${points}${pointsSuffix}`;
           }
         } else {
-          // Open-ended: not graded, leave badge unchanged (shows max points)
           if (answerBox) answerBox.style.display = 'block';
-          // No points added to total, no badge update
         }
       });
 
-      // Show result summary
       const resultDiv = document.createElement('div');
       resultDiv.id = 'exam-result';
       resultDiv.style.cssText = 'text-align: center; margin: 2rem 0; padding: 1rem; border: 2px solid var(--quiz-border); background: var(--quiz-surface);';
@@ -553,7 +516,6 @@
       resultDiv.innerHTML = `<h2>${scoreLabel}: ${earnedPoints} / ${totalPoints} (${percentage}%)</h2>`;
       quizSection.insertBefore(resultDiv, quizSection.firstChild);
 
-      // Scroll to result
       resultDiv.scrollIntoView({ behavior: 'smooth' });
     });
   }
@@ -570,7 +532,6 @@
     setupCodeCopy();
     initTheme();
 
-    // Syntax highlighting initialization with fallback protection
     if (typeof hljs !== 'undefined') {
       try {
         hljs.highlightAll();
