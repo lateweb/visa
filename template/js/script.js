@@ -287,15 +287,15 @@
     });
   }
 
-  // --- OPEN ANSWER AUTOSAVE & AUTO‑EXPAND (exam mode only) ---
+  // --- OPEN ANSWER AUTOSAVE, AUTO‑EXPAND & IMAGE PASTE (exam mode) ---
   function setupOpenAnswerAutosave() {
-    const textareas = document.querySelectorAll('.open-answer-textarea');
-    if (textareas.length === 0) return;
+    const answerDivs = document.querySelectorAll('.open-answer-textarea[contenteditable="true"]');
+    if (answerDivs.length === 0) return;
 
-    // Auto‑expand: adjust height to content
-    const autoResize = (textarea) => {
-      textarea.style.height = 'auto';
-      textarea.style.height = textarea.scrollHeight + 'px';
+    // Auto‑resize: adjust height to content
+    const autoResize = (div) => {
+      div.style.height = 'auto';
+      div.style.height = div.scrollHeight + 'px';
     };
 
     // Debounce helper
@@ -307,53 +307,104 @@
       };
     };
 
-    const saveAnswer = (textarea) => {
-      const qBlock = textarea.closest('.question-block');
+    const saveAnswer = (div) => {
+      const qBlock = div.closest('.question-block');
       if (!qBlock || !qBlock.id) return;
       const key = `open-answer-${qBlock.id}`;
       try {
-        localStorage.setItem(key, textarea.value);
+        localStorage.setItem(key, div.innerHTML);
       } catch (e) {
         // storage full or disabled – ignore silently
       }
     };
 
     const restoreAnswers = () => {
-      document.querySelectorAll('.open-answer-textarea').forEach(textarea => {
-        const qBlock = textarea.closest('.question-block');
+      document.querySelectorAll('.open-answer-textarea[contenteditable="true"]').forEach(div => {
+        const qBlock = div.closest('.question-block');
         if (!qBlock || !qBlock.id) return;
         const key = `open-answer-${qBlock.id}`;
         const saved = localStorage.getItem(key);
         if (saved !== null) {
-          textarea.value = saved;
-          // Auto‑resize after restoring content
-          autoResize(textarea);
+          div.innerHTML = saved;
+          autoResize(div);
         }
       });
     };
 
-    const debouncedSave = debounce((textarea) => {
-      saveAnswer(textarea);
+    const debouncedSave = debounce((div) => {
+      saveAnswer(div);
     }, 500);
 
-    textareas.forEach(textarea => {
+    // Handle image paste from clipboard
+    const handlePaste = (e) => {
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        if (item.type.indexOf('image') !== -1) {
+          e.preventDefault();
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            const img = document.createElement('img');
+            img.src = evt.target.result;
+            img.alt = 'Pasted image';
+
+            // Insert the image at the current cursor position (or just append)
+            const sel = window.getSelection();
+            if (sel.rangeCount) {
+              const range = sel.getRangeAt(0);
+              range.deleteContents();
+              range.insertNode(img);
+              // Move cursor after the image
+              range.setStartAfter(img);
+              range.collapse(true);
+              sel.removeAllRanges();
+              sel.addRange(range);
+            } else {
+              e.target.appendChild(img);
+            }
+
+            // Trigger resize and save
+            autoResize(e.target);
+            saveAnswer(e.target);
+            markQuestionAsAnswered(e.target.closest('.question-block'));
+          };
+          reader.readAsDataURL(blob);
+          return; // only handle one image at a time to be safe
+        }
+      }
+    };
+
+    answerDivs.forEach(div => {
       // Auto‑resize on input
-      textarea.addEventListener('input', () => {
-        autoResize(textarea);
-        debouncedSave(textarea);
+      div.addEventListener('input', () => {
+        autoResize(div);
+        debouncedSave(div);
       });
 
       // Save on blur
-      textarea.addEventListener('blur', () => saveAnswer(textarea));
+      div.addEventListener('blur', () => saveAnswer(div));
 
-      // Initial auto‑resize in case of pre‑filled content (e.g. from restore)
-      autoResize(textarea);
+      // Paste handler for images
+      div.addEventListener('paste', handlePaste);
+
+      // Initial resize
+      autoResize(div);
+
+      // Mark as answered on first input
+      div.addEventListener('input', function markAnsweredOnce() {
+        const qBlock = div.closest('.question-block');
+        if (qBlock) markQuestionAsAnswered(qBlock);
+        div.removeEventListener('input', markAnsweredOnce); // only once
+      });
     });
 
     // Restore any previously saved answers
     restoreAnswers();
 
-    // Expose for manual use (e.g., if needed elsewhere)
+    // Expose for manual use
     window._restoreOpenAnswers = restoreAnswers;
   }
 
@@ -574,13 +625,7 @@
       });
     });
 
-    // Also mark open‑ended as answered when the textarea receives input (first keystroke)
-    document.querySelectorAll('.open-answer-textarea').forEach(textarea => {
-      textarea.addEventListener('input', function () {
-        const qBlock = this.closest('.question-block');
-        if (qBlock) markQuestionAsAnswered(qBlock);
-      });
-    });
+    // Mark open‑ended as answered on first input (already handled in setupOpenAnswerAutosave)
 
     finishBtn.addEventListener('click', () => {
       const confirmMsg = translations.confirmFinish[lang] || translations.confirmFinish.en;
@@ -602,7 +647,7 @@
         const feedback = qBlock.querySelector('.feedback');
         const explanation = qBlock.querySelector('.explanation');
         const answerBox = qBlock.querySelector('.answer-box');
-        const openAnswerTextarea = qBlock.querySelector('.open-answer-textarea');
+        const openAnswerDiv = qBlock.querySelector('.open-answer-textarea');
         const badge = qBlock.querySelector('.points-badge');
 
         if (isMcq) {
@@ -637,14 +682,15 @@
             badge.innerText = `${earned} / ${points}${pointsSuffix}`;
           }
         } else {
-          // Open‑ended: lock the textarea and reveal model answer
-          if (openAnswerTextarea) {
-            openAnswerTextarea.readOnly = true;
+          // Open‑ended: lock the answer area and reveal model answer
+          if (openAnswerDiv) {
+            openAnswerDiv.setAttribute('contenteditable', 'false');
+            // Trigger a final save just in case
+            saveAnswerOnFinish(openAnswerDiv);
           }
           if (answerBox) {
             answerBox.style.display = 'block';
           }
-          // Open‑ended answers don't count toward automatic score
         }
       });
 
@@ -660,6 +706,16 @@
     });
   }
 
+  // Helper to save answer on finish (same pattern as autosave)
+  function saveAnswerOnFinish(div) {
+    const qBlock = div.closest('.question-block');
+    if (!qBlock || !qBlock.id) return;
+    const key = `open-answer-${qBlock.id}`;
+    try {
+      localStorage.setItem(key, div.innerHTML);
+    } catch (e) {}
+  }
+
   // --- INITIALIZATION ---
 
   function initializePage() {
@@ -672,7 +728,7 @@
     autoFormatQuotes();
     setupCodeCopy();
     initTheme();
-    setupOpenAnswerAutosave();   // auto‑save + auto‑expand for open‑answer textareas
+    setupOpenAnswerAutosave();   // auto‑save, auto‑expand, image paste for open‑answer divs
 
     if (typeof hljs !== 'undefined') {
       try {
@@ -689,13 +745,13 @@
     if (window.MathJax?.startup?.promise) {
         window.MathJax.startup.promise.then(onMathJaxReady).catch(e => console.error(e));
     } else {
-        window.addEventListener('load', () => {
-           if (window.MathJax?.startup?.promise) {
-               window.MathJax.startup.promise.then(onMathJaxReady);
-           } else {
-               setTimeout(onMathJaxReady, 1000);
-           }
-        });
+      window.addEventListener('load', () => {
+         if (window.MathJax?.startup?.promise) {
+             window.MathJax.startup.promise.then(onMathJaxReady);
+         } else {
+             setTimeout(onMathJaxReady, 1000);
+         }
+      });
     }
 
     const obs = new MutationObserver((muts) => {
