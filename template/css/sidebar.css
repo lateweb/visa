@@ -121,18 +121,18 @@
   border-color: var(--quiz-border);
 }
 
-/* ----- CORRECT: solid green block (overrides split) ----- */
+/* Override with green bottom for correct */
 .quiz-nav-item a.q-correct {
-  background: #2e7d32;
-  color: #ffffff;
-  border-color: #2e7d32;
+  background: linear-gradient(to bottom, var(--quiz-surface) 50%, #2e7d32 50%);
+  border-color: var(--quiz-border);    /* keep border neutral */
+  color: var(--quiz-text);             /* keep text readable */
 }
 
-/* ----- INCORRECT: solid red block (overrides split) ----- */
+/* Override with red bottom for incorrect */
 .quiz-nav-item a.q-incorrect {
-  background: #c62828;
-  color: #ffffff;
-  border-color: #c62828;
+  background: linear-gradient(to bottom, var(--quiz-surface) 50%, #c62828 50%);
+  border-color: var(--quiz-border);
+  color: var(--quiz-text);
 }
 
 /* Hover effect – subtle darkening */
