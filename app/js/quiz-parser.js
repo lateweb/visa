@@ -298,7 +298,8 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
         if (!examMode) {
           html += `<details><summary>${translations.showHide[lang]}</summary><div class="answer-box">${answer}</div></details>`;
         } else {
-          // In exam mode, hide answer until finish
+          // In exam mode: show a blank textarea for student's answer, hide the model answer
+          html += `<textarea class="open-answer-textarea" placeholder="Write your answer here..."></textarea>`;
           html += `<div class="answer-box" style="display:none;">${answer}</div>`;
         }
       }
