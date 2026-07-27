@@ -152,36 +152,28 @@
       if (!selection.rangeCount) return;
 
       const range = selection.getRangeAt(0);
-      const start = range.startContainer;
-      const end = range.endContainer;
+      const fragment = range.cloneContents();
 
-      // Find the common ancestor mjx-container that has data-tex
-      const mathContainer = findMathContainer(start) || findMathContainer(end);
-      if (!mathContainer) return;
+      // Find all math containers in the selected fragment
+      const mathContainers = fragment.querySelectorAll
+        ? fragment.querySelectorAll('mjx-container[data-tex]')
+        : [];
 
-      // Verify that both start and end are within the same math container
-      const startContainer = start.nodeType === Node.TEXT_NODE ? start.parentElement : start;
-      const endContainer = end.nodeType === Node.TEXT_NODE ? end.parentElement : end;
-      if (!startContainer || !endContainer) return;
-      if (!mathContainer.contains(startContainer) || !mathContainer.contains(endContainer)) return;
+      if (mathContainers.length === 0) return; // no math, let default copy happen
 
-      const tex = mathContainer.getAttribute('data-tex');
-      if (tex) {
-        e.clipboardData.setData('text/plain', tex);
-        e.preventDefault();
-      }
-    });
-
-    function findMathContainer(node) {
-      let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
-      while (el) {
-        if (el.hasAttribute && el.hasAttribute('data-tex') && el.tagName.toLowerCase() === 'mjx-container') {
-          return el;
+      // Replace each math container with its LaTeX source
+      mathContainers.forEach(container => {
+        const tex = container.getAttribute('data-tex');
+        if (tex) {
+          const textNode = document.createTextNode(tex);
+          container.parentNode.replaceChild(textNode, container);
         }
-        el = el.parentElement;
-      }
-      return null;
-    }
+      });
+
+      const plainText = fragment.textContent;
+      e.clipboardData.setData('text/plain', plainText);
+      e.preventDefault();
+    });
   }
 
   // --- INTERACTION HANDLERS ---
@@ -773,7 +765,7 @@
   function initializePage() {
     preventMathInteraction();
     installQuestionNumberClickHandler();
-    setupMathCopyHandler();
+    setupMathCopyHandler();   // <-- updated: now works with mixed selections
 
     buildSidebar();
     wireQuiz();
