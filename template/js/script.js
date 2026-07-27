@@ -20,7 +20,7 @@
     style.id = styleId;
     style.textContent = `
       /* Standard Converter Styles */
-      .tex-raw-inline { display:inline; white-space:nowrap; word-break:break-word; cursor:text; font-family: 'Fira Code', monospace; color: #d63384; font-size: 1.05em; }
+      .tex-raw-inline { display:inline; white-space:pre-wrap; word-break:break-word; cursor:text; font-family: 'Fira Code', monospace; color: #d63384; font-size: 1.05em; }
       .tex-raw-block { display:block; white-space:pre-wrap; word-break:break-word; cursor:text; margin:0.5em 0; background: var(--quiz-surface); padding: 0.5em; border-radius: 4px; font-family: 'Fira Code', monospace; color: #d63384; font-size: 1.05em; }
       
       .question-number { cursor: pointer; user-select: none; font-weight: bold; color: inherit; font-size: 1.2em; display: inline-block; margin-right: 8px; }
@@ -30,11 +30,14 @@
       
       /* 1. CONTAINER: Default behavior */
       mjx-container {
-        display: inline-block !important; 
+        display: inline-block !important;
+        white-space: nowrap !important;
         margin: 0 !important;
         padding: 0 !important;
         line-height: inherit !important;
-        font-size: 1.05em !important;     
+        font-size: 1.05em !important;
+        width: auto !important;
+        max-width: 100% !important;
         
         /* Interaction Disabling */
         cursor: default !important;
@@ -42,8 +45,18 @@
         user-select: none; 
       }
 
-      /* 2. INLINE MATH: Unbreakable block (Standard LaTeX behavior) */
-      .math-inline mjx-container {
+      /* 2. INLINE SPECIFIC: Let the browser break equations naturally */
+      .math-inline mjx-container,
+      .math-inline mjx-container mjx-math,
+      .math-inline mjx-container mjx-mrow {
+        display: inline !important;
+        white-space: normal !important;
+      }
+      
+      /* 3. ATOMIC TERMS: Prevent breaking inside math tokens (variables, operators, numbers) */
+      .math-inline mjx-container mjx-mi,
+      .math-inline mjx-container mjx-mn,
+      .math-inline mjx-container mjx-mo {
         white-space: nowrap !important;
       }
 
@@ -54,14 +67,21 @@
         overflow-x: auto;
         overflow-y: hidden;
         max-width: 100%;
-        margin: 1rem 0;
+        margin: 0.5em 0;
+        white-space: nowrap !important;
         cursor: default;
         -webkit-overflow-scrolling: touch;
       }
       
+      /* FIX: Perfectly equalize the gap above display math by neutralizing text margin */
+      .content-text + .math-scroll {
+        margin-top: -0.5em;
+      }
+      
       .math-scroll mjx-container {
          max-width: none !important;
-         display: block !important; /* Prevents invisible line-height spacing struts */
+         white-space: nowrap !important;
+         display: inline-block !important;
          min-width: 100%;
       }
 
