@@ -1,4 +1,4 @@
-/* template/css/sidebar.css */
+/* quiz/css/sidebar.css */
 .nav-toggle-btn {
   position: fixed;
   top: 1.1rem;
@@ -108,50 +108,44 @@
   position: relative;
 }
 
-/*
- * Moodle‑inspired “half grey / half white” for answered questions
- * Uses a diagonal split (bottom‑left to top‑right) with grey and white.
- * The white part is transparent to let the surface show through.
- */
+/* ----- ANSWERED STATE (solid block, no diagonals) ----- */
 .quiz-nav-item a.answered {
-  background: linear-gradient(135deg, var(--quiz-muted) 50%, transparent 50%);
+  background: #e0e0e0;          /* light grey – visible in both themes */
+  color: var(--quiz-text);
+  border-color: var(--quiz-border);
 }
 
-/* Graded states: solid black / grey with checkmark or cross */
+/* ----- CORRECT (green block) ----- */
 .quiz-nav-item a.q-correct {
-  background: var(--quiz-text);      /* solid black */
-  color: var(--quiz-bg);             /* white text */
+  background: #2e7d32;          /* deep green */
+  color: #ffffff;               /* white text */
+  border-color: #2e7d32;
 }
 
+/* ----- INCORRECT (red block) ----- */
 .quiz-nav-item a.q-incorrect {
-  background: var(--quiz-muted);     /* solid grey */
-  color: var(--quiz-text);           /* black (or white in dark mode) */
+  background: #c62828;          /* deep red */
+  color: #ffffff;               /* white text */
+  border-color: #c62828;
 }
 
-/* Remove the old ::after bars – we use the background directly */
+/* Keep hover style – use a dark overlay or invert */
+.quiz-nav-item a:hover {
+  filter: brightness(0.85);
+}
+
+/* Remove any pseudo‑elements – we use pure backgrounds */
 .quiz-nav-item a::after {
-  content: '';
-  display: none;
+  content: none;
 }
 
-/* Status icon (checkmark / cross) – visible only after grading */
+/* Status icon – visible only after grading */
 .quiz-nav-item a .status-icon {
   display: inline-block;
   margin-left: 4px;
   font-size: 0.85em;
   vertical-align: middle;
   line-height: 1;
-}
-
-/* For graded states, ensure the icon is visible */
-.quiz-nav-item a.q-correct .status-icon,
-.quiz-nav-item a.q-incorrect .status-icon {
-  /* default is visible, but we can add extra styling if needed */
-}
-
-.quiz-nav-item a:hover {
-  background: var(--quiz-border);
-  color: var(--quiz-bg);
 }
 
 .sidebar-overlay {
