@@ -142,22 +142,16 @@ summary::-webkit-details-marker { display: none; }
 
 .explanation { display: none; }
 
-/* Points badge – visible only in exam mode */
+/* Points badge – now inline with question number, not absolute */
 .points-badge {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
-  background: var(--quiz-surface);
-  border: 1px solid var(--quiz-border);
-  padding: 0.2rem 0.5rem;
+  display: inline;
+  margin-left: 6px;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--quiz-text);
-  display: none;
-}
-
-body.exam-mode .points-badge {
-  display: block;
+  background: var(--quiz-surface);
+  border: 1px solid var(--quiz-border);
+  padding: 0.1rem 0.4rem;
 }
 
 /* Hide individual check buttons in exam mode (if any remain) */
@@ -186,8 +180,7 @@ body.exam-mode details .answer-box {
 
 @media (max-width: 768px) {
   .question-block { padding: 1.2rem 0.75rem; border-left-width: 6px; }
-  .points-badge { top: 0.2rem; right: 0.2rem; font-size: 0.75rem; padding: 0.1rem 0.4rem; }
-  /* ===== removed: .question-title { padding-right: 3.5rem; } ===== */
+  .points-badge { font-size: 0.75rem; padding: 0.1rem 0.4rem; }
   .check-button, summary { width: 100%; text-align: center; padding: 0.6rem 1.2rem !important; font-size: 1rem !important; }
 }
 
