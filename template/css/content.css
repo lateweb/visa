@@ -166,6 +166,11 @@ code.backtick {
   text-align: left;
 }
 
+/* FIX: Neutralize the preceding text's 1rem margin-bottom to make the gap above identical to the gap below */
+.content-text + .math-scroll {
+  margin-top: -0.5rem;
+}
+
 mjx-container[display="true"],
 .math-scroll mjx-container {
   text-align: left !important;
