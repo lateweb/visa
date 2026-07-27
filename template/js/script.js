@@ -28,14 +28,14 @@
       
       /* --- MATHJAX 4 OVERRIDES --- */
       
-      /* 1. CONTAINER: Default behavior (prevents breaking by default for display math) */
+      /* 1. CONTAINER: Default behavior */
       mjx-container {
-        display: inline-block !important; /* Changed from inline to allow scrolling */
-        white-space: nowrap !important;   /* CRITICAL: Force non-breaking for display math */
+        display: inline-block !important;
+        white-space: nowrap !important;
         margin: 0 !important;
         padding: 0 !important;
         line-height: inherit !important;
-        font-size: 1.05em !important;     /* Scales inline and block math equally */
+        font-size: 1.05em !important;
         width: auto !important;
         max-width: 100% !important;
         
@@ -45,27 +45,18 @@
         user-select: none; 
       }
 
-      /* 2. INLINE SPECIFIC: Force wrapping for $...$ */
-      .math-inline mjx-container {
-        display: inline !important;
-        white-space: normal !important;      /* Allow wrapping for inline text */
-        overflow-wrap: anywhere !important;
-      }
-
-      /* 3. INNER MATH */
-      .math-inline mjx-container mjx-math {
+      /* 2. INLINE SPECIFIC: Let the browser break equations naturally */
+      .math-inline mjx-container,
+      .math-inline mjx-container mjx-math,
+      .math-inline mjx-container mjx-mrow {
         display: inline !important;
         white-space: normal !important;
-        overflow-wrap: anywhere !important;
-        font-size: inherit !important;
-        width: auto !important;
-        max-width: 100% !important;
       }
       
-      /* 4. ATOMIC TERMS: Prevent breaking inside numbers or variables */
-      .math-inline mjx-container mjx-mrow > mjx-mi,
-      .math-inline mjx-container mjx-mrow > mjx-mn,
-      .math-inline mjx-container mjx-mrow > mjx-mo:not([fence="true"]):not([separator="true"]) {
+      /* 3. ATOMIC TERMS: Prevent breaking inside math tokens (variables, operators, numbers) */
+      .math-inline mjx-container mjx-mi,
+      .math-inline mjx-container mjx-mn,
+      .math-inline mjx-container mjx-mo {
         white-space: nowrap !important;
       }
 
@@ -77,14 +68,18 @@
         overflow-y: hidden;
         max-width: 100%;
         margin: 0.5em 0;
-        white-space: nowrap !important; /* Enforce non-breaking on the wrapper too */
+        white-space: nowrap !important;
         cursor: default;
         -webkit-overflow-scrolling: touch;
       }
       
-      /* Ensure display math inside scroll box can grow freely, enabling horizontal scroll */
+      /* FIX: Perfectly equalize the gap above display math by neutralizing text margin */
+      .content-text + .math-scroll {
+        margin-top: -0.5em;
+      }
+      
       .math-scroll mjx-container {
-         max-width: none !important;         /* CRITICAL: override mjx-container max-width to allow scrolling */
+         max-width: none !important;
          white-space: nowrap !important;
          display: inline-block !important;
          min-width: 100%;
