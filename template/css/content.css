@@ -158,7 +158,7 @@ code.backtick {
   color: var(--quiz-text);
 }
 
-/* === DISPLAY MATH – enlarged manually === */
+/* === DISPLAY MATH – evenly spaced, sized naturally === */
 .math-scroll {
   display: block;
   width: 100%;
@@ -178,7 +178,6 @@ mjx-container[display="true"] {
   margin-bottom: 0 !important;
 }
 
-/* --- enlarged display math --- */
 .math-scroll mjx-container {
   text-align: left !important;
   margin-left: 0 !important;
@@ -187,10 +186,8 @@ mjx-container[display="true"] {
   min-width: 0;
   max-width: none !important;
   white-space: nowrap !important;
-  font-size: 1.1em !important;   /* display math ~10% larger than body text */
+  /* font-size: inherit; – let it match the surrounding text size (now uniform) */
 }
-
-/* inline math stays at inherited body size, no extra scaling */
 
 mjx-container[display="true"],
 .math-scroll mjx-container {
