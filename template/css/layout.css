@@ -178,7 +178,6 @@ summary::-webkit-details-marker { display: none; }
 .open-answer-textarea[contenteditable="true"]:empty:before {
   content: attr(data-placeholder);
   color: var(--quiz-muted);
-  font-style: italic;
   pointer-events: none;
   display: block; /* For Firefox */
 }
