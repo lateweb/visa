@@ -130,7 +130,7 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, 
         scale: 1,
         minScale: 0.5,
         linebreaks: {
-          automatic: false 
+          inline: true
         }
       },
       startup: {
