@@ -287,6 +287,58 @@
     });
   }
 
+  // --- OPEN ANSWER AUTOSAVE (exam mode only) ---
+  function setupOpenAnswerAutosave() {
+    const textareas = document.querySelectorAll('.open-answer-textarea');
+    if (textareas.length === 0) return;
+
+    // Debounce helper
+    const debounce = (fn, delay) => {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn.apply(this, args), delay);
+      };
+    };
+
+    const saveAnswer = (textarea) => {
+      const qBlock = textarea.closest('.question-block');
+      if (!qBlock || !qBlock.id) return;
+      const key = `open-answer-${qBlock.id}`;
+      try {
+        localStorage.setItem(key, textarea.value);
+      } catch (e) {
+        // storage full or disabled – ignore silently
+      }
+    };
+
+    const restoreAnswers = () => {
+      document.querySelectorAll('.open-answer-textarea').forEach(textarea => {
+        const qBlock = textarea.closest('.question-block');
+        if (!qBlock || !qBlock.id) return;
+        const key = `open-answer-${qBlock.id}`;
+        const saved = localStorage.getItem(key);
+        if (saved !== null) {
+          textarea.value = saved;
+        }
+      });
+    };
+
+    const debouncedSave = debounce((textarea) => saveAnswer(textarea), 500);
+
+    textareas.forEach(textarea => {
+      textarea.addEventListener('input', () => debouncedSave(textarea));
+      // Also save on blur to catch final state
+      textarea.addEventListener('blur', () => saveAnswer(textarea));
+    });
+
+    // Restore any previously saved answers
+    restoreAnswers();
+
+    // Expose for manual use (e.g., if needed elsewhere)
+    window._restoreOpenAnswers = restoreAnswers;
+  }
+
   // --- SIDEBAR & TIMER ---
 
   function buildTimer(sidebar) {
@@ -504,6 +556,14 @@
       });
     });
 
+    // Also mark open‑ended as answered when the textarea receives input (first keystroke)
+    document.querySelectorAll('.open-answer-textarea').forEach(textarea => {
+      textarea.addEventListener('input', function () {
+        const qBlock = this.closest('.question-block');
+        if (qBlock) markQuestionAsAnswered(qBlock);
+      });
+    });
+
     finishBtn.addEventListener('click', () => {
       const confirmMsg = translations.confirmFinish[lang] || translations.confirmFinish.en;
       if (!confirm(confirmMsg)) {
@@ -524,6 +584,7 @@
         const feedback = qBlock.querySelector('.feedback');
         const explanation = qBlock.querySelector('.explanation');
         const answerBox = qBlock.querySelector('.answer-box');
+        const openAnswerTextarea = qBlock.querySelector('.open-answer-textarea');
         const badge = qBlock.querySelector('.points-badge');
 
         if (isMcq) {
@@ -558,7 +619,14 @@
             badge.innerText = `${earned} / ${points}${pointsSuffix}`;
           }
         } else {
-          if (answerBox) answerBox.style.display = 'block';
+          // Open‑ended: lock the textarea and reveal model answer
+          if (openAnswerTextarea) {
+            openAnswerTextarea.readOnly = true;
+          }
+          if (answerBox) {
+            answerBox.style.display = 'block';
+          }
+          // Open‑ended answers don't count toward automatic score
         }
       });
 
@@ -579,13 +647,14 @@
   function initializePage() {
     preventMathInteraction();
     installQuestionNumberClickHandler();
-    setupMathCopyHandler();  // <-- new copy handler for LaTeX source
+    setupMathCopyHandler();
 
     buildSidebar();
     wireQuiz();
     autoFormatQuotes();
     setupCodeCopy();
     initTheme();
+    setupOpenAnswerAutosave();   // <-- new autosave for open answers
 
     if (typeof hljs !== 'undefined') {
       try {
