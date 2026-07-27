@@ -158,19 +158,38 @@ code.backtick {
   color: var(--quiz-text);
 }
 
+/* === DISPLAY MATH SPACING FIX === */
 .math-scroll {
   display: block;
   width: 100%;
   overflow-x: auto;
-  margin: 0.2rem 0;   /* reduced from 0.5rem to tighten vertical spacing */
+  margin: 0;                     /* zero wrapper margin – we'll control spacing via the container below */
   text-align: left;
 }
 
-/* FIX: Neutralize the preceding text's 1rem margin-bottom to make the gap above identical to the gap below */
+/* completely cancel the preceding <p>'s margin-bottom so the equation sits tight */
 .content-text + .math-scroll {
-  margin-top: -0.8rem; /* 0.2rem - 1rem = -0.8rem to offset text bottom margin */
+  margin-top: -1rem;              /* exactly offsets .content-text's margin-bottom: 1rem */
 }
 
+/* overrule MathJax's default 1em top/bottom margins on display containers */
+mjx-container[display="true"] {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+/* keep the scrollable inline-block nature intact */
+.math-scroll mjx-container {
+  text-align: left !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
+  display: inline-block !important;
+  min-width: 0;
+  max-width: none !important;
+  white-space: nowrap !important;
+}
+
+/* existing (safe) rule for alignment */
 mjx-container[display="true"],
 .math-scroll mjx-container {
   text-align: left !important;
