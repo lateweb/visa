@@ -162,13 +162,8 @@ code.backtick {
   display: block;
   width: 100%;
   overflow-x: auto;
-  margin: 0.5rem 0;
+  margin: 1rem 0;
   text-align: left;
-}
-
-/* FIX: Neutralize the preceding text's 1rem margin-bottom to make the gap above identical to the gap below */
-.content-text + .math-scroll {
-  margin-top: -0.5rem;
 }
 
 mjx-container[display="true"],
@@ -176,7 +171,7 @@ mjx-container[display="true"],
   text-align: left !important;
   margin-left: 0 !important;
   margin-right: auto !important;
-  display: inline-block !important;
+  display: block !important;
   min-width: 0;
 }
 
