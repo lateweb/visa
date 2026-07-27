@@ -18,7 +18,8 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
   // Translations for user-facing text
   const translations = {
     check: { en: 'Check', fi: 'Tarkista' },
-    showHide: { en: 'Show/Hide', fi: 'Näytä/Piilota' }
+    showHide: { en: 'Show/Hide', fi: 'Näytä/Piilota' },
+    pointsLabel: { en: ' pts.', fi: ' p.' }   // e.g. "5 pts." / "5 p."
   };
 
   // 1. Header Parsing
@@ -267,12 +268,15 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
       const qId = `q${qNum}`;
       const correctAnswerLetter = isMcq ? String.fromCharCode(97 + options.findIndex(opt => opt.correct)) : '';
 
+      // Points label suffix
+      const pointsSuffix = (translations.pointsLabel[lang] || translations.pointsLabel.en);
+
       // Build question block HTML
       let html = `<section class="question-block" id="${qId}" data-points="${questionPoints}" ${isMcq ? `data-correct-answer="${correctAnswerLetter}"` : ''} aria-labelledby="${qId}-title">`;
       
       // Points badge for exam mode
       if (examMode) {
-        html += `<span class="points-badge">${questionPoints} p</span>`;
+        html += `<span class="points-badge">${questionPoints}${pointsSuffix}</span>`;
       }
       
       html += `<p class="question-number" id="${qId}-number">${qNum}.</p><div class="question-title" id="${qId}-title">${questionTitle}</div>`;
