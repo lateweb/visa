@@ -267,7 +267,14 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
       const qId = `q${qNum}`;
       const correctAnswerLetter = isMcq ? String.fromCharCode(97 + options.findIndex(opt => opt.correct)) : '';
 
+      // Build question block HTML
       let html = `<section class="question-block" id="${qId}" data-points="${questionPoints}" ${isMcq ? `data-correct-answer="${correctAnswerLetter}"` : ''} aria-labelledby="${qId}-title">`;
+      
+      // Points badge for exam mode
+      if (examMode) {
+        html += `<span class="points-badge">${questionPoints} p</span>`;
+      }
+      
       html += `<p class="question-number" id="${qId}-number">${qNum}.</p><div class="question-title" id="${qId}-title">${questionTitle}</div>`;
 
       if (isMcq) {
