@@ -95,11 +95,11 @@
 .quiz-nav-item { list-style: none; }
 
 .quiz-nav-item a {
-  display: flex;                /* flex column for vertical layout */
+  display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 8px 4px;
+  justify-content: flex-start;   /* number sticks to top */
+  padding: 6px 4px 4px 4px;      /* top padding gives space */
   text-decoration: none;
   color: var(--quiz-text);
   background: var(--quiz-surface);
@@ -108,31 +108,33 @@
   font-size: 0.9em;
   transition: background 0.2s, color 0.2s;
   position: relative;
-  min-height: 2.8rem;           /* enough height for top/bottom split */
+  min-height: 3.5rem;            /* taller button */
+  height: 3.5rem;                /* fixed height for consistency */
+  box-sizing: border-box;
 }
 
 /* ----- ANSWERED STATE: grey on the bottom half ----- */
 .quiz-nav-item a.answered {
-  background: linear-gradient(to bottom, transparent 50%, #d0d0d0 50%);
+  background: linear-gradient(to bottom, var(--quiz-surface) 50%, var(--quiz-muted) 50%);
   color: var(--quiz-text);
   border-color: var(--quiz-border);
 }
 
-/* ----- CORRECT: solid green block ----- */
+/* ----- CORRECT: solid green block (overrides split) ----- */
 .quiz-nav-item a.q-correct {
-  background: #2e7d32;          /* deep green */
+  background: #2e7d32;
   color: #ffffff;
   border-color: #2e7d32;
 }
 
-/* ----- INCORRECT: solid red block ----- */
+/* ----- INCORRECT: solid red block (overrides split) ----- */
 .quiz-nav-item a.q-incorrect {
-  background: #c62828;          /* deep red */
+  background: #c62828;
   color: #ffffff;
   border-color: #c62828;
 }
 
-/* Hover effect – subtle darkening */
+/* Hover effect – subtle darkening (skip for graded states?) */
 .quiz-nav-item a:hover {
   filter: brightness(0.9);
 }
@@ -142,7 +144,7 @@
   content: none;
 }
 
-/* Hide status icon entirely – we use only colour */
+/* Hide status icon – colour only */
 .quiz-nav-item a .status-icon {
   display: none;
 }
