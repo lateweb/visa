@@ -315,6 +315,29 @@
     }, 1000);
   }
 
+  function markQuestionAsAnswered(qBlock) {
+    const id = qBlock.id;
+    if (!id) return;
+    const link = document.querySelector(`.quiz-nav-item a[href="#${id}"]`);
+    if (link) {
+      link.classList.add('answered');
+    }
+  }
+
+  function markQuestionAsGraded(qBlock, isCorrect) {
+    const id = qBlock.id;
+    if (!id) return;
+    const link = document.querySelector(`.quiz-nav-item a[href="#${id}"]`);
+    if (!link) return;
+    // Add class for correct/incorrect styling
+    link.classList.add(isCorrect ? 'q-correct' : 'q-incorrect');
+    // Set the status icon text
+    const iconSpan = link.querySelector('.status-icon');
+    if (iconSpan) {
+      iconSpan.textContent = isCorrect ? '✓' : '✗';
+    }
+  }
+
   function buildSidebar() {
     const sidebar = document.createElement('nav');
     sidebar.className = 'quiz-nav-sidebar';
@@ -341,7 +364,10 @@
 
       const li = document.createElement('li');
       li.className = 'quiz-nav-item';
-      li.innerHTML = `<a href="#${q.id}">${numberStr}</a>`;
+      const a = document.createElement('a');
+      a.href = `#${q.id}`;
+      a.innerHTML = `${numberStr} <span class="status-icon"></span>`;
+      li.appendChild(a);
       list.appendChild(li);
     });
 
@@ -415,6 +441,8 @@
           return;
         }
 
+        markQuestionAsAnswered(qBlock);
+
         if (selected.value === qBlock.dataset.correctAnswer) {
           feedback.textContent = (t.correct[lang] || t.correct.en);
           feedback.className = "feedback correct";
@@ -444,6 +472,14 @@
     finishBtn.style.margin = '2rem auto 0';
     quizSection.appendChild(finishBtn);
 
+    // Add live “answered” tracking for radio inputs
+    document.querySelectorAll('.question-block input[type="radio"]').forEach(radio => {
+      radio.addEventListener('change', function () {
+        const qBlock = this.closest('.question-block');
+        if (qBlock) markQuestionAsAnswered(qBlock);
+      });
+    });
+
     finishBtn.addEventListener('click', () => {
       // Confirmation dialog
       const confirmMsg = translations.confirmFinish[lang] || translations.confirmFinish.en;
@@ -451,8 +487,9 @@
         return; // user cancelled
       }
 
-      // Prevent double submission
+      // Prevent double submission and hide the button
       finishBtn.disabled = true;
+      finishBtn.style.display = 'none';
 
       const questionBlocks = document.querySelectorAll('.question-block');
       let totalPoints = 0;
@@ -478,7 +515,7 @@
               feedback.textContent = translations.correct[lang] || '✓ Correct';
               feedback.className = 'feedback correct';
             }
-            qBlock.classList.add('correct');
+            markQuestionAsGraded(qBlock, true);
           } else {
             if (feedback) {
               if (!selected) {
@@ -488,7 +525,7 @@
               }
               feedback.className = 'feedback incorrect';
             }
-            qBlock.classList.add('incorrect');
+            markQuestionAsGraded(qBlock, false);
           }
 
           if (explanation) explanation.style.display = 'block';
