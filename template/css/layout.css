@@ -21,12 +21,40 @@
 
 .question-block p { margin-bottom: 1.2rem; }
 
+/* Flag Button */
+.flag-question-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  color: var(--quiz-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+  z-index: 2;
+}
+
+.flag-question-btn:hover {
+  color: var(--quiz-text);
+}
+
+.question-block.flagged .flag-question-btn {
+  color: #e65100;
+}
+
+.question-block.flagged .flag-question-btn svg {
+  fill: currentColor;
+}
+
 /* ===== PADDING REMOVED – content now spans full width ===== */
 .question-title { 
   font-weight: 600; 
   font-size: 1rem; 
   color: var(--quiz-text); 
-  /* no padding-right – removed completely */
 }
 
 .options label {
@@ -204,11 +232,11 @@ summary::-webkit-details-marker { display: none; }
   margin-top: 1.5rem;
 }
 
-/* Points badge – absolute top‑right (old style) */
+/* Points badge – absolute top‑right */
 .points-badge {
   position: absolute;
   top: 0.5rem;
-  right: 0.5rem;
+  right: 2.8rem; /* Accommodate flag button */
   background: var(--quiz-surface);
   border: 1px solid var(--quiz-border);
   padding: 0.2rem 0.5rem;
@@ -248,7 +276,8 @@ body.exam-mode details .answer-box {
 
 @media (max-width: 768px) {
   .question-block { padding: 1.2rem 0.75rem; border-left-width: 6px; }
-  .points-badge { top: 0.2rem; right: 0.2rem; font-size: 0.75rem; padding: 0.1rem 0.4rem; }
+  .flag-question-btn { top: 0.2rem; right: 0.2rem; }
+  .points-badge { top: 0.2rem; right: 2.4rem; font-size: 0.75rem; padding: 0.1rem 0.4rem; }
   .check-button, summary { width: 100%; text-align: center; padding: 0.6rem 1.2rem !important; font-size: 1rem !important; }
 }
 
