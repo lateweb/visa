@@ -277,7 +277,12 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
       // Build question block HTML
       let html = `<section class="question-block" id="${qId}" data-points="${questionPoints}" ${isMcq ? `data-correct-answer="${correctAnswerLetter}"` : ''} aria-labelledby="${qId}-title">`;
       
-      // Points badge – absolute positioned top-right (old style)
+      // Flag button
+      html += `<button class="flag-question-btn" aria-label="Flag for review" title="Flag for review">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg>
+      </button>`;
+
+      // Points badge
       if (examMode) {
         html += `<span class="points-badge">${questionPoints}${pointsSuffix}</span>`;
       }
