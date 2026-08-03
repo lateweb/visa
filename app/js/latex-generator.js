@@ -179,6 +179,9 @@
 
         case 'material':
           return `\\begin{quote}\n${applyLatexFormatting(trimmed)}\n\\end{quote}\n`;
+          
+        case 'plot':
+          return `\\begin{center}\n\\fbox{\\parbox{0.8\\textwidth}{\\centering \\textbf{Interactive Plot}\\\\[0.5em] ${trimmed.split('\n').filter(Boolean).map(x => `$${escapeLatex(x)}$`).join(' \\\\ ')} }}\n\\end{center}\n`;
 
         case 'table': {
           const rows = trimmed.split('\n').map(r => r.trim()).filter(Boolean);
@@ -332,8 +335,8 @@
     const parsed = parseQuizdownToLatex(content);
     const title = findTitleValue(parsed.frontMatter) || 'Quiz';
 
-    const inputFields = [];   // keys with empty values → fill-in lines
-    const infoFields  = [];   // keys with values → info block
+    const inputFields = [];   
+    const infoFields  = [];   
     Object.entries(parsed.frontMatter).forEach(([key, value]) => {
       if (key.toLowerCase() === 'title') return;
       const trimmedKey = key.trim();
