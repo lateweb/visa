@@ -99,6 +99,38 @@ document.addEventListener('DOMContentLoaded', () => {
             runBtn.innerHTML = 'Generating...';
             runBtn.disabled = true;
            
+            // Open a new tab with a loading screen (theme‑aware: black/white)
+            const previewTab = window.open('about:blank', '_blank');
+            if (previewTab) {
+                const isDark = document.documentElement.classList.contains('dark');
+                const bg = isDark ? '#000000' : '#ffffff';
+                const text = isDark ? '#ffffff' : '#000000';
+                previewTab.document.write(`
+                    <html>
+                        <head>
+                            <style>
+                                body { 
+                                    background: ${bg}; 
+                                    color: ${text}; 
+                                    font-family: sans-serif; 
+                                    padding: 20px; 
+                                    margin: 0;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    height: 100vh;
+                                }
+                                h2 { margin: 0; }
+                            </style>
+                        </head>
+                        <body>
+                            <h2>Generating Quiz Preview...</h2>
+                        </body>
+                    </html>
+                `);
+                previewTab.document.close();
+            }
+           
             try {
                 if (typeof generateQuizHtml !== 'function') throw new Error("HTML Generator not loaded");
                
@@ -106,17 +138,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 const html = await generateQuizHtml(langSelect.value, examMode);
                
                 if (html) {
-                    // Create blob URL and open directly – no loading screen
-                    const blob = new Blob([html], { type: 'text/html' });
-                    const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
-                    // Revoke the blob URL after a short delay to free memory
-                    setTimeout(() => URL.revokeObjectURL(url), 10000);
+                    if (previewTab) {
+                        // Create a blob URL and navigate the existing tab to it
+                        const blob = new Blob([html], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        previewTab.location.href = url;
+                        // Revoke the blob URL after a delay to free memory
+                        setTimeout(() => URL.revokeObjectURL(url), 10000);
+                    } else {
+                        // Fallback if popup was blocked
+                        const blob = new Blob([html], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                        setTimeout(() => URL.revokeObjectURL(url), 10000);
+                    }
                 } else {
+                    if (previewTab) previewTab.close();
                     showToast('Please enter some text first.', 'warning');
                 }
             } catch (error) {
                 console.error("Error generating HTML:", error);
+                if (previewTab) previewTab.close();
                 showToast('Error generating preview.', 'error');
             } finally {
                 runBtn.innerHTML = btnText;
