@@ -8,6 +8,48 @@ window.loadQuiz = loadQuiz;
 window.deleteQuiz = deleteQuiz;
 window.loadSavedQuizzes = loadSavedQuizzes;
 
+// Setup a global custom confirm modal
+window.customConfirm = function(message) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-modal-overlay active';
+        
+        const box = document.createElement('div');
+        box.className = 'custom-modal-box';
+        
+        const text = document.createElement('div');
+        text.className = 'custom-modal-text';
+        text.textContent = message;
+        
+        const actions = document.createElement('div');
+        actions.className = 'custom-modal-actions';
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'btn btn-secondary';
+        cancelBtn.textContent = 'Cancel';
+        
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'btn btn-primary';
+        confirmBtn.textContent = 'OK';
+        
+        actions.appendChild(cancelBtn);
+        actions.appendChild(confirmBtn);
+        box.appendChild(text);
+        box.appendChild(actions);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        
+        const close = (result) => {
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.remove(), 200);
+            resolve(result);
+        };
+        
+        cancelBtn.onclick = () => close(false);
+        confirmBtn.onclick = () => close(true);
+    });
+};
+
 // Generate a unique ID for each quiz
 function generateQuizId() {
     return crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -232,19 +274,19 @@ function loadQuiz(quizId) {
 
 // Delete quiz with confirmation dialog
 function deleteQuiz(quizId) {
-    if (!confirm('Are you sure you want to delete this quiz? This action cannot be undone.')) {
-        return;
-    }
-    
-    const savedQuizzes = JSON.parse(localStorage.getItem('savedQuizzes') || '[]');
-    const filteredQuizzes = savedQuizzes.filter(q => q.id !== quizId);
-    
-    localStorage.setItem('savedQuizzes', JSON.stringify(filteredQuizzes));
-    loadSavedQuizzes();
-    
-    if(typeof showToast === 'function') {
-        showToast("Quiz deleted", "success");
-    }
+    window.customConfirm('Are you sure you want to delete this quiz? This action cannot be undone.').then(confirmed => {
+        if (!confirmed) return;
+        
+        const savedQuizzes = JSON.parse(localStorage.getItem('savedQuizzes') || '[]');
+        const filteredQuizzes = savedQuizzes.filter(q => q.id !== quizId);
+        
+        localStorage.setItem('savedQuizzes', JSON.stringify(filteredQuizzes));
+        loadSavedQuizzes();
+        
+        if(typeof showToast === 'function') {
+            showToast("Quiz deleted", "success");
+        }
+    });
 }
 
 // Search through saved quizzes
