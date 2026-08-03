@@ -272,11 +272,6 @@ async function generateQuizHtml(lang = 'en', examMode = false) {
         extraScripts += `\n  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/${l}.min.js"></script>`;
     });
 
-    // Detect if the document contains a [plot] and inject Desmos Graphing API
-    if (/\[plot\]/i.test(quizdownContent)) {
-        extraScripts += `\n  <script src="https://www.desmos.com/api/v1.9/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>`;
-    }
-
     assetsPromise = null;
     
     return await createFullHtml(finalTitle, quizOutput.body, lang, isDark, examMode, extraScripts);
