@@ -7,7 +7,7 @@
  * Compact (two‑column) mode is still supported via the isCompact
  * parameter; its settings are also fully embedded.
  *
- * Updated: Front-matter populates nicely formatted, centered blocks.
+ * Updated: Standardizes math delimiters to \[ \] and \( \) for maximum consistency.
  */
 
 (function (global) {
@@ -64,25 +64,25 @@
         return token;
       });
 
-      // --- 1. Mask math (both display and inline) ---
+      // --- 1. Mask math (both display and inline) - Standardizing to brackets ---
       processed = processed.replace(/\\\[([\s\S]*?)\\\]/g, (m, p1) => {
         const token = `PHMATHBLOCK${mathBlocks.length}ENDPH`;
         mathBlocks.push({ token, content: `\\[\n${p1.trim()}\n\\]` });
         return `\n\n${token}\n\n`;
-      });
-      processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (m, p1) => {
-        const token = `PHMATHINLINE${mathBlocks.length}ENDPH`;
-        mathBlocks.push({ token, content: `$${p1.trim()}$` });
-        return token;
       });
       processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (m, p1) => {
         const token = `PHMATHBLOCK${mathBlocks.length}ENDPH`;
         mathBlocks.push({ token, content: `\\[\n${p1.trim()}\n\\]` });
         return `\n\n${token}\n\n`;
       });
+      processed = processed.replace(/\\\(([\s\S]*?)\\\)/g, (m, p1) => {
+        const token = `PHMATHINLINE${mathBlocks.length}ENDPH`;
+        mathBlocks.push({ token, content: `\\(${p1.trim()}\\)` });
+        return token;
+      });
       processed = processed.replace(/\$([^\$\n]+?)\$/g, (m, p1) => {
         const token = `PHMATHINLINE${mathBlocks.length}ENDPH`;
-        mathBlocks.push({ token, content: `$${p1.trim()}$` });
+        mathBlocks.push({ token, content: `\\(${p1.trim()}\\)` });
         return token;
       });
 
