@@ -17,14 +17,52 @@
     })();
   </script>
 
-  <!-- ----- INLINE CRITICAL CSS: ensures dark background before external CSS loads ----- -->
+  <!-- ----- INLINE CRITICAL CSS: ensures dark theme is applied before external CSS loads ----- -->
   <style>
-    /* CRITICAL: These styles must load before external CSS to prevent flash */
+    /* CRITICAL: Full dark theme styles */
     html, body {
       background-color: #ffffff;
     }
     html.dark, html.dark body {
       background-color: #000000;
+    }
+
+    html.dark {
+      color-scheme: dark;
+    }
+    html.dark body {
+      background: #000000;
+      color: #ffffff;
+    }
+    html.dark .header-bar .back-link {
+      color: #aaaaaa;
+    }
+    html.dark .header-bar .back-link:hover {
+      color: #ffffff;
+    }
+    html.dark .theme-toggle {
+      color: #aaaaaa;
+    }
+    html.dark .theme-toggle:hover {
+      color: #ffffff;
+    }
+    html.dark h1, html.dark h2, html.dark h3 {
+      border-bottom-color: #444444;
+    }
+    html.dark pre {
+      background-color: #111111;
+      border-color: #444444;
+    }
+    html.dark .copy-btn {
+      border-color: #444444;
+      color: #aaaaaa;
+    }
+    html.dark .copy-btn:hover {
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+    html.dark code {
+      color: #ffffff;
     }
   </style>
 
