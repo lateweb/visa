@@ -249,6 +249,25 @@
     });
   }
 
+  // --- FLAGGING HANDLER ---
+  function wireFlagging() {
+    document.querySelectorAll('.flag-question-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const qBlock = btn.closest('.question-block');
+        if (!qBlock) return;
+        qBlock.classList.toggle('flagged');
+        
+        // Sync with sidebar
+        const id = qBlock.id;
+        const link = document.querySelector(`.quiz-nav-item a[href="#${id}"]`);
+        if (link) {
+          link.classList.toggle('flagged');
+        }
+        e.stopPropagation();
+      });
+    });
+  }
+
   // --- THEME HANDLER ---
   function initTheme() {
     const toggle = document.getElementById('theme-toggle');
@@ -612,6 +631,29 @@
     }, { rootMargin: '-20% 0px -60% 0px', threshold: 0 });
 
     questions.forEach(q => observer.observe(q));
+
+    // Finish Quiz button in sidebar for exam mode
+    if (typeof examMode !== 'undefined' && examMode) {
+      const sidebarFinishContainer = document.createElement('div');
+      sidebarFinishContainer.className = 'sidebar-finish-container';
+      
+      const sidebarFinishBtn = document.createElement('button');
+      sidebarFinishBtn.className = 'sidebar-finish-btn';
+      
+      const lang = typeof quizLang !== 'undefined' ? quizLang : 'en';
+      const finishText = lang === 'fi' ? 'Palauta' : 'Finish Quiz';
+      sidebarFinishBtn.textContent = finishText;
+      
+      sidebarFinishContainer.appendChild(sidebarFinishBtn);
+      sidebar.appendChild(sidebarFinishContainer);
+      
+      sidebarFinishBtn.addEventListener('click', () => {
+         const mainFinish = document.querySelector('.finish-quiz-btn');
+         if (mainFinish) {
+             mainFinish.click();
+         }
+      });
+    }
   }
 
   // --- QUIZ LOGIC ---
@@ -700,6 +742,14 @@
 
       finishBtn.disabled = true;
       finishBtn.style.display = 'none';
+      
+      const sidebarFinishBtn = document.querySelector('.sidebar-finish-btn');
+      if (sidebarFinishBtn) {
+        sidebarFinishBtn.style.display = 'none';
+      }
+
+      // Disable flagging after completion
+      document.querySelectorAll('.flag-question-btn').forEach(btn => btn.disabled = true);
 
       const questionBlocks = document.querySelectorAll('.question-block');
       let totalPoints = 0;
@@ -793,6 +843,7 @@
     setupMathCopyHandler();
 
     buildSidebar();
+    wireFlagging();
     wireQuiz();
     autoFormatQuotes();
     setupCodeCopy();
