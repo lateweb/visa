@@ -186,6 +186,7 @@ window.renderVisualEditor = function() {
                     <button class="btn-tiny" onclick="window.addMaterial(${index}, 'code')">+ Add Code</button>
                     <button class="btn-tiny" onclick="window.addMaterial(${index}, 'quote')">+ Add Quote</button>
                     <button class="btn-tiny" onclick="window.addMaterial(${index}, 'table')">+ Add Table</button>
+                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'plot')">+ Add Plot</button>
                     <button class="btn-tiny" onclick="window.addMaterial(${index}, 'material')">+ Add Material</button>
                 </div>
             </div>
@@ -240,6 +241,20 @@ function renderMaterialHTML(qIdx, mIdx, material) {
                 </div>
             </div>
             <textarea class="code-font" placeholder="Paste code here..." oninput="window.autoGrow(this); window.updateMaterial(${qIdx}, ${mIdx}, 'content', this.value)">${material.content}</textarea>
+        </div>`;
+    }
+
+    if (material.type === 'plot') {
+        return `
+        <div class="visual-material-item">
+            <div class="mat-header">
+                <span class="mat-tag">Plot (Desmos)</span>
+                <button class="btn-delete-tiny" title="Remove Plot" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Enter LaTeX expressions (one per line):</p>
+            <textarea class="code-font" placeholder="y = x^2\ny = \\sin(x)" oninput="window.autoGrow(this); window.updateMaterial(${qIdx}, ${mIdx}, 'content', this.value)">${material.content}</textarea>
         </div>`;
     }
 
