@@ -121,6 +121,7 @@ code.backtick {
   font-size: 0.82em;
   font-weight: 500;
   border-radius: 4px;
+  white-space: nowrap; /* Prevents backtick code blocks from wrapping onto two lines */
 }
 
 .single-table-box {
@@ -197,6 +198,14 @@ mjx-assistive-mml { display: none !important; }
 .hazard-icon,
 .warning-icon {
   color: #e65100;
+}
+
+/* DESMOS OVERRIDES */
+/* Locks down the Desmos sidebar to prevent students from inputting new expressions entirely */
+.desmos-calculator .dcg-add-expression-container,
+.desmos-calculator .dcg-new-expression,
+.desmos-calculator .dcg-empty-expression {
+  display: none !important;
 }
 
 @media (max-width: 768px) {
