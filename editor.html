@@ -4,182 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>Quiz Builder | Visual Editor</title>
 
-  <!-- ----- INLINE THEME SCRIPT: prevents white flash ----- -->
-  <script>
-    (function() {
-      const saved = localStorage.getItem('visa-theme');
-      const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (saved === 'dark' || (!saved && prefers)) {
-        document.documentElement.classList.add('dark');
-      }
-    })();
-  </script>
-
-  <!-- ----- INLINE CRITICAL CSS: ensures dark theme is applied before external CSS loads ----- -->
-  <style>
-    /* CRITICAL: Full dark theme variables and background styles */
-    html, body {
-      background-color: #ffffff;
-    }
-    html.dark, html.dark body {
-      background-color: #000000;
-    }
-
-    /* Apply dark styles immediately if .dark is present on html */
-    html.dark {
-      color-scheme: dark;
-    }
-    html.dark body {
-      background: #000000;
-      color: #ffffff;
-    }
-    html.dark .navbar {
-      background: #000000;
-      border-bottom-color: #ffffff;
-    }
-    html.dark .navbar .brand h1 {
-      color: #ffffff;
-    }
-    html.dark .storage-sidebar {
-      background: #000000;
-      border-right-color: #ffffff;
-    }
-    html.dark .content-area {
-      background: #000000;
-    }
-    html.dark .toolbar {
-      background: #000000;
-      border-bottom-color: #ffffff;
-    }
-    html.dark .bottom-toolbar {
-      border-top-color: #ffffff;
-    }
-    html.dark .btn {
-      background: #000000;
-      color: #ffffff;
-      border-color: #ffffff;
-    }
-    html.dark .btn-primary {
-      background: #ffffff;
-      color: #000000;
-    }
-    html.dark textarea#quizdownCode {
-      background: #000000;
-      color: #ffffff;
-      border-color: #ffffff;
-    }
-    html.dark .search-container input {
-      background: #000000;
-      color: #ffffff;
-      border-color: #ffffff;
-    }
-    html.dark .saved-quiz-item {
-      background: #000000;
-      border-color: #ffffff;
-    }
-    html.dark .select-wrapper select {
-      background: #000000;
-      color: #ffffff;
-      border-color: #ffffff;
-    }
-    html.dark .custom-checkbox {
-      background: #000000;
-      border-color: #ffffff;
-    }
-    html.dark .custom-checkbox:checked {
-      background: #ffffff;
-      border-color: #ffffff;
-    }
-    html.dark .custom-checkbox:checked::after {
-      border-color: #000000;
-    }
-    html.dark .theme-toggle {
-      color: #aaaaaa;
-    }
-    html.dark .theme-toggle:hover {
-      color: #ffffff;
-    }
-    html.dark .help-link {
-      color: #aaaaaa;
-    }
-    html.dark .help-link:hover {
-      color: #ffffff;
-    }
-    html.dark .status-message {
-      color: #ffffff;
-      background: #111111;
-      border-color: #ffffff;
-    }
-    html.dark .toast-notification {
-      background: #000000;
-      color: #ffffff;
-      border-color: #ffffff;
-    }
-    html.dark .custom-modal-box {
-      background: #000000;
-      border-color: #ffffff;
-      color: #ffffff;
-    }
-    html.dark .badge {
-      background: #111111;
-      color: #aaaaaa;
-    }
-    html.dark .text-muted,
-    html.dark .group-label,
-    html.dark .sidebar-header h3 {
-      color: #aaaaaa;
-    }
-    html.dark .export-separator {
-      background-color: #ffffff;
-    }
-    html.dark .empty-state {
-      color: #aaaaaa;
-    }
-    html.dark .resize-handle:hover {
-      background: rgba(255,255,255,0.05);
-    }
-    /* Visual editor dark overrides */
-    html.dark .visual-card {
-      background: #000000;
-      border-color: #ffffff;
-    }
-    html.dark .visual-card textarea,
-    html.dark .visual-card input[type="text"],
-    html.dark .visual-card select {
-      background: #000000;
-      color: #ffffff;
-      border-color: #ffffff;
-    }
-    html.dark .visual-material-item {
-      background: #111111;
-      border-color: #ffffff;
-    }
-    html.dark .mat-tag {
-      background: #ffffff;
-      color: #000000;
-    }
-    html.dark .btn-tiny {
-      background: #000000;
-      color: #aaaaaa;
-      border-color: #ffffff;
-    }
-    html.dark .btn-tiny:hover {
-      background: #ffffff;
-      color: #000000;
-    }
-    html.dark .mc-option-row {
-      background: #000000;
-      border-color: #ffffff;
-    }
-    html.dark .card-header {
-      border-bottom-color: #111111;
-    }
-    html.dark .answer-section {
-      border-top-color: #111111;
-    }
-  </style>
+  <script src="app/js/theme.js"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -188,7 +16,6 @@
   <link rel="icon" type="image/png" href="image/icon.png">
 </head>
 <body class="editor-page">
-
   <nav class="navbar">
     <div class="brand">
       <h1>Quiz Builder</h1>
@@ -198,9 +25,7 @@
         <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
         <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
       </button>
-      <a href="index.html" class="btn btn-secondary" style="text-decoration: none; margin-right: 10px;">
-        &larr; Converter
-      </a>
+      <a href="index.html" class="btn btn-secondary" style="text-decoration: none; margin-right: 10px;">&larr; Converter</a>
       <a href="help.html" target="_blank" class="help-link">Help</a>
     </div>
   </nav>
@@ -223,9 +48,7 @@
     <main class="content-area builder-area">
       <div class="toolbar top-toolbar sticky-toolbar">
         <div class="primary-actions">
-          <button id="saveBtn" class="btn btn-primary">
-            Save Progress
-          </button>
+          <button id="saveBtn" class="btn btn-primary">Save Progress</button>
         </div>
         <div style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;"></div>
       </div>
@@ -239,11 +62,11 @@
           </div>
           <textarea id="quizdownCode" style="display:none;"></textarea>
         </div>
+
         <div id="visual-questions-container"></div>
+
         <div class="add-question-wrapper">
-          <button class="btn btn-primary btn-large" onclick="window.visualAddQuestion()">
-            + Add New Question
-          </button>
+          <button class="btn btn-primary btn-large" onclick="window.visualAddQuestion()">+ Add New Question</button>
         </div>
       </div>
     </main>
@@ -254,6 +77,5 @@
   <script src="app/js/visual-editor.js"></script>
   <script src="app/js/storage.js"></script>
   <script src="app/js/builder.js"></script>
-  <script src="app/js/theme.js"></script>
 </body>
 </html>
