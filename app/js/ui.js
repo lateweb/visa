@@ -102,7 +102,22 @@ document.addEventListener('DOMContentLoaded', () => {
             // Open tab synchronously before any await to avoid pop-up blockers
             const previewTab = window.open('about:blank', '_blank');
             if (previewTab) {
-                previewTab.document.write("<h2 style='font-family:sans-serif; padding: 20px;'>Generating Quiz Preview...</h2>");
+                // Respect current theme for the temporary loading screen
+                const isDark = document.documentElement.classList.contains('dark');
+                const bg = isDark ? '#000000' : '#ffffff';
+                const text = isDark ? '#ffffff' : '#000000';
+                previewTab.document.write(`
+                    <html>
+                        <head>
+                            <style>
+                                body { background: ${bg}; color: ${text}; font-family: sans-serif; padding: 20px; }
+                            </style>
+                        </head>
+                        <body>
+                            <h2>Generating Quiz Preview...</h2>
+                        </body>
+                    </html>
+                `);
             }
            
             try {
