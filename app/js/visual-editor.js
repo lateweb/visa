@@ -8,7 +8,9 @@ window.visualState = {
 
 // --- UTILITY: Auto-Grow Textarea ---
 window.autoGrow = function(element) {
-    element.style.height = 'auto';
+    // Resetting height to a small value allows the scrollHeight to shrink
+    // dynamically when a user deletes lines.
+    element.style.height = '5px';
     element.style.height = (element.scrollHeight) + 'px';
 };
 
@@ -184,12 +186,12 @@ window.renderVisualEditor = function() {
                     <button class="btn-tiny" onclick="window.addMaterial(${index}, 'code')">+ Add Code</button>
                     <button class="btn-tiny" onclick="window.addMaterial(${index}, 'quote')">+ Add Quote</button>
                     <button class="btn-tiny" onclick="window.addMaterial(${index}, 'table')">+ Add Table</button>
-                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'material')">+ Add Block</button>
+                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'material')">+ Add Material</button>
                 </div>
             </div>
 
             <div class="answer-section" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--surface-muted);">
-                <label>${q.type === 'mc' ? 'Options & Answer' : 'Answer Explanation'}</label>
+                <label>${q.type === 'mc' ? 'Options & Explanation' : 'Model Answer'}</label>
                 <div id="options-container-${index}">
                     ${renderAnswerSection(index, q)}
                 </div>
@@ -220,7 +222,7 @@ function renderMaterialHTML(qIdx, mIdx, material) {
                 </button>
             </div>
             <textarea placeholder="Quote text..." oninput="window.autoGrow(this); window.updateMaterial(${qIdx}, ${mIdx}, 'content', this.value)">${material.content}</textarea>
-            <input type="text" placeholder="Author/Source (Optional)" value="${material.author || ''}" oninput="window.updateMaterial(${qIdx}, ${mIdx}, 'author', this.value)">
+            <input type="text" placeholder="Author / Source (Optional)" value="${material.author || ''}" oninput="window.updateMaterial(${qIdx}, ${mIdx}, 'author', this.value)">
         </div>`;
     }
 
@@ -245,11 +247,11 @@ function renderMaterialHTML(qIdx, mIdx, material) {
     <div class="visual-material-item">
         <div class="mat-header">
             <span class="mat-tag">${material.type}</span>
-            <button class="btn-delete-tiny" title="Remove Block" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">
+            <button class="btn-delete-tiny" title="Remove Material" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         </div>
-        <textarea placeholder="Content here..." oninput="window.autoGrow(this); window.updateMaterial(${qIdx}, ${mIdx}, 'content', this.value)">${material.content}</textarea>
+        <textarea placeholder="Material text..." oninput="window.autoGrow(this); window.updateMaterial(${qIdx}, ${mIdx}, 'content', this.value)">${material.content}</textarea>
     </div>`;
 }
 
@@ -298,9 +300,9 @@ function renderTableEditor(qIdx, mIdx, content) {
                 <div class="table-editor-wrapper table-init-box">
                     <p style="margin-bottom:10px; font-weight:500;">Create a new table</p>
                     <div style="display:flex; gap:8px;">
-                        <button class="btn btn-secondary btn-sm" onclick="window.initTable(${qIdx}, ${mIdx}, 2, 2)">2x2</button>
-                        <button class="btn btn-secondary btn-sm" onclick="window.initTable(${qIdx}, ${mIdx}, 3, 3)">3x3</button>
-                        <button class="btn btn-secondary btn-sm" onclick="window.initTable(${qIdx}, ${mIdx}, 4, 2)">4x2</button>
+                        <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.initTable(${qIdx}, ${mIdx}, 2, 2)">2x2</button>
+                        <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.initTable(${qIdx}, ${mIdx}, 3, 3)">3x3</button>
+                        <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.initTable(${qIdx}, ${mIdx}, 4, 2)">4x2</button>
                     </div>
                 </div>
             </div>
@@ -341,13 +343,13 @@ function renderTableEditor(qIdx, mIdx, content) {
                     </table>
                 </div>
                 <div class="table-controls">
-                    <button class="btn btn-secondary btn-sm" onclick="window.tableAddRow(${qIdx}, ${mIdx})">+ Row</button>
-                    <button class="btn btn-secondary btn-sm" onclick="window.tableRemoveRow(${qIdx}, ${mIdx})">- Row</button>
+                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableAddRow(${qIdx}, ${mIdx})">+ Row</button>
+                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableRemoveRow(${qIdx}, ${mIdx})">- Row</button>
                     
                     <span style="color:var(--border-color);">|</span>
                     
-                    <button class="btn btn-secondary btn-sm" onclick="window.tableAddCol(${qIdx}, ${mIdx})">+ Col</button>
-                    <button class="btn btn-secondary btn-sm" onclick="window.tableRemoveCol(${qIdx}, ${mIdx})">- Col</button>
+                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableAddCol(${qIdx}, ${mIdx})">+ Col</button>
+                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableRemoveCol(${qIdx}, ${mIdx})">- Col</button>
                     
                     <button class="btn btn-sm" style="color:#ef4444; border-color:transparent; margin-left:auto; background:transparent;" onclick="window.tableReset(${qIdx}, ${mIdx})">Reset</button>
                 </div>
@@ -423,7 +425,7 @@ function renderAnswerSection(index, q) {
         return `
             <textarea 
                 class="input-answer" 
-                placeholder="Type the correct answer explanation..." 
+                placeholder="Type the model answer..." 
                 oninput="window.autoGrow(this); window.updateAnswer(${index}, this.value)"
             >${q.answer}</textarea>`;
     } else {
@@ -439,7 +441,7 @@ function renderAnswerSection(index, q) {
                 </div>
             `;
         });
-        html += `<button class="btn-sm btn-secondary" style="margin-top:5px;" onclick="window.addOption(${index})">+ Add Option</button></div>`;
+        html += `<button class="btn-sm btn-secondary" style="margin-top:5px; border-radius: 6px;" onclick="window.addOption(${index})">+ Add Option</button></div>`;
         html += `<label style="margin-top:20px; display:block;">Explanation (Optional)</label>`;
         html += `
             <textarea 
