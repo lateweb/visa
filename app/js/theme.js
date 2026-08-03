@@ -17,25 +17,14 @@
     return systemPrefersDark() ? 'dark' : 'light';
   }
 
-  function applyTheme(theme, persist) {
-    const isDark = theme === 'dark';
+  function persistTheme(theme) {
+    try {
+      localStorage.setItem(THEME_KEY, theme);
+    } catch (e) {}
+  }
 
-    // FIX: the flash-prevention class lives on <html>.
-    // Keep <body> in sync for legacy CSS only.
-    document.documentElement.classList.toggle('dark', isDark);
-
-    if (document.body) {
-      document.body.classList.toggle('dark', isDark);
-    }
-
-    // FIX: do NOT persist on first load unless the user explicitly changes it.
-    // Persisting too early can force light mode and cause a flash on reload.
-    if (persist) {
-      try {
-        localStorage.setItem(THEME_KEY, theme);
-      } catch (e) {}
-    }
-
+  function updateIcons() {
+    const isDark = document.documentElement.classList.contains('dark');
     const moon = document.getElementById('moon-icon');
     const sun = document.getElementById('sun-icon');
 
@@ -45,15 +34,48 @@
     }
   }
 
+  function applyTheme(theme, persist) {
+    const isDark = theme === 'dark';
+
+    document.documentElement.classList.toggle('dark', isDark);
+
+    if (document.body) {
+      document.body.classList.toggle('dark', isDark);
+    }
+
+    if (persist) {
+      persistTheme(theme);
+    }
+
+    updateIcons();
+  }
+
+  function syncBodyToDocumentElement() {
+    if (document.body) {
+      document.body.classList.toggle('dark', document.documentElement.classList.contains('dark'));
+    }
+  }
+
+  function initToggle() {
+    syncBodyToDocumentElement();
+    updateIcons();
+
+    const toggle = document.getElementById('theme-toggle');
+
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+        applyTheme(next, true);
+      });
+    }
+  }
+
   applyTheme(getInitialTheme(), false);
 
-  const toggle = document.getElementById('theme-toggle');
-
-  if (toggle) {
-    toggle.addEventListener('click', () => {
-      const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-      applyTheme(next, true);
-    });
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initToggle);
+  } else {
+    initToggle();
   }
 
   window.addEventListener('storage', (event) => {
