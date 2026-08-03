@@ -49,7 +49,7 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
     // Scope math stash per question
     let mathStash = [];
 
-    // Helper: Mask Math (Protects pipes | and formatting chars)
+    // Helper: Mask Math (Protects pipes | and formatting chars). Standardizes delimiters to \[ \] and \( \)
     function maskMath(str) {
       if (!str) return '';
       // 1. Extract display math with \[...\]
@@ -61,7 +61,7 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
       // 2. Extract display math with $$...$$
       str = str.replace(/\$\$([\s\S]*?)\$\$/g, (match, p1) => {
         const token = `@@MATH_D_${mathStash.length}@@`;
-        mathStash.push({ token, content: `<div class="math-scroll">$$${p1}$$</div>` });
+        mathStash.push({ token, content: `<div class="math-scroll">\\[${p1}\\]</div>` });
         return token;
       });
       // 3. Extract inline math with \(...\)
@@ -73,7 +73,7 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
       // 4. Extract inline math with $...$
       str = str.replace(/\$([^\$\n]+?)\$/g, (match, p1) => {
         const token = `@@MATH_I_${mathStash.length}@@`;
-        mathStash.push({ token, content: `<span class="math-inline">$${p1}$</span>` });
+        mathStash.push({ token, content: `<span class="math-inline">\\(${p1}\\)</span>` });
         return token;
       });
       return str;
