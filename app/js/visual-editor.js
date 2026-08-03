@@ -298,9 +298,9 @@ function renderTableEditor(qIdx, mIdx, content) {
                 <div class="table-editor-wrapper table-init-box">
                     <p style="margin-bottom:10px; font-weight:500;">Create a new table</p>
                     <div style="display:flex; gap:8px;">
-                        <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.initTable(${qIdx}, ${mIdx}, 2, 2)">2x2</button>
-                        <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.initTable(${qIdx}, ${mIdx}, 3, 3)">3x3</button>
-                        <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.initTable(${qIdx}, ${mIdx}, 4, 2)">4x2</button>
+                        <button class="btn btn-secondary btn-sm" onclick="window.initTable(${qIdx}, ${mIdx}, 2, 2)">2x2</button>
+                        <button class="btn btn-secondary btn-sm" onclick="window.initTable(${qIdx}, ${mIdx}, 3, 3)">3x3</button>
+                        <button class="btn btn-secondary btn-sm" onclick="window.initTable(${qIdx}, ${mIdx}, 4, 2)">4x2</button>
                     </div>
                 </div>
             </div>
@@ -341,13 +341,13 @@ function renderTableEditor(qIdx, mIdx, content) {
                     </table>
                 </div>
                 <div class="table-controls">
-                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableAddRow(${qIdx}, ${mIdx})">+ Row</button>
-                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableRemoveRow(${qIdx}, ${mIdx})">- Row</button>
+                    <button class="btn btn-secondary btn-sm" onclick="window.tableAddRow(${qIdx}, ${mIdx})">+ Row</button>
+                    <button class="btn btn-secondary btn-sm" onclick="window.tableRemoveRow(${qIdx}, ${mIdx})">- Row</button>
                     
                     <span style="color:var(--border-color);">|</span>
                     
-                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableAddCol(${qIdx}, ${mIdx})">+ Col</button>
-                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableRemoveCol(${qIdx}, ${mIdx})">- Col</button>
+                    <button class="btn btn-secondary btn-sm" onclick="window.tableAddCol(${qIdx}, ${mIdx})">+ Col</button>
+                    <button class="btn btn-secondary btn-sm" onclick="window.tableRemoveCol(${qIdx}, ${mIdx})">- Col</button>
                     
                     <button class="btn btn-sm" style="color:#ef4444; border-color:transparent; margin-left:auto; background:transparent;" onclick="window.tableReset(${qIdx}, ${mIdx})">Reset</button>
                 </div>
@@ -439,7 +439,7 @@ function renderAnswerSection(index, q) {
                 </div>
             `;
         });
-        html += `<button class="btn-sm btn-secondary" style="margin-top:5px; border-radius: 6px;" onclick="window.addOption(${index})">+ Add Option</button></div>`;
+        html += `<button class="btn-sm btn-secondary" style="margin-top:5px;" onclick="window.addOption(${index})">+ Add Option</button></div>`;
         html += `<label style="margin-top:20px; display:block;">Explanation (Optional)</label>`;
         html += `
             <textarea 
