@@ -4,7 +4,7 @@
  * Bundles the Quizdown content, CSS, and JS into a single HTML string.
  */
 
-// Variable to cache the fetched assets (CSS strings and JS string)
+// Variable to cache the fetched assets (CSS strings and JS strings)
 let assetsPromise = null;
 
 // DEFINITION: The list of CSS files to merge
@@ -13,6 +13,14 @@ const CSS_FILES = [
   './template/css/sidebar.css',
   './template/css/layout.css',
   './template/css/content.css'
+];
+
+// DEFINITION: The modularized JS files
+const JS_FILES = [
+  './template/js/quiz-utils.js',
+  './template/js/quiz-math.js',
+  './template/js/quiz-sidebar.js',
+  './template/js/quiz-core.js'
 ];
 
 /**
@@ -40,18 +48,18 @@ async function fetchAsset(url) {
 }
 
 /**
- * Helper: Loads all external CSS files and the JS file once.
- * Returns a Promise that resolves to [mergedCssString, jsString].
+ * Helper: Loads all external CSS and JS files once.
+ * Returns a Promise that resolves to [mergedCssString, mergedJsString].
  */
 function loadAssets() {
   if (!assetsPromise) {
     const cssPromises = CSS_FILES.map(file => fetchAsset(file));
-    const jsPromise = fetchAsset('./template/js/script.js');
+    const jsPromises = JS_FILES.map(file => fetchAsset(file));
 
-    assetsPromise = Promise.all([...cssPromises, jsPromise])
-      .then(results => {
-        const jsContent = results.pop();
-        const cssContent = results.join('\n\n/* --- END OF FILE --- */\n\n');
+    assetsPromise = Promise.all([Promise.all(cssPromises), Promise.all(jsPromises)])
+      .then(([cssResults, jsResults]) => {
+        const cssContent = cssResults.join('\n\n/* --- END OF FILE --- */\n\n');
+        const jsContent = jsResults.join('\n\n/* --- END OF SCRIPT MODULE --- */\n\n');
         return [cssContent, jsContent];
       })
       .catch((err) => {
@@ -86,8 +94,6 @@ function extractTitleFromFrontMatter(text) {
 
 /**
  * Helper: Strips point values from #Q markers
- * NOTE: No longer needed – the parser now extracts point values,
- * so this function is kept as a no‑op to preserve the call site.
  */
 function preprocessQuizdownContent(content) {
   return content; 
@@ -272,7 +278,7 @@ async function generateQuizHtml(lang = 'en', examMode = false) {
         extraScripts += `\n  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/${l}.min.js"></script>`;
     });
 
-    assetsPromise = null;
+    assetsPromise = null; // Re-fetch assets cache so changes reflect instantly without a hard refresh
     
     return await createFullHtml(finalTitle, quizOutput.body, lang, isDark, examMode, extraScripts);
     
