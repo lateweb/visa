@@ -99,9 +99,6 @@ document.addEventListener('DOMContentLoaded', () => {
             runBtn.innerHTML = 'Generating...';
             runBtn.disabled = true;
            
-            // Open tab synchronously to avoid pop-up blockers
-            const previewTab = window.open('about:blank', '_blank');
-           
             try {
                 if (typeof generateQuizHtml !== 'function') throw new Error("HTML Generator not loaded");
                
@@ -109,24 +106,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const html = await generateQuizHtml(langSelect.value, examMode);
                
                 if (html) {
-                    if (previewTab) {
-                        // Inject the rendered HTML without a temporary loading screen
-                        previewTab.document.open();
-                        previewTab.document.write(html);
-                        previewTab.document.close();
-                    } else {
-                        // Fallback if the popup was initially blocked but allowed later
-                        const blob = new Blob([html], { type: 'text/html' });
-                        const url = URL.createObjectURL(blob);
-                        window.open(url, '_blank');
-                    }
+                    // Create blob URL and open directly – no loading screen
+                    const blob = new Blob([html], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                    // Revoke the blob URL after a short delay to free memory
+                    setTimeout(() => URL.revokeObjectURL(url), 10000);
                 } else {
-                    if (previewTab) previewTab.close();
                     showToast('Please enter some text first.', 'warning');
                 }
             } catch (error) {
                 console.error("Error generating HTML:", error);
-                if (previewTab) previewTab.close();
                 showToast('Error generating preview.', 'error');
             } finally {
                 runBtn.innerHTML = btnText;
