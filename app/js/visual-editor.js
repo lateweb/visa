@@ -32,8 +32,8 @@ window.parseRawToVisual = function(text) {
         let qSection = qaSplit[0];
         let aSection = qaSplit.length > 1 ? qaSplit[1] : "";
 
-        // Regex for materials matches code, quote, table, material, plot and optional langs
-        const materialRegex = /\[(code(?::[a-zA-Z0-9_-]+)?|quote|table|material|plot)\]\n?([\s\S]*?)\n?\[\/(?:code|quote|table|material|plot)\]/gi;
+        // Regex for materials matches code, quote, table, material and optional langs
+        const materialRegex = /\[(code(?::[a-zA-Z0-9_-]+)?|quote|table|material)\]\n?([\s\S]*?)\n?\[\/(?:code|quote|table|material)\]/gi;
         let match;
         while ((match = materialRegex.exec(qSection)) !== null) {
             let fullType = match[1].toLowerCase();
@@ -186,7 +186,6 @@ window.renderVisualEditor = function() {
                     <button class="btn-tiny" onclick="window.addMaterial(${index}, 'code')">+ Add Code</button>
                     <button class="btn-tiny" onclick="window.addMaterial(${index}, 'quote')">+ Add Quote</button>
                     <button class="btn-tiny" onclick="window.addMaterial(${index}, 'table')">+ Add Table</button>
-                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'plot')">+ Add Plot</button>
                     <button class="btn-tiny" onclick="window.addMaterial(${index}, 'material')">+ Add Material</button>
                 </div>
             </div>
@@ -241,20 +240,6 @@ function renderMaterialHTML(qIdx, mIdx, material) {
                 </div>
             </div>
             <textarea class="code-font" placeholder="Paste code here..." oninput="window.autoGrow(this); window.updateMaterial(${qIdx}, ${mIdx}, 'content', this.value)">${material.content}</textarea>
-        </div>`;
-    }
-
-    if (material.type === 'plot') {
-        return `
-        <div class="visual-material-item">
-            <div class="mat-header">
-                <span class="mat-tag">Plot (Desmos)</span>
-                <button class="btn-delete-tiny" title="Remove Plot" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
-            </div>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px;">Enter LaTeX expressions (one per line):</p>
-            <textarea class="code-font" placeholder="y = x^2\ny = \\sin(x)" oninput="window.autoGrow(this); window.updateMaterial(${qIdx}, ${mIdx}, 'content', this.value)">${material.content}</textarea>
         </div>`;
     }
 
@@ -476,31 +461,4 @@ window.visualAddQuestion = () => {
     window.visualState.questions.push({ text: "", type: "mc", options: [{text:"Option 1", correct:false}, {text:"Option 2", correct:true}], answer: "", materials:[] });
     window.renderVisualEditor(); 
     setTimeout(() => { 
-        const container = document.getElementById('visual-questions-container');
-        if(container && container.lastElementChild) {
-            container.lastElementChild.scrollIntoView({ behavior: 'smooth' });
-            const textarea = container.lastElementChild.querySelector('textarea');
-            if(textarea) textarea.focus();
-        }
-    }, 100);
-};
-window.updateQType = (idx, type) => {
-    window.visualState.questions[idx].type = type;
-    if(type === 'mc' && window.visualState.questions[idx].options.length === 0) window.visualState.questions[idx].options = [{text:"Option 1", correct:false}];
-    window.renderVisualEditor();
-};
-window.addMaterial = (qIdx, type) => { window.visualState.questions[qIdx].materials.push({type: type, content: ""}); window.renderVisualEditor(); };
-window.updateMaterial = (qIdx, mIdx, field, val) => {
-    if (field === 'content') {
-        window.visualState.questions[qIdx].materials[mIdx].content = val;
-    } else if (field === 'author') {
-        window.visualState.questions[qIdx].materials[mIdx].author = val;
-    } else if (field === 'lang') {
-        window.visualState.questions[qIdx].materials[mIdx].lang = val;
-    }
-};
-window.deleteMaterial = (qIdx, mIdx) => { window.visualState.questions[qIdx].materials.splice(mIdx, 1); window.renderVisualEditor(); };
-window.updateOptionText = (qIdx, oIdx, val) => window.visualState.questions[qIdx].options[oIdx].text = val;
-window.updateOptionCorrect = (qIdx, oIdx, val) => window.visualState.questions[qIdx].options[oIdx].correct = val;
-window.addOption = (qIdx) => { window.visualState.questions[qIdx].options.push({text: "", correct: false}); window.renderVisualEditor(); };
-window.deleteOption = (qIdx, oIdx) => { window.visualState.questions[qIdx].options.splice(oIdx, 1); window.renderVisualEditor(); };
+        const container = document.getElementById('visual-questions-contai
