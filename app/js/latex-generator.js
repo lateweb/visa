@@ -181,7 +181,7 @@
           return `\\begin{quote}\n${applyLatexFormatting(trimmed)}\n\\end{quote}\n`;
           
         case 'plot':
-          return `\\begin{center}\n\\fbox{\\parbox{0.8\\textwidth}{\\centering \\textbf{Interactive Plot}\\\\[0.5em] ${trimmed.split('\n').filter(Boolean).map(x => `$${escapeLatex(x)}$`).join(' \\\\ ')} }}\n\\end{center}\n`;
+          return `% Interactive plot omitted in LaTeX\n`;
 
         case 'table': {
           const rows = trimmed.split('\n').map(r => r.trim()).filter(Boolean);
