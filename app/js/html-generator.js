@@ -211,4 +211,120 @@ ${cssContent}
 
 <button id="theme-toggle" class="theme-toggle-fixed" aria-label="Toggle theme">
 <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: ${isDark ? 'none' : 'inline'};"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-<svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: ${isDark ? 'inline' : 'none'};"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12"
+<svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: ${isDark ? 'inline' : 'none'};"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+</button>
+
+${quizBody}
+
+<script>
+const quizLang = '${lang}';
+const examMode = ${examMode};
+const quizInstanceId = '${instanceId}';
+</script>
+
+<!-- Dynamic highlight theme toggle -->
+<script>
+(function() {
+  const lightLink = document.getElementById('hljs-theme-light');
+  const darkLink = document.getElementById('hljs-theme-dark');
+
+  function updateHighlightTheme() {
+    const isDark = document.body.classList.contains('dark');
+    lightLink.disabled = isDark;
+    darkLink.disabled = !isDark;
+  }
+
+  updateHighlightTheme();
+
+  const observer = new MutationObserver(function(mutations) {
+    for (let mutation of mutations) {
+      if (mutation.attributeName === 'class') {
+        updateHighlightTheme();
+        break;
+      }
+    }
+  });
+
+  observer.observe(document.body, { attributes: true });
+})();
+</script>
+
+<script>
+${jsContent}
+</script>
+</body>
+</html>`;
+  } catch (error) {
+    console.error("Failed to build HTML structure:", error);
+    alert("Error: Could not load CSS or JS assets. Please check console for details.");
+    return null;
+  }
+}
+
+/**
+ * Main Function called by ui.js
+ */
+async function generateQuizHtml(lang = 'en', examMode = false) {
+  const codeElement = document.getElementById("quizdownCode");
+  if (!codeElement) {
+    console.error("Element #quizdownCode not found.");
+    return null;
+  }
+
+  let quizdownContent = codeElement.value;
+
+  if (!quizdownContent || !quizdownContent.trim()) {
+    return null;
+  }
+
+  try {
+    quizdownContent = preprocessQuizdownContent(quizdownContent);
+
+    const extractedTitle = extractTitleFromFrontMatter(quizdownContent);
+    const quizOutput = parseQuizdown(quizdownContent, lang, examMode);
+    const finalTitle = extractedTitle || quizOutput.title;
+
+    const isDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
+
+    // Dynamically fetch extra highlighting packages based on requested languages
+    const codeLangs = new Set();
+
+    const langAliases = {
+      'tex': 'latex',
+      'js': 'javascript',
+      'ts': 'typescript',
+      'py': 'python',
+      'rb': 'ruby',
+      'sh': 'bash',
+      'html': 'xml',
+      'vue': 'xml',
+      'react': 'javascript'
+    };
+
+    for (const match of quizdownContent.matchAll(/\[code:([a-zA-Z0-9_-]+)\]/gi)) {
+      let parsedLang = match[1].toLowerCase();
+
+      if (langAliases[parsedLang]) {
+        parsedLang = langAliases[parsedLang];
+      }
+
+      if (parsedLang !== 'text') {
+        codeLangs.add(parsedLang);
+      }
+    }
+
+    let extraScripts = '';
+
+    // Append Highlight.js modules
+    codeLangs.forEach(l => {
+      extraScripts += `\n<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/${l}.min.js"></script>`;
+    });
+
+    assetsPromise = null; // Re-fetch assets cache so changes reflect instantly without a hard refresh
+
+    return await createFullHtml(finalTitle, quizOutput.body, lang, isDark, examMode, extraScripts);
+  } catch (error) {
+    console.error("Error generating quiz HTML:", error);
+    return null;
+  }
+}
