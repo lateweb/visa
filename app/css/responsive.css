@@ -1,0 +1,71 @@
+/* app/css/responsive.css */
+@media (max-width: 768px) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  .main-container {
+    flex-direction: column;
+    height: auto;
+    overflow: visible;
+    width: 100%;
+  }
+
+  .storage-sidebar {
+    width: 100%;
+    max-width: none;
+    height: auto;
+    max-height: 400px;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .resize-handle {
+    display: none;
+  }
+
+  .navbar {
+    padding: 0 15px;
+  }
+
+  .toolbar {
+    padding: 10px 15px;
+    gap: 10px;
+    justify-content: flex-start;
+    overflow-x: hidden;
+  }
+
+  .bottom-toolbar {
+    justify-content: flex-start;
+  }
+
+  .editor-wrapper {
+    padding: 15px;
+  }
+
+  .export-separator {
+    display: none;
+  }
+
+  .export-group {
+    justify-content: flex-start;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .primary-actions {
+    display: flex;
+    width: 100%;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .primary-actions .btn {
+    flex: 1 1 auto;
+  }
+
+  textarea#quizdownCode {
+    padding: 15px;
+  }
+}
