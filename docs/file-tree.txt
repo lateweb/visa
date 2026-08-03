@@ -1,35 +1,40 @@
 # docs/file-tree.txt
-
 Project Root/
+├── index.html
+├── editor.html
+├── help.html
 │
-├── index.html                 # The Main Converter Tool
-├── editor.html                # The Visual Builder Page
-├── help.html                  # Documentation & Syntax Reference
-│
-├── app/                       # Global application logic (UI & functionality)
+├── app/
 │   ├── css/
-│   │   └── app.css            # Styles for Converter and Editor
+│   │   ├── base.css
+│   │   ├── layout.css
+│   │   ├── components.css
+│   │   ├── builder.css
+│   │   ├── responsive.css
+│   │   └── help.css
+│   │
 │   └── js/
-│       ├── builder.js         # Visual Editor state management
-│       ├── html-generator.js  # Compiles Quizdown to raw HTML file
-│       ├── latex-generator.js # Compiles Quizdown to LaTeX document
-│       ├── quiz-parser.js     # Parses syntax into objects/strings
-│       ├── storage.js         # LocalStorage management
-│       ├── theme.js           # Light/Dark mode toggling
-│       ├── ui.js              # Interactivity for index.html
-│       └── visual-editor.js   # HTML renderer for the visual builder
+│       ├── builder.js
+│       ├── html-generator.js
+│       ├── latex-generator.js
+│       ├── quiz-parser.js
+│       ├── storage.js
+│       ├── theme.js
+│       ├── ui.js
+│       └── visual-editor.js
 │
-├── template/                  # Styles & logic injected into generated HTML files
+├── template/
 │   ├── css/
-│   │   ├── base.css           # Body styling, fonts, and theme logic
-│   │   ├── content.css        # Blocks (tables, code, quotes, math)
-│   │   ├── layout.css         # Quiz structure, inputs, spacing
-│   │   └── sidebar.css        # Interactive side navigation menu
+│   │   ├── base.css
+│   │   ├── content.css
+│   │   ├── layout.css
+│   │   └── sidebar.css
+│   │
 │   └── js/
-│       ├── quiz-core.js       # Core checking logic, exam finish flows, autosaving
-│       ├── quiz-math.js       # MathJax initialization, layout, and copy handlers
-│       ├── quiz-sidebar.js    # Sidebar navigation and countdown timer logic
-│       └── quiz-utils.js      # Theme toggling, code copying, and quiz flagging
+│       ├── quiz-core.js
+│       ├── quiz-math.js
+│       ├── quiz-sidebar.js
+│       └── quiz-utils.js
 │
-└── docs/                      
-    └── file-tree.txt          # Current file structure representation
+└── docs/
+    └── file-tree.txt
