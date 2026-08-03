@@ -17,6 +17,17 @@
     })();
   </script>
 
+  <!-- ----- INLINE CRITICAL CSS: ensures dark background before external CSS loads ----- -->
+  <style>
+    /* CRITICAL: These styles must load before external CSS to prevent flash */
+    html, body {
+      background-color: #ffffff;
+    }
+    html.dark, html.dark body {
+      background-color: #000000;
+    }
+  </style>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
