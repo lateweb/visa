@@ -58,13 +58,13 @@ function loadAssets() {
 
     assetsPromise = Promise.all([Promise.all(cssPromises), Promise.all(jsPromises)])
       .then(([cssResults, jsResults]) => {
-        const cssContent = cssResults.join('\n\n/* --- END OF FILE --- */\n\n');
-        const jsContent = jsResults.join('\n\n/* --- END OF SCRIPT MODULE --- */\n\n');
+        const cssContent = cssResults.join('\n/* --- END OF FILE --- */\n');
+        const jsContent = jsResults.join('\n/* --- END OF SCRIPT MODULE --- */\n');
         return [cssContent, jsContent];
       })
       .catch((err) => {
         console.error("Error loading quiz assets:", err);
-        assetsPromise = null; 
+        assetsPromise = null;
         throw err;
       });
   }
@@ -79,6 +79,7 @@ function extractTitleFromFrontMatter(text) {
   if (headerMatch) {
     const headerText = headerMatch[1];
     const lines = headerText.split('\n');
+
     for (const line of lines) {
       const colonIndex = line.indexOf(':');
       if (colonIndex > -1) {
@@ -96,15 +97,15 @@ function extractTitleFromFrontMatter(text) {
  * Helper: Strips point values from #Q markers
  */
 function preprocessQuizdownContent(content) {
-  return content; 
+  return content;
 }
 
 /**
  * Generates a random UUID for quiz instance identification
- * (used to isolate autosaved open‑answer data per quiz)
  */
 function generateQuizInstanceId() {
   if (crypto.randomUUID) return crypto.randomUUID();
+
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0;
     const v = c === 'x' ? r : (r & 0x3 | 0x8);
@@ -118,6 +119,7 @@ function generateQuizInstanceId() {
 async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, examMode = false, extraScripts = '') {
   try {
     const [cssContent, jsContent] = await loadAssets();
+
     const safeTitle = escapeHtml(quizTitle);
     const instanceId = generateQuizInstanceId();
 
@@ -129,176 +131,84 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, 
     const bodyClasses = [];
     if (isDark) bodyClasses.push('dark');
     if (examMode) bodyClasses.push('exam-mode');
+
     const bodyClassAttr = bodyClasses.length > 0 ? ` class="${bodyClasses.join(' ')}"` : '';
 
     return `<!DOCTYPE html>
 <html lang="${lang}">
 <head>
-  <title>${safeTitle}</title>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  
-  <!-- Fonts: Open Sans and Fira Code -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<title>${safeTitle}</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
 
-  <!-- MathJax 4 Configuration -->
-  <script>
-    window.MathJax = {
-      loader: { load: ['input/tex', 'output/chtml', 'ui/menu'] },
-      tex: {
-        inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
-        displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
-        processEscapes: true,
-        packages: {'[+]': ['noerrors', 'action']}
-      },
-      chtml: {
-        matchFontHeight: true,
-        scale: 1,
-        minScale: 0.5,
-        linebreaks: {
-          inline: true
-        }
-      },
-      startup: {
-        ready: () => {
-          MathJax.startup.defaultReady();
-        }
-      }
-    };
-  </script>
-  
-  <!-- MathJax 4 Library -->
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
-
-  <!-- Syntax highlighting: highlight.js -->
-  <link rel="stylesheet" id="hljs-theme-light" href="${highlightCssLight}" ${isDark ? 'disabled' : ''}>
-  <link rel="stylesheet" id="hljs-theme-dark" href="${highlightCssDark}" ${isDark ? '' : 'disabled'}>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>${extraScripts}
-  <script>hljs.highlightAll();</script>
-  
-  <style>
-${cssContent}
-  </style>
-</head>
-
-<body${bodyClassAttr}>
-  <button id="theme-toggle" class="theme-toggle-fixed" aria-label="Toggle theme">
-    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: ${isDark ? 'none' : 'inline'};"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: ${isDark ? 'inline' : 'none'};"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-  </button>
-${quizBody}
-  <script>
-    const quizLang = '${lang}';
-    const examMode = ${examMode};
-    const quizInstanceId = '${instanceId}';
-  </script>
-  
-  <!-- Dynamic highlight theme toggle -->
-  <script>
-    (function() {
-      const lightLink = document.getElementById('hljs-theme-light');
-      const darkLink = document.getElementById('hljs-theme-dark');
-      
-      function updateHighlightTheme() {
-        const isDark = document.body.classList.contains('dark');
-        lightLink.disabled = isDark;
-        darkLink.disabled = !isDark;
-      }
-      
-      updateHighlightTheme();
-      
-      const observer = new MutationObserver(function(mutations) {
-        for (let mutation of mutations) {
-          if (mutation.attributeName === 'class') {
-            updateHighlightTheme();
-            break;
-          }
-        }
-      });
-      observer.observe(document.body, { attributes: true });
-    })();
-  </script>
-  
-  <script>
-${jsContent}
-  </script>
-</body>
-</html>`;
-
-  } catch (error) {
-    console.error("Failed to build HTML structure:", error);
-    alert("Error: Could not load CSS or JS assets. Please check console for details.");
-    return null;
-  }
-}
-
-/**
- * Main Function called by ui.js
- */
-async function generateQuizHtml(lang = 'en', examMode = false) {
-  const codeElement = document.getElementById("quizdownCode");
-  
-  if (!codeElement) {
-    console.error("Element #quizdownCode not found.");
-    return null;
-  }
-
-  let quizdownContent = codeElement.value;
-  
-  if (!quizdownContent || !quizdownContent.trim()) {
-    return null;
-  }
-  
+<script>
+(function () {
   try {
-    quizdownContent = preprocessQuizdownContent(quizdownContent);
-    const extractedTitle = extractTitleFromFrontMatter(quizdownContent);
-    const quizOutput = parseQuizdown(quizdownContent, lang, examMode);
-    const finalTitle = extractedTitle || quizOutput.title;
-    
-    const isDark = document.body.classList.contains('dark');
-    
-    // Dynamically fetch extra highlighting packages based on requested languages
-    const codeLangs = new Set();
-    
-    const langAliases = {
-        'tex': 'latex',
-        'js': 'javascript',
-        'ts': 'typescript',
-        'py': 'python',
-        'rb': 'ruby',
-        'sh': 'bash',
-        'html': 'xml',
-        'vue': 'xml',
-        'react': 'javascript'
-    };
+    var saved = localStorage.getItem('visa-theme');
+    var prefers = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var dark = saved === 'dark' || (saved !== 'light' && prefers);
 
-    for (const match of quizdownContent.matchAll(/\[code:([a-zA-Z0-9_-]+)\]/gi)) {
-        let parsedLang = match[1].toLowerCase();
-        
-        if (langAliases[parsedLang]) {
-            parsedLang = langAliases[parsedLang];
-        }
-        
-        if (parsedLang !== 'text') {
-            codeLangs.add(parsedLang);
-        }
+    if (dark) {
+      document.documentElement.classList.add('dark');
     }
-    
-    let extraScripts = '';
-    
-    // Append Highlight.js modules
-    codeLangs.forEach(l => {
-        extraScripts += `\n  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/${l}.min.js"></script>`;
-    });
+  } catch (e) {}
+})();
+</script>
 
-    assetsPromise = null; // Re-fetch assets cache so changes reflect instantly without a hard refresh
-    
-    return await createFullHtml(finalTitle, quizOutput.body, lang, isDark, examMode, extraScripts);
-    
-  } catch (error) {
-    console.error("Error generating quiz HTML:", error);
-    return null;
+<!-- Fonts: Open Sans and Fira Code -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!-- MathJax 4 Configuration -->
+<script>
+window.MathJax = {
+  loader: { load: ['input/tex', 'output/chtml', 'ui/menu'] },
+  tex: {
+    inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
+    displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
+    processEscapes: true,
+    packages: {'[+]': ['noerrors', 'action']}
+  },
+  chtml: {
+    matchFontHeight: true,
+    scale: 1,
+    minScale: 0.5,
+    linebreaks: {
+      inline: true
+    }
+  },
+  startup: {
+    ready: () => {
+      MathJax.startup.defaultReady();
+    }
   }
-}
+};
+</script>
+
+<!-- MathJax 4 Library -->
+<script src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js"></script>
+
+<!-- Syntax highlighting: highlight.js -->
+<link rel="stylesheet" id="hljs-theme-light" href="${highlightCssLight}" ${isDark ? 'disabled' : ''}>
+<link rel="stylesheet" id="hljs-theme-dark" href="${highlightCssDark}" ${isDark ? '' : 'disabled'}>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>${extraScripts}
+<script>hljs.highlightAll();</script>
+
+<style>
+${cssContent}
+</style>
+</head>
+<body${bodyClassAttr}>
+<script>
+(function () {
+  if (document.body) {
+    document.body.classList.toggle('dark', document.documentElement.classList.contains('dark'));
+  }
+})();
+</script>
+
+<button id="theme-toggle" class="theme-toggle-fixed" aria-label="Toggle theme">
+<svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: ${isDark ? 'none' : 'inline'};"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+<svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: ${isDark ? 'inline' : 'none'};"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12"
