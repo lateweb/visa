@@ -100,12 +100,26 @@ function preprocessQuizdownContent(content) {
 }
 
 /**
+ * Generates a random UUID for quiz instance identification
+ * (used to isolate autosaved open‑answer data per quiz)
+ */
+function generateQuizInstanceId() {
+  if (crypto.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+/**
  * Helper: Constructs the final HTML string.
  */
 async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, examMode = false, extraScripts = '') {
   try {
     const [cssContent, jsContent] = await loadAssets();
     const safeTitle = escapeHtml(quizTitle);
+    const instanceId = generateQuizInstanceId();
 
     // Highlight.js themes
     const highlightCssLight = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
@@ -178,6 +192,7 @@ ${quizBody}
   <script>
     const quizLang = '${lang}';
     const examMode = ${examMode};
+    const quizInstanceId = '${instanceId}';
   </script>
   
   <!-- Dynamic highlight theme toggle -->
