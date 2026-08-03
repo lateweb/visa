@@ -500,14 +500,17 @@
       try {
         const exprs = JSON.parse(exprsData);
         const calc = Desmos.GraphingCalculator(el, {
-          expressions: false,   // Disable side expressions list
-          settingsMenu: false,  // Disable standard settings menu
-          zoomButtons: true,    // Keep zoom buttons enabled
+          expressions: true,    // Keep sidebar list visually present
+          settingsMenu: false,  // Hide settings wrench
+          zoomButtons: true,    // Allow zooming
           lockViewport: false,  // Allow panning
-          invertedColors: isDark
+          invertedColors: isDark,
+          authorFeatures: true  // Required to explicitly utilize the read-only flag
         });
         exprs.forEach((expr, i) => {
-          calc.setExpression({ id: 'expr-' + i, latex: expr });
+          // Marking an expression readonly disables editing of the LaTeX field
+          // but completely retains slider/viewport interactivity!
+          calc.setExpression({ id: 'expr-' + i, latex: expr, readonly: true });
         });
         // Store on DOM element so theme toggle can access it later
         el._desmosCalc = calc;
