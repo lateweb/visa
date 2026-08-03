@@ -413,9 +413,18 @@ window.tableRemoveCol = (qIdx, mIdx) => {
 };
 
 window.tableReset = (qIdx, mIdx) => {
-    if(confirm("Clear this table?")) {
-        window.visualState.questions[qIdx].materials[mIdx].content = "";
-        window.renderVisualEditor();
+    if (window.customConfirm) {
+        window.customConfirm("Clear this table?").then(confirmed => {
+            if(confirmed) {
+                window.visualState.questions[qIdx].materials[mIdx].content = "";
+                window.renderVisualEditor();
+            }
+        });
+    } else {
+        if(confirm("Clear this table?")) {
+            window.visualState.questions[qIdx].materials[mIdx].content = "";
+            window.renderVisualEditor();
+        }
     }
 };
 
@@ -456,9 +465,48 @@ function renderAnswerSection(index, q) {
 // Basic CRUD
 window.updateQText = (idx, val) => window.visualState.questions[idx].text = val;
 window.updateAnswer = (idx, val) => window.visualState.questions[idx].answer = val;
-window.visualDeleteQ = (idx) => { if(confirm("Delete this question?")) { window.visualState.questions.splice(idx, 1); window.renderVisualEditor(); }};
+window.visualDeleteQ = (idx) => { 
+    if (window.customConfirm) {
+        window.customConfirm("Delete this question?").then(confirmed => {
+            if(confirmed) { window.visualState.questions.splice(idx, 1); window.renderVisualEditor(); }
+        });
+    } else {
+        if(confirm("Delete this question?")) { window.visualState.questions.splice(idx, 1); window.renderVisualEditor(); }
+    }
+};
 window.visualAddQuestion = () => { 
     window.visualState.questions.push({ text: "", type: "mc", options: [{text:"Option 1", correct:false}, {text:"Option 2", correct:true}], answer: "", materials:[] });
     window.renderVisualEditor(); 
     setTimeout(() => { 
-        const container = document.getElementById('visual-questions-contai
+        const container = document.getElementById('visual-questions-container');
+        if(container && container.lastElementChild) {
+            container.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, 100);
+};
+
+window.updateQType = (idx, val) => {
+    window.visualState.questions[idx].type = val;
+    if (val === 'mc' && window.visualState.questions[idx].options.length === 0) {
+        window.visualState.questions[idx].options = [{text:"Option 1", correct:false}, {text:"Option 2", correct:true}];
+    }
+    window.renderVisualEditor();
+};
+window.updateOptionText = (qIdx, oIdx, val) => window.visualState.questions[qIdx].options[oIdx].text = val;
+window.updateOptionCorrect = (qIdx, oIdx, checked) => window.visualState.questions[qIdx].options[oIdx].correct = checked;
+window.addOption = (qIdx) => { window.visualState.questions[qIdx].options.push({text:"", correct:false}); window.renderVisualEditor(); };
+window.deleteOption = (qIdx, oIdx) => { window.visualState.questions[qIdx].options.splice(oIdx, 1); window.renderVisualEditor(); };
+
+window.addMaterial = (qIdx, type) => {
+    let newMat = { type, content: "" };
+    if (type === 'code') newMat.lang = "text";
+    window.visualState.questions[qIdx].materials.push(newMat);
+    window.renderVisualEditor();
+};
+window.updateMaterial = (qIdx, mIdx, field, val) => {
+    window.visualState.questions[qIdx].materials[mIdx][field] = val;
+};
+window.deleteMaterial = (qIdx, mIdx) => {
+    window.visualState.questions[qIdx].materials.splice(mIdx, 1);
+    window.renderVisualEditor();
+};
