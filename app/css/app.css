@@ -12,6 +12,11 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', Consolas, monospace;
 }
 
+/*
+  FIX: dark variables must be bound to <html.dark> immediately.
+  The pre-paint inline script adds .dark to <html>, not <body>.
+*/
+html.dark,
 body.dark {
   color-scheme: dark;
   --bg: #000000;
@@ -21,6 +26,16 @@ body.dark {
   --text: #ffffff;
   --text-muted: #aaaaaa;
   --accent: #ffffff;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark,
+html.dark body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
 }
 
 *,
@@ -533,7 +548,6 @@ textarea#quizdownCode:focus {
 /* ============================================================
    Builder-specific Boxy Overhaul Styles
    ============================================================ */
-
 .editor-page .sticky-toolbar {
   position: fixed;
   bottom: 0;
@@ -619,7 +633,7 @@ textarea#quizdownCode:focus {
 }
 
 .visual-card textarea {
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .visual-card textarea:focus,
