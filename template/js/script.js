@@ -656,16 +656,60 @@
     }
   }
 
+  // --- CUSTOM DIALOGS FOR EXAM MODE ---
+  function customExamConfirm(message, okText, cancelText) {
+      return new Promise(resolve => {
+          const overlay = document.createElement('div');
+          overlay.className = 'exam-modal-overlay active';
+          
+          const box = document.createElement('div');
+          box.className = 'exam-modal-box';
+          
+          const text = document.createElement('div');
+          text.textContent = message;
+          
+          const actions = document.createElement('div');
+          actions.className = 'exam-modal-actions';
+          
+          const cancelBtn = document.createElement('button');
+          cancelBtn.className = 'exam-modal-btn';
+          cancelBtn.textContent = cancelText || 'Cancel';
+          
+          const confirmBtn = document.createElement('button');
+          confirmBtn.className = 'exam-modal-btn primary';
+          confirmBtn.textContent = okText || 'OK';
+          
+          actions.appendChild(cancelBtn);
+          actions.appendChild(confirmBtn);
+          box.appendChild(text);
+          box.appendChild(actions);
+          overlay.appendChild(box);
+          document.body.appendChild(overlay);
+          
+          const close = (res) => {
+              overlay.classList.remove('active');
+              setTimeout(() => overlay.remove(), 200);
+              resolve(res);
+          };
+          
+          cancelBtn.onclick = () => close(false);
+          confirmBtn.onclick = () => close(true);
+      });
+  }
+
   // --- QUIZ LOGIC ---
 
   function wireQuiz() {
     const translations = {
       selectAnswer: { en: "⚠ Please select an answer", fi: "⚠ Valitse vastaus" },
+      unanswered: { en: "⚠ Unanswered", fi: "⚠ Ei vastattu" },
       correct: { en: "✓ Correct", fi: "✓ Oikein" },
       incorrect: { en: "✖ Incorrect", fi: "✖ Väärin" },
       finish: { en: "Finish Quiz", fi: "Palauta" },
       score: { en: "Your Score", fi: "Pisteesi" },
       confirmFinish: { en: "Are you sure you want to finish? You can't change your answers after this.", fi: "Haluatko varmasti palauttaa? Et voi muuttaa vastauksiasi tämän jälkeen." },
+      cancel: { en: "Cancel", fi: "Peruuta" },
+      ok: { en: "OK", fi: "OK" },
       pointsLabel: { en: ' pts.', fi: ' p.' }
     };
 
@@ -733,95 +777,110 @@
 
     finishBtn.addEventListener('click', () => {
       const confirmMsg = translations.confirmFinish[lang] || translations.confirmFinish.en;
-      if (!confirm(confirmMsg)) {
-        return;
-      }
+      const okText = translations.ok[lang] || translations.ok.en;
+      const cancelText = translations.cancel[lang] || translations.cancel.en;
 
-      // Stop the timer when finishing the quiz
-      stopTimer();
+      customExamConfirm(confirmMsg, okText, cancelText).then(confirmed => {
+        if (!confirmed) return;
 
-      finishBtn.disabled = true;
-      finishBtn.style.display = 'none';
-      
-      const sidebarFinishBtn = document.querySelector('.sidebar-finish-btn');
-      if (sidebarFinishBtn) {
-        sidebarFinishBtn.style.display = 'none';
-      }
+        // Stop the timer when finishing the quiz
+        stopTimer();
 
-      // Disable flagging after completion
-      document.querySelectorAll('.flag-question-btn').forEach(btn => btn.disabled = true);
-
-      const questionBlocks = document.querySelectorAll('.question-block');
-      let totalPoints = 0;
-      let earnedPoints = 0;
-
-      questionBlocks.forEach((qBlock) => {
-        const points = parseInt(qBlock.dataset.points, 10) || 1;
-
-        const isMcq = qBlock.querySelector('.options') !== null;
-        const feedback = qBlock.querySelector('.feedback');
-        const explanation = qBlock.querySelector('.explanation');
-        const answerBox = qBlock.querySelector('.answer-box');
-        const openAnswerDiv = qBlock.querySelector('.open-answer-textarea');
-        const badge = qBlock.querySelector('.points-badge');
-
-        if (isMcq) {
-          totalPoints += points;
-          const selected = qBlock.querySelector(`input[name="${qBlock.id}"]:checked`);
-          const correctAnswer = qBlock.dataset.correctAnswer;
-
-          if (selected && selected.value === correctAnswer) {
-            earnedPoints += points;
-            if (feedback) {
-              feedback.textContent = translations.correct[lang] || '✓ Correct';
-              feedback.className = 'feedback correct';
-            }
-            markQuestionAsGraded(qBlock, true);
-          } else {
-            if (feedback) {
-              if (!selected) {
-                feedback.textContent = (translations.selectAnswer[lang] || '⚠ Please select an answer');
-                feedback.className = 'feedback warning';
-              } else {
-                feedback.textContent = (translations.incorrect[lang] || '✖ Incorrect');
-                feedback.className = 'feedback incorrect';
-              }
-            }
-            markQuestionAsGraded(qBlock, false);
-          }
-
-          if (explanation) explanation.style.display = 'block';
-
-          if (badge) {
-            const earned = (selected && selected.value === correctAnswer) ? points : 0;
-            badge.innerText = `${earned} / ${points}${pointsSuffix}`;
-          }
-        } else {
-          // Open‑ended: lock the answer area, reveal labels and model answer
-          if (openAnswerDiv) {
-            openAnswerDiv.setAttribute('contenteditable', 'false');
-            // Trigger a final save just in case
-            saveAnswerOnFinish(openAnswerDiv);
-          }
-          const openLabel = qBlock.querySelector('.open-answer-label');
-          const modelLabel = qBlock.querySelector('.model-answer-label');
-          if (openLabel) openLabel.style.display = 'block';
-          if (modelLabel) modelLabel.style.display = 'block';
-          if (answerBox) {
-            answerBox.style.display = 'block';
-          }
+        finishBtn.disabled = true;
+        finishBtn.style.display = 'none';
+        
+        const sidebarFinishBtn = document.querySelector('.sidebar-finish-btn');
+        if (sidebarFinishBtn) {
+          sidebarFinishBtn.style.display = 'none';
         }
+
+        // Disable flagging after completion
+        document.querySelectorAll('.flag-question-btn').forEach(btn => btn.disabled = true);
+
+        const questionBlocks = document.querySelectorAll('.question-block');
+        let totalPoints = 0;
+        let earnedPoints = 0;
+
+        questionBlocks.forEach((qBlock) => {
+          const points = parseInt(qBlock.dataset.points, 10) || 1;
+
+          const isMcq = qBlock.querySelector('.options') !== null;
+          const feedback = qBlock.querySelector('.feedback');
+          const explanation = qBlock.querySelector('.explanation');
+          const answerBox = qBlock.querySelector('.answer-box');
+          const openAnswerDiv = qBlock.querySelector('.open-answer-textarea');
+          const badge = qBlock.querySelector('.points-badge');
+
+          if (isMcq) {
+            totalPoints += points;
+            const selected = qBlock.querySelector(`input[name="${qBlock.id}"]:checked`);
+            const correctAnswer = qBlock.dataset.correctAnswer;
+
+            // Highlight options and disable them
+            const allRadios = qBlock.querySelectorAll(`input[type="radio"]`);
+            allRadios.forEach(radio => {
+              radio.disabled = true;
+              const label = radio.closest('label');
+              if (radio.value === correctAnswer) {
+                label.classList.add('is-correct-option');
+              } else if (radio.checked) {
+                label.classList.add('is-wrong-option');
+              }
+            });
+
+            if (selected && selected.value === correctAnswer) {
+              earnedPoints += points;
+              if (feedback) {
+                feedback.textContent = translations.correct[lang] || '✓ Correct';
+                feedback.className = 'feedback correct';
+              }
+              markQuestionAsGraded(qBlock, true);
+            } else {
+              if (feedback) {
+                if (!selected) {
+                  feedback.textContent = (translations.unanswered[lang] || '⚠ Unanswered');
+                  feedback.className = 'feedback warning';
+                } else {
+                  feedback.textContent = (translations.incorrect[lang] || '✖ Incorrect');
+                  feedback.className = 'feedback incorrect';
+                }
+              }
+              markQuestionAsGraded(qBlock, false);
+            }
+
+            if (explanation) explanation.style.display = 'block';
+
+            if (badge) {
+              const earned = (selected && selected.value === correctAnswer) ? points : 0;
+              badge.innerText = `${earned} / ${points}${pointsSuffix}`;
+            }
+          } else {
+            // Open‑ended: lock the answer area, reveal labels and model answer
+            if (openAnswerDiv) {
+              openAnswerDiv.setAttribute('contenteditable', 'false');
+              // Trigger a final save just in case
+              saveAnswerOnFinish(openAnswerDiv);
+            }
+            const openLabel = qBlock.querySelector('.open-answer-label');
+            const modelLabel = qBlock.querySelector('.model-answer-label');
+            if (openLabel) openLabel.style.display = 'block';
+            if (modelLabel) modelLabel.style.display = 'block';
+            if (answerBox) {
+              answerBox.style.display = 'block';
+            }
+          }
+        });
+
+        const resultDiv = document.createElement('div');
+        resultDiv.id = 'exam-result';
+        resultDiv.style.cssText = 'text-align: center; margin: 2rem 0; padding: 1rem; border: 2px solid var(--quiz-border); background: var(--quiz-surface);';
+        const percentage = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
+        const scoreLabel = translations.score[lang] || translations.score.en;
+        resultDiv.innerHTML = `<h2>${scoreLabel}: ${earnedPoints} / ${totalPoints} (${percentage}%)</h2>`;
+        quizSection.insertBefore(resultDiv, quizSection.firstChild);
+
+        resultDiv.scrollIntoView({ behavior: 'smooth' });
       });
-
-      const resultDiv = document.createElement('div');
-      resultDiv.id = 'exam-result';
-      resultDiv.style.cssText = 'text-align: center; margin: 2rem 0; padding: 1rem; border: 2px solid var(--quiz-border); background: var(--quiz-surface);';
-      const percentage = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
-      const scoreLabel = translations.score[lang] || translations.score.en;
-      resultDiv.innerHTML = `<h2>${scoreLabel}: ${earnedPoints} / ${totalPoints} (${percentage}%)</h2>`;
-      quizSection.insertBefore(resultDiv, quizSection.firstChild);
-
-      resultDiv.scrollIntoView({ behavior: 'smooth' });
     });
   }
 
