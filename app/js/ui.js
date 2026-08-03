@@ -99,26 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
             runBtn.innerHTML = 'Generating...';
             runBtn.disabled = true;
            
-            // Open tab synchronously before any await to avoid pop-up blockers
+            // Open tab synchronously to avoid pop-up blockers
             const previewTab = window.open('about:blank', '_blank');
-            if (previewTab) {
-                // Respect current theme for the temporary loading screen
-                const isDark = document.documentElement.classList.contains('dark');
-                const bg = isDark ? '#000000' : '#ffffff';
-                const text = isDark ? '#ffffff' : '#000000';
-                previewTab.document.write(`
-                    <html>
-                        <head>
-                            <style>
-                                body { background: ${bg}; color: ${text}; font-family: sans-serif; padding: 20px; }
-                            </style>
-                        </head>
-                        <body>
-                            <h2>Generating Quiz Preview...</h2>
-                        </body>
-                    </html>
-                `);
-            }
            
             try {
                 if (typeof generateQuizHtml !== 'function') throw new Error("HTML Generator not loaded");
@@ -128,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
                
                 if (html) {
                     if (previewTab) {
-                        // Safely inject the rendered HTML without relying on Blob URLs (which can cause cross-origin limits)
+                        // Inject the rendered HTML without a temporary loading screen
                         previewTab.document.open();
                         previewTab.document.write(html);
                         previewTab.document.close();
