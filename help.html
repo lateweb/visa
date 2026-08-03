@@ -4,67 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>Documentation - Quizdown Converter</title>
 
-  <!-- ----- INLINE THEME SCRIPT: prevents white flash ----- -->
-  <script>
-    (function() {
-      const saved = localStorage.getItem('visa-theme');
-      const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (saved === 'dark' || (!saved && prefers)) {
-        document.documentElement.classList.add('dark');
-      }
-    })();
-  </script>
-
-  <!-- ----- INLINE CRITICAL CSS: ensures dark theme is applied before external CSS loads ----- -->
-  <style>
-    /* CRITICAL: Full dark theme styles */
-    html, body {
-      background-color: #ffffff;
-    }
-    html.dark, html.dark body {
-      background-color: #000000;
-    }
-
-    html.dark {
-      color-scheme: dark;
-    }
-    html.dark body {
-      background: #000000;
-      color: #ffffff;
-    }
-    html.dark .header-bar .back-link {
-      color: #aaaaaa;
-    }
-    html.dark .header-bar .back-link:hover {
-      color: #ffffff;
-    }
-    html.dark .theme-toggle {
-      color: #aaaaaa;
-    }
-    html.dark .theme-toggle:hover {
-      color: #ffffff;
-    }
-    html.dark h1, html.dark h2, html.dark h3 {
-      border-bottom-color: #444444;
-    }
-    html.dark pre {
-      background-color: #111111;
-      border-color: #444444;
-    }
-    html.dark .copy-btn {
-      border-color: #444444;
-      color: #aaaaaa;
-    }
-    html.dark .copy-btn:hover {
-      border-color: #ffffff;
-      color: #ffffff;
-    }
-    html.dark code {
-      color: #ffffff;
-    }
-  </style>
+  <script src="app/js/theme.js"></script>
 
   <style>
     :root {
@@ -74,8 +17,10 @@
       --muted: #555555;
       --surface: #f4f4f4;
     }
-    
+
+    html.dark,
     body.dark {
+      color-scheme: dark;
       --bg: #000000;
       --text: #ffffff;
       --border: #444444;
@@ -94,7 +39,6 @@
       background-color: var(--bg);
     }
 
-    /* Header bar containing back link and theme toggle */
     .header-bar {
       display: flex;
       justify-content: space-between;
@@ -105,13 +49,13 @@
     .back-link {
       text-decoration: underline;
       color: var(--muted);
-      margin-bottom: 0; /* reset old margin */
+      margin-bottom: 0;
     }
+
     .back-link:hover {
       color: var(--text);
     }
 
-    /* Theme toggle button (no border, no background) */
     .theme-toggle {
       background: transparent;
       border: none;
@@ -123,6 +67,7 @@
       justify-content: center;
       transition: color 0.2s;
     }
+
     .theme-toggle:hover {
       color: var(--text);
     }
@@ -132,23 +77,27 @@
       padding-bottom: 10px;
       margin-top: 1.5em;
     }
+
     h1 {
       border: none;
       font-size: 2.2em;
       margin-top: 0;
     }
+
     h2 {
       font-size: 1.5em;
     }
+
     h3 {
       font-size: 1.2em;
       border-bottom: none;
     }
-    
+
     .code-wrapper {
       position: relative;
       margin: 20px 0;
     }
+
     pre {
       background-color: var(--surface);
       padding: 15px;
@@ -159,10 +108,11 @@
       font-size: 14px;
       overflow-x: auto;
     }
+
     code {
       font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
     }
-    
+
     .copy-btn {
       position: absolute;
       top: 5px;
@@ -175,6 +125,7 @@
       color: var(--muted);
       transition: color 0.2s, border-color 0.2s;
     }
+
     .copy-btn:hover {
       color: var(--text);
       border-color: var(--text);
@@ -184,15 +135,15 @@
       list-style-type: disc;
       margin-left: 20px;
     }
+
     li {
       margin-bottom: 8px;
     }
   </style>
 </head>
 <body>
-
   <div class="header-bar">
-    <a href="index.html" class="back-link">← Back to Converter</a>
+    <a href="index.html" class="back-link">&larr; Back to Converter</a>
     <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
       <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
       <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
@@ -200,35 +151,39 @@
   </div>
 
   <h1>Documentation</h1>
-  
   <p>This tool converts text written in a specific syntax into interactive HTML quizzes or static LaTeX documents.</p>
 
-  <h2>File Structure & Metadata</h2>
+  <h2>File Structure &amp; Metadata</h2>
   <p>A file must begin with a header block enclosed in <code>---</code>. The <code>title</code> variable is strictly required. Any additional custom fields provided here will be output solely onto the LaTeX cover page.</p>
+
   <div class="code-wrapper">
     <button class="copy-btn" aria-label="Copy code">Copy</button>
-<pre><code>---
+    <pre><code>---
 title: Introduction to Physics
 Instructor: Dr. Smith
 Date: October 23, 2025
 ---
+
 ...questions start here</code></pre>
   </div>
 
   <h2>Questions</h2>
   <p>Questions must be separated by <code>---</code>.</p>
   <ul>
-      <li><strong>Multiple-Choice:</strong> Write the question immediately after the <code>#Q</code> tag. Mark the correct answer with <code>- [x]</code> and incorrect answers with <code>- [ ]</code>. Provide an explanation under the <code>#A</code> tag.</li>
-      <li><strong>Open-Ended:</strong> Omit the multiple choice options. The interactive HTML output will hide the <code>#A</code> block behind a toggle button.</li>
-      <li><strong>Scoring (LaTeX only):</strong> Append a colon and a number to the question marker (e.g., <code>#Q:5</code>) to display a point indicator in the PDF output.</li>
+    <li><strong>Multiple-Choice:</strong> Write the question immediately after the <code>#Q</code> tag. Mark the correct answer with <code>- [x]</code> and incorrect answers with <code>- [ ]</code>. Provide an explanation under the <code>#A</code> tag.</li>
+    <li><strong>Open-Ended:</strong> Omit the multiple choice options. The interactive HTML output will hide the <code>#A</code> block behind a toggle button.</li>
+    <li><strong>Scoring (LaTeX only):</strong> Append a colon and a number to the question marker (e.g., <code>#Q:5</code>) to display a point indicator in the PDF output.</li>
   </ul>
+
   <div class="code-wrapper">
     <button class="copy-btn" aria-label="Copy code">Copy</button>
-<pre><code>#Q
+    <pre><code>#Q
 What is the capital of France?
+
 - [x] Paris
 - [ ] London
 - [ ] Berlin
+
 #A
 Paris is the capital of France.</code></pre>
   </div>
@@ -242,13 +197,13 @@ Paris is the capital of France.</code></pre>
   <h2>Mathematics</h2>
   <p>The converter integrates MathJax formatting for equations.</p>
   <ul>
-      <li><strong>Inline math:</strong> Wrap the expression in <code>\(</code> and <code>\)</code>: <code>\(E=mc^2\)</code>.</li>
-      <li><strong>Display math:</strong> Wrap the expression in <code>\[</code> and <code>\]</code>: <code>\[ a^2 + b^2 = c^2 \]</code>.</li>
+    <li><strong>Inline math:</strong> Wrap the expression in <code>\(</code> and <code>\)</code>: <code>\(E=mc^2\)</code>.</li>
+    <li><strong>Display math:</strong> Wrap the expression in <code>\[</code> and <code>\]</code>: <code>\[ a^2 + b^2 = c^2 \]</code>.</li>
   </ul>
 
   <h2>Material Blocks</h2>
   <p>You can embed distinct elements inside a question (after the <code>#Q</code> tag) by using bracketed block syntaxes.</p>
-  
+
   <h3>Text Context: <code>[material]</code></h3>
   <pre><code>[material]
 Read this passage before answering the question.
@@ -259,7 +214,7 @@ Read this passage before answering the question.
   <pre><code>[code:javascript]
 function test() { return true; }
 [/code]</code></pre>
-  
+
   <h3>Quotes: <code>[quote]</code></h3>
   <p>Renders a blockquote. Optionally provide an attribution by starting a line with <code>Source:</code> or <code>Author:</code>.</p>
   <pre><code>[quote]
@@ -278,38 +233,11 @@ Author: William Shakespeare
 
   <h2>Outputs</h2>
   <ul>
-      <li><strong>Generate HTML:</strong> Produces a standalone, interactive HTML file. Works offline. Includes a theme toggle.</li>
-      <li><strong>Generate LaTeX:</strong> Produces a <code>.tex</code> source file to compile into a PDF. Cover page metadata and point values are included. Options exist to generate questions only or include an answer key.</li>
+    <li><strong>Generate HTML:</strong> Produces a standalone, interactive HTML file. Works offline. Includes a theme toggle.</li>
+    <li><strong>Generate LaTeX:</strong> Produces a <code>.tex</code> source file to compile into a PDF. Cover page metadata and point values are included. Options exist to generate questions only or include an answer key.</li>
   </ul>
 
   <script>
-    // --- Theme toggle (consistent with other pages, no border/box) ---
-    (function() {
-      const toggle = document.getElementById('theme-toggle');
-      const moon = document.getElementById('moon-icon');
-      const sun = document.getElementById('sun-icon');
-      
-      function apply(theme) {
-        document.body.classList.toggle('dark', theme === 'dark');
-        localStorage.setItem('visa-theme', theme);
-        if (moon && sun) {
-          moon.style.display = theme === 'dark' ? 'none' : 'inline';
-          sun.style.display = theme === 'dark' ? 'inline' : 'none';
-        }
-      }
-      
-      const saved = localStorage.getItem('visa-theme') || 'light';
-      apply(saved);
-      
-      if (toggle) {
-        toggle.addEventListener('click', () => {
-          const next = document.body.classList.contains('dark') ? 'light' : 'dark';
-          apply(next);
-        });
-      }
-    })();
-
-    // --- Copy buttons (existing functionality) ---
     document.querySelectorAll('.copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const preBlock = btn.nextElementSibling;
@@ -317,12 +245,15 @@ Author: William Shakespeare
           navigator.clipboard.writeText(preBlock.textContent).then(() => {
             const originalText = btn.textContent;
             btn.textContent = 'Copied';
-            setTimeout(() => { btn.textContent = originalText; }, 2000);
-          }).catch(err => { console.error('Copy failed: ', err); });
+            setTimeout(() => {
+              btn.textContent = originalText;
+            }, 2000);
+          }).catch(err => {
+            console.error('Copy failed: ', err);
+          });
         }
       });
     });
   </script>
-
 </body>
 </html>
