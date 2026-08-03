@@ -179,9 +179,6 @@
 
         case 'material':
           return `\\begin{quote}\n${applyLatexFormatting(trimmed)}\n\\end{quote}\n`;
-          
-        case 'plot':
-          return `% Interactive plot omitted in LaTeX\n`;
 
         case 'table': {
           const rows = trimmed.split('\n').map(r => r.trim()).filter(Boolean);
@@ -210,7 +207,7 @@
     function extractMaterials(str) {
       let materialLatex = '';
       const clean = str.replace(
-        /\[(code|quote|table|material|plot)(?::([^\]]+))?\]\s*([\s\S]*?)\s*\[\/\1\]/gi,
+        /\[(code|quote|table|material)(?::([^\]]+))?\]\s*([\s\S]*?)\s*\[\/\1\]/gi,
         (m, baseType, lang, content) => {
           const fullType = lang ? `${baseType}:${lang}` : baseType;
           materialLatex += parseMaterialBlock(fullType, content);
