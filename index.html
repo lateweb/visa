@@ -17,14 +17,167 @@
     })();
   </script>
 
-  <!-- ----- INLINE CRITICAL CSS: ensures dark background before external CSS loads ----- -->
+  <!-- ----- INLINE CRITICAL CSS: ensures dark theme is applied before external CSS loads ----- -->
   <style>
-    /* CRITICAL: These styles must load before external CSS to prevent flash */
+    /* CRITICAL: Full dark theme variables and background styles */
     html, body {
       background-color: #ffffff;
     }
     html.dark, html.dark body {
       background-color: #000000;
+    }
+
+    /* Apply dark styles immediately if .dark is present on html */
+    html.dark {
+      color-scheme: dark;
+    }
+    html.dark body {
+      background: #000000;
+      color: #ffffff;
+    }
+    html.dark .navbar {
+      background: #000000;
+      border-bottom-color: #ffffff;
+    }
+    html.dark .navbar .brand h1 {
+      color: #ffffff;
+    }
+    html.dark .storage-sidebar {
+      background: #000000;
+      border-right-color: #ffffff;
+    }
+    html.dark .content-area {
+      background: #000000;
+    }
+    html.dark .toolbar {
+      background: #000000;
+      border-bottom-color: #ffffff;
+    }
+    html.dark .bottom-toolbar {
+      border-top-color: #ffffff;
+    }
+    html.dark .btn {
+      background: #000000;
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+    html.dark .btn-primary {
+      background: #ffffff;
+      color: #000000;
+    }
+    html.dark textarea#quizdownCode {
+      background: #000000;
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+    html.dark .search-container input {
+      background: #000000;
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+    html.dark .saved-quiz-item {
+      background: #000000;
+      border-color: #ffffff;
+    }
+    html.dark .select-wrapper select {
+      background: #000000;
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+    html.dark .custom-checkbox {
+      background: #000000;
+      border-color: #ffffff;
+    }
+    html.dark .custom-checkbox:checked {
+      background: #ffffff;
+      border-color: #ffffff;
+    }
+    html.dark .custom-checkbox:checked::after {
+      border-color: #000000;
+    }
+    html.dark .theme-toggle {
+      color: #aaaaaa;
+    }
+    html.dark .theme-toggle:hover {
+      color: #ffffff;
+    }
+    html.dark .help-link {
+      color: #aaaaaa;
+    }
+    html.dark .help-link:hover {
+      color: #ffffff;
+    }
+    html.dark .status-message {
+      color: #ffffff;
+      background: #111111;
+      border-color: #ffffff;
+    }
+    html.dark .toast-notification {
+      background: #000000;
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+    html.dark .custom-modal-box {
+      background: #000000;
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+    html.dark .badge {
+      background: #111111;
+      color: #aaaaaa;
+    }
+    html.dark .text-muted,
+    html.dark .group-label,
+    html.dark .sidebar-header h3 {
+      color: #aaaaaa;
+    }
+    html.dark .export-separator {
+      background-color: #ffffff;
+    }
+    html.dark .empty-state {
+      color: #aaaaaa;
+    }
+    html.dark .resize-handle:hover {
+      background: rgba(255,255,255,0.05);
+    }
+    /* Visual editor dark overrides */
+    html.dark .visual-card {
+      background: #000000;
+      border-color: #ffffff;
+    }
+    html.dark .visual-card textarea,
+    html.dark .visual-card input[type="text"],
+    html.dark .visual-card select {
+      background: #000000;
+      color: #ffffff;
+      border-color: #ffffff;
+    }
+    html.dark .visual-material-item {
+      background: #111111;
+      border-color: #ffffff;
+    }
+    html.dark .mat-tag {
+      background: #ffffff;
+      color: #000000;
+    }
+    html.dark .btn-tiny {
+      background: #000000;
+      color: #aaaaaa;
+      border-color: #ffffff;
+    }
+    html.dark .btn-tiny:hover {
+      background: #ffffff;
+      color: #000000;
+    }
+    html.dark .mc-option-row {
+      background: #000000;
+      border-color: #ffffff;
+    }
+    html.dark .card-header {
+      border-bottom-color: #111111;
+    }
+    html.dark .answer-section {
+      border-top-color: #111111;
     }
   </style>
 
