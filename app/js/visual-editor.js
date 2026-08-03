@@ -1,4 +1,4 @@
-/* visual-editor.js */
+// app/js/visual-editor.js
 
 // Global state
 window.visualState = {
@@ -30,11 +30,45 @@ window.parseRawToVisual = function(text) {
         let qSection = qaSplit[0];
         let aSection = qaSplit.length > 1 ? qaSplit[1] : "";
 
-        // Regex for materials
-        const materialRegex = /\[(code|quote|table|material)\]([\s\S]*?)\[\/\1\]/g;
+        // Regex for materials matches code, quote, table, material, plot and optional langs
+        const materialRegex = /\[(code(?::[a-zA-Z0-9_-]+)?|quote|table|material|plot)\]\n?([\s\S]*?)\n?\[\/(?:code|quote|table|material|plot)\]/gi;
         let match;
         while ((match = materialRegex.exec(qSection)) !== null) {
-            qObj.materials.push({ type: match[1], content: match[2].trim() });
+            let fullType = match[1].toLowerCase();
+            let content = match[2].trim();
+            
+            let type = fullType;
+            let lang = '';
+            let author = '';
+            
+            if (fullType.startsWith('code:')) {
+                type = 'code';
+                lang = fullType.substring(5);
+            } else if (fullType === 'code') {
+                type = 'code';
+                lang = 'text';
+            }
+            
+            if (type === 'quote') {
+                // look for Author: or Source: at the end of the quote block
+                let lines = content.split('\n');
+                let attrIdx = lines.findIndex(l => {
+                    let t = l.trim();
+                    return t.startsWith('—') || /^(author|by|source|attribution)\s*:/i.test(t);
+                });
+                if (attrIdx !== -1) {
+                    let attrLine = lines[attrIdx].trim();
+                    let prefixMatch = attrLine.match(/^(author|by|source|attribution)\s*:\s*(.*)$/i);
+                    author = prefixMatch ? prefixMatch[2].trim() : attrLine.replace(/^—\s*/, '');
+                    content = lines.slice(0, attrIdx).join('\n').trim();
+                }
+            }
+            
+            let matObj = { type, content };
+            if (type === 'code') matObj.lang = lang;
+            if (type === 'quote') matObj.author = author;
+            
+            qObj.materials.push(matObj);
         }
         
         qSection = qSection.replace(materialRegex, "").trim();
@@ -69,16 +103,34 @@ window.generateRawFromVisual = function() {
     let questionBlocks = window.visualState.questions.map(q => {
         let qBlock = "#Q\n";
         qBlock += q.text + "\n\n";
+        
         q.materials.forEach(mat => {
-            qBlock += `[${mat.type}]\n${mat.content}\n[/${mat.type}]\n\n`;
+            if (mat.type === 'quote') {
+                qBlock += `[quote]\n${mat.content}\n`;
+                if (mat.author && mat.author.trim() !== '') {
+                    qBlock += `Author: ${mat.author}\n`;
+                }
+                qBlock += `[/quote]\n\n`;
+            } else if (mat.type === 'code') {
+                let tag = (mat.lang && mat.lang.trim() !== '' && mat.lang !== 'text') ? `code:${mat.lang.trim()}` : 'code';
+                qBlock += `[${tag}]\n${mat.content}\n[/code]\n\n`;
+            } else {
+                qBlock += `[${mat.type}]\n${mat.content}\n[/${mat.type}]\n\n`;
+            }
         });
+        
         if (q.type === 'mc') {
             q.options.forEach(opt => {
                 const mark = opt.correct ? 'x' : ' ';
                 qBlock += `- [${mark}] ${opt.text}\n`;
             });
         }
-        qBlock += "#A\n" + q.answer;
+        
+        if (q.answer && q.answer.trim() !== '') {
+            qBlock += "#A\n" + q.answer;
+        } else {
+            qBlock += "#A"; // Must include the marker even if empty
+        }
         return qBlock;
     });
 
@@ -106,11 +158,15 @@ window.renderVisualEditor = function() {
         card.innerHTML = `
             <div class="card-header">
                 <span class="q-number">Q${index + 1}</span>
-                <select onchange="window.updateQType(${index}, this.value)" style="padding: 4px;">
-                    <option value="mc" ${q.type === 'mc' ? 'selected' : ''}>Multiple Choice</option>
-                    <option value="open" ${q.type === 'open' ? 'selected' : ''}>Open Ended</option>
-                </select>
-                <button class="btn-delete" onclick="window.visualDeleteQ(${index})">×</button>
+                <div style="display:flex; align-items:center; gap: 10px;">
+                    <select onchange="window.updateQType(${index}, this.value)" style="margin-bottom:0; padding:6px 12px; width:auto; font-weight:600; background:var(--surface-muted);">
+                        <option value="mc" ${q.type === 'mc' ? 'selected' : ''}>Multiple Choice</option>
+                        <option value="open" ${q.type === 'open' ? 'selected' : ''}>Open Ended</option>
+                    </select>
+                    <button class="btn-delete" title="Delete Question" onclick="window.visualDeleteQ(${index})">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
             </div>
             
             <label>Question Text</label>
@@ -125,14 +181,14 @@ window.renderVisualEditor = function() {
                     ${q.materials.map((m, mIdx) => renderMaterialHTML(index, mIdx, m)).join('')}
                 </div>
                 <div class="mat-buttons">
-                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'code')">+ Code</button>
-                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'quote')">+ Quote</button>
-                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'table')">+ Table</button>
-                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'material')">+ Material</button>
+                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'code')">+ Add Code</button>
+                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'quote')">+ Add Quote</button>
+                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'table')">+ Add Table</button>
+                    <button class="btn-tiny" onclick="window.addMaterial(${index}, 'material')">+ Add Block</button>
                 </div>
             </div>
 
-            <div class="answer-section" style="margin-top: 15px; border-top: 1px dashed #eee; padding-top: 10px;">
+            <div class="answer-section" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--surface-muted);">
                 <label>${q.type === 'mc' ? 'Options & Answer' : 'Answer Explanation'}</label>
                 <div id="options-container-${index}">
                     ${renderAnswerSection(index, q)}
@@ -154,21 +210,47 @@ function renderMaterialHTML(qIdx, mIdx, material) {
         return renderTableEditor(qIdx, mIdx, material.content);
     }
     
-    // Generic renderer for Code, Quote, Material
-    const isCode = material.type === 'code' || material.type === 'material';
-    const extraClass = isCode ? 'code-font' : '';
-    
-    return `
+    if (material.type === 'quote') {
+        return `
         <div class="visual-material-item">
+            <div class="mat-header">
+                <span class="mat-tag">Quote</span>
+                <button class="btn-delete-tiny" title="Remove Quote" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <textarea placeholder="Quote text..." oninput="window.autoGrow(this); window.updateMaterial(${qIdx}, ${mIdx}, 'content', this.value)">${material.content}</textarea>
+            <input type="text" placeholder="Author/Source (Optional)" value="${material.author || ''}" oninput="window.updateMaterial(${qIdx}, ${mIdx}, 'author', this.value)">
+        </div>`;
+    }
+
+    if (material.type === 'code') {
+        return `
+        <div class="visual-material-item">
+            <div class="mat-header">
+                <span class="mat-tag">Code</span>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <label style="font-size:0.8rem; color:var(--text-muted); margin-bottom:0;">Language:</label>
+                    <input type="text" style="width:100px; padding:2px 8px; margin-bottom:0;" placeholder="e.g. js" value="${material.lang || 'text'}" oninput="window.updateMaterial(${qIdx}, ${mIdx}, 'lang', this.value)">
+                    <button class="btn-delete-tiny" title="Remove Code" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <textarea class="code-font" placeholder="Paste code here..." oninput="window.autoGrow(this); window.updateMaterial(${qIdx}, ${mIdx}, 'content', this.value)">${material.content}</textarea>
+        </div>`;
+    }
+
+    return `
+    <div class="visual-material-item">
+        <div class="mat-header">
             <span class="mat-tag">${material.type}</span>
-            <textarea 
-                class="${extraClass}"
-                placeholder="Paste your ${material.type} here..."
-                oninput="window.autoGrow(this); window.updateMaterial(${qIdx}, ${mIdx}, this.value)" 
-            >${material.content}</textarea>
-            <button class="btn-delete-tiny" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">×</button>
+            <button class="btn-delete-tiny" title="Remove Block" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
         </div>
-    `;
+        <textarea placeholder="Content here..." oninput="window.autoGrow(this); window.updateMaterial(${qIdx}, ${mIdx}, 'content', this.value)">${material.content}</textarea>
+    </div>`;
 }
 
 // --- TABLE EDITOR LOGIC ---
@@ -207,14 +289,20 @@ function renderTableEditor(qIdx, mIdx, content) {
     if (!grid || grid.length === 0) {
         return `
             <div class="visual-material-item">
-                <span class="mat-tag">Table</span>
+                <div class="mat-header">
+                    <span class="mat-tag">Table</span>
+                    <button class="btn-delete-tiny" title="Remove Table" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">
+                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
                 <div class="table-editor-wrapper table-init-box">
                     <p style="margin-bottom:10px; font-weight:500;">Create a new table</p>
-                    <button class="btn btn-secondary btn-sm" onclick="window.initTable(${qIdx}, ${mIdx}, 2, 2)">2x2</button>
-                    <button class="btn btn-secondary btn-sm" onclick="window.initTable(${qIdx}, ${mIdx}, 3, 3)">3x3</button>
-                    <button class="btn btn-secondary btn-sm" onclick="window.initTable(${qIdx}, ${mIdx}, 4, 2)">4x2</button>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.initTable(${qIdx}, ${mIdx}, 2, 2)">2x2</button>
+                        <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.initTable(${qIdx}, ${mIdx}, 3, 3)">3x3</button>
+                        <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.initTable(${qIdx}, ${mIdx}, 4, 2)">4x2</button>
+                    </div>
                 </div>
-                <button class="btn-delete-tiny" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">×</button>
             </div>
         `;
     }
@@ -240,24 +328,30 @@ function renderTableEditor(qIdx, mIdx, content) {
 
     return `
         <div class="visual-material-item">
-            <span class="mat-tag">Table Editor</span>
+            <div class="mat-header">
+                <span class="mat-tag">Table Editor</span>
+                <button class="btn-delete-tiny" title="Remove Table" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">
+                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
             <div class="table-editor-wrapper">
-                <table class="visual-table">
-                    <tbody>${rowsHtml}</tbody>
-                </table>
+                <div style="overflow-x:auto;">
+                    <table class="visual-table">
+                        <tbody>${rowsHtml}</tbody>
+                    </table>
+                </div>
                 <div class="table-controls">
-                    <button class="btn btn-secondary btn-sm" onclick="window.tableAddRow(${qIdx}, ${mIdx})">+ Row</button>
-                    <button class="btn btn-secondary btn-sm" onclick="window.tableRemoveRow(${qIdx}, ${mIdx})">- Row</button>
+                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableAddRow(${qIdx}, ${mIdx})">+ Row</button>
+                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableRemoveRow(${qIdx}, ${mIdx})">- Row</button>
                     
-                    <span style="color:#ddd;">|</span>
+                    <span style="color:var(--border-color);">|</span>
                     
-                    <button class="btn btn-secondary btn-sm" onclick="window.tableAddCol(${qIdx}, ${mIdx})">+ Col</button>
-                    <button class="btn btn-secondary btn-sm" onclick="window.tableRemoveCol(${qIdx}, ${mIdx})">- Col</button>
+                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableAddCol(${qIdx}, ${mIdx})">+ Col</button>
+                    <button class="btn btn-secondary btn-sm" style="border-radius:6px;" onclick="window.tableRemoveCol(${qIdx}, ${mIdx})">- Col</button>
                     
-                    <button class="btn btn-sm" style="color:red; margin-left:auto;" onclick="window.tableReset(${qIdx}, ${mIdx})">Reset</button>
+                    <button class="btn btn-sm" style="color:#ef4444; border-color:transparent; margin-left:auto; background:transparent;" onclick="window.tableReset(${qIdx}, ${mIdx})">Reset</button>
                 </div>
             </div>
-            <button class="btn-delete-tiny" onclick="window.deleteMaterial(${qIdx}, ${mIdx})">×</button>
         </div>
     `;
 }
@@ -337,18 +431,20 @@ function renderAnswerSection(index, q) {
         q.options.forEach((opt, oIdx) => {
             html += `
                 <div class="mc-option-row">
-                    <input type="checkbox" ${opt.correct ? 'checked' : ''} onchange="window.updateOptionCorrect(${index}, ${oIdx}, this.checked)">
+                    <input type="checkbox" ${opt.correct ? 'checked' : ''} onchange="window.updateOptionCorrect(${index}, ${oIdx}, this.checked)" title="Mark as correct">
                     <input type="text" value="${opt.text}" oninput="window.updateOptionText(${index}, ${oIdx}, this.value)" placeholder="Option text">
-                    <button class="btn-delete" onclick="window.deleteOption(${index}, ${oIdx})">×</button>
+                    <button class="btn-delete" title="Remove Option" onclick="window.deleteOption(${index}, ${oIdx})">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
                 </div>
             `;
         });
-        html += `<button class="btn-sm" style="margin-top:5px;" onclick="window.addOption(${index})">+ Add Option</button></div>`;
-        html += `<label style="margin-top:15px; display:block;">Explanation</label>`;
+        html += `<button class="btn-sm btn-secondary" style="margin-top:5px; border-radius: 6px;" onclick="window.addOption(${index})">+ Add Option</button></div>`;
+        html += `<label style="margin-top:20px; display:block;">Explanation (Optional)</label>`;
         html += `
             <textarea 
                 class="input-answer" 
-                placeholder="Optional explanation..."
+                placeholder="Explain why the answer is correct..."
                 oninput="window.autoGrow(this); window.updateAnswer(${index}, this.value)"
             >${q.answer}</textarea>`;
         return html;
@@ -377,7 +473,15 @@ window.updateQType = (idx, type) => {
     window.renderVisualEditor();
 };
 window.addMaterial = (qIdx, type) => { window.visualState.questions[qIdx].materials.push({type: type, content: ""}); window.renderVisualEditor(); };
-window.updateMaterial = (qIdx, mIdx, val) => window.visualState.questions[qIdx].materials[mIdx].content = val;
+window.updateMaterial = (qIdx, mIdx, field, val) => {
+    if (field === 'content') {
+        window.visualState.questions[qIdx].materials[mIdx].content = val;
+    } else if (field === 'author') {
+        window.visualState.questions[qIdx].materials[mIdx].author = val;
+    } else if (field === 'lang') {
+        window.visualState.questions[qIdx].materials[mIdx].lang = val;
+    }
+};
 window.deleteMaterial = (qIdx, mIdx) => { window.visualState.questions[qIdx].materials.splice(mIdx, 1); window.renderVisualEditor(); };
 window.updateOptionText = (qIdx, oIdx, val) => window.visualState.questions[qIdx].options[oIdx].text = val;
 window.updateOptionCorrect = (qIdx, oIdx, val) => window.visualState.questions[qIdx].options[oIdx].correct = val;
