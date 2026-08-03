@@ -90,7 +90,7 @@ function extractTitleFromFrontMatter(text) {
  * so this function is kept as a no‑op to preserve the call site.
  */
 function preprocessQuizdownContent(content) {
-  return content; // points must be preserved for exam scoring
+  return content; 
 }
 
 /**
@@ -101,7 +101,7 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, 
     const [cssContent, jsContent] = await loadAssets();
     const safeTitle = escapeHtml(quizTitle);
 
-    // Highlight.js themes (both included, one disabled initially)
+    // Highlight.js themes
     const highlightCssLight = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
     const highlightCssDark = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
 
@@ -118,7 +118,7 @@ async function createFullHtml(quizTitle, quizBody, lang = 'en', isDark = false, 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   
-  <!-- Fonts: Open Sans (incl. 800 weight) and Fira Code -->
+  <!-- Fonts: Open Sans and Fira Code -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
@@ -186,10 +186,8 @@ ${quizBody}
         darkLink.disabled = !isDark;
       }
       
-      // Sync on load (in case the script runs after the body class is set)
       updateHighlightTheme();
       
-      // Watch for class changes on body (e.g. from the theme toggle)
       const observer = new MutationObserver(function(mutations) {
         for (let mutation of mutations) {
           if (mutation.attributeName === 'class') {
@@ -240,10 +238,9 @@ async function generateQuizHtml(lang = 'en', examMode = false) {
     
     const isDark = document.body.classList.contains('dark');
     
-    // Clever Noticer: Dynamically fetch extra highlighting packages based on requested languages
+    // Dynamically fetch extra highlighting packages based on requested languages
     const codeLangs = new Set();
     
-    // Alias map for common language abbreviations that highlight.js expects under a different name
     const langAliases = {
         'tex': 'latex',
         'js': 'javascript',
@@ -259,7 +256,6 @@ async function generateQuizHtml(lang = 'en', examMode = false) {
     for (const match of quizdownContent.matchAll(/\[code:([a-zA-Z0-9_-]+)\]/gi)) {
         let parsedLang = match[1].toLowerCase();
         
-        // Map to highlight.js official language filename if alias exists
         if (langAliases[parsedLang]) {
             parsedLang = langAliases[parsedLang];
         }
@@ -270,11 +266,17 @@ async function generateQuizHtml(lang = 'en', examMode = false) {
     }
     
     let extraScripts = '';
+    
+    // Append Highlight.js modules
     codeLangs.forEach(l => {
         extraScripts += `\n  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/${l}.min.js"></script>`;
     });
 
-    // Clear cache so we always get the latest CSS/JS (useful during development)
+    // Detect if the document contains a [plot] and inject Desmos Graphing API
+    if (/\[plot\]/i.test(quizdownContent)) {
+        extraScripts += `\n  <script src="https://www.desmos.com/api/v1.9/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"></script>`;
+    }
+
     assetsPromise = null;
     
     return await createFullHtml(finalTitle, quizOutput.body, lang, isDark, examMode, extraScripts);
