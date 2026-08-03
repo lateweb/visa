@@ -39,59 +39,15 @@ document.addEventListener('DOMContentLoaded', () => {
     if (examModeCheckbox) examModeCheckbox.addEventListener('change', () => localStorage.setItem('pref_exam', examModeCheckbox.checked));
     if (compactModeCheckbox) compactModeCheckbox.addEventListener('change', () => localStorage.setItem('pref_compact', compactModeCheckbox.checked));
 
-    // --- OUTPUT LINK MODAL ---
-    function showGeneratedLinkModal(url) {
-        const overlay = document.createElement('div');
-        overlay.className = 'custom-modal-overlay active';
-        
-        const box = document.createElement('div');
-        box.className = 'custom-modal-box';
-        
-        const text = document.createElement('div');
-        text.className = 'custom-modal-text';
-        text.innerHTML = `<strong>Success!</strong><br><br>Your quiz preview has been generated.`;
-        
-        const actions = document.createElement('div');
-        actions.className = 'custom-modal-actions';
-        
-        const closeBtn = document.createElement('button');
-        closeBtn.className = 'btn btn-secondary';
-        closeBtn.textContent = 'Close';
-        
-        const openLink = document.createElement('a');
-        openLink.className = 'btn btn-primary';
-        openLink.textContent = 'Open Quiz Preview';
-        openLink.href = url;
-        openLink.target = '_blank';
-        openLink.style.textDecoration = 'none';
-        
-        actions.appendChild(closeBtn);
-        actions.appendChild(openLink);
-        box.appendChild(text);
-        box.appendChild(actions);
-        overlay.appendChild(box);
-        document.body.appendChild(overlay);
-        
-        const close = () => {
-            overlay.classList.remove('active');
-            setTimeout(() => overlay.remove(), 200);
-        };
-        
-        closeBtn.onclick = close;
-        openLink.onclick = () => { setTimeout(close, 100); };
-    }
-
     // --- NAVIGATION: Open Visual Builder ---
     if (openBuilderBtn) {
         openBuilderBtn.addEventListener('click', (e) => {
             e.preventDefault();
             const text = quizInput.value.trim();
             if (text) {
-                // Compress data and pass to editor via URL
                 const compressed = LZString.compressToBase64(text);
                 window.location.href = `editor.html#quiz=${encodeURIComponent(compressed)}`;
             } else {
-                // If text is intentionally empty, clear the draft to ensure a fresh start
                 localStorage.removeItem('quiz_autosave_draft');
                 window.location.href = 'editor.html';
             }
@@ -105,7 +61,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (runBtn) runBtn.disabled = !hasText;
         });
         
-        // Initial check
         const hasText = quizInput.value.trim().length > 0;
         if (runBtn) runBtn.disabled = !hasText;
     }
@@ -114,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resizeHandle && sidebar) {
         let isResizing = false;
 
-        resizeHandle.addEventListener('mousedown', (e) => {
+        resizeHandle.addEventListener('mousedown', () => {
             isResizing = true;
             document.body.style.cursor = 'col-resize';
             sidebar.style.userSelect = 'none';
@@ -144,6 +99,12 @@ document.addEventListener('DOMContentLoaded', () => {
             runBtn.innerHTML = 'Generating...';
             runBtn.disabled = true;
            
+            // Open tab synchronously before any await to avoid pop-up blockers
+            const previewTab = window.open('about:blank', '_blank');
+            if (previewTab) {
+                previewTab.document.write("<h2 style='font-family:sans-serif; padding: 20px;'>Generating Quiz Preview...</h2>");
+            }
+           
             try {
                 if (typeof generateQuizHtml !== 'function') throw new Error("HTML Generator not loaded");
                
@@ -151,14 +112,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 const html = await generateQuizHtml(langSelect.value, examMode);
                
                 if (html) {
-                    const blob = new Blob([html], { type: 'text/html' });
-                    const url = URL.createObjectURL(blob);
-                    showGeneratedLinkModal(url);
+                    if (previewTab) {
+                        // Safely inject the rendered HTML without relying on Blob URLs (which can cause cross-origin limits)
+                        previewTab.document.open();
+                        previewTab.document.write(html);
+                        previewTab.document.close();
+                    } else {
+                        // Fallback if the popup was initially blocked but allowed later
+                        const blob = new Blob([html], { type: 'text/html' });
+                        const url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                    }
                 } else {
+                    if (previewTab) previewTab.close();
                     showToast('Please enter some text first.', 'warning');
                 }
             } catch (error) {
                 console.error("Error generating HTML:", error);
+                if (previewTab) previewTab.close();
                 showToast('Error generating preview.', 'error');
             } finally {
                 runBtn.innerHTML = btnText;
@@ -171,18 +142,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.ctrlKey && (e.key === 'Enter' || e.key.toLowerCase() === 'e')) {
             e.preventDefault();
-            if (runBtn && !runBtn.disabled) {
-                runBtn.click();
-            }
+            if (runBtn && !runBtn.disabled) runBtn.click();
         }
     });
     
-    // Copy HTML Code – now changes button text to "Copied!" instead of side popup
+    // Copy HTML Code
     if (copyBtn) {
         copyBtn.addEventListener('click', async () => {
             const originalText = copyBtn.innerHTML;
             copyBtn.textContent = 'Copying...';
-           
             try {
                 if (typeof generateQuizHtml !== 'function') throw new Error("HTML Generator not loaded");
                 const examMode = examModeCheckbox ? examModeCheckbox.checked : false;
@@ -197,9 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Error copying HTML:", error);
                 copyBtn.textContent = 'Failed';
             } finally {
-                setTimeout(() => {
-                    copyBtn.innerHTML = originalText;
-                }, 2000);
+                setTimeout(() => { copyBtn.innerHTML = originalText; }, 2000);
             }
         });
     }
@@ -226,22 +192,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Error downloading HTML:", error);
                 downloadBtn.textContent = 'Failed';
             } finally {
-                setTimeout(() => {
-                    downloadBtn.innerHTML = originalText;
-                }, 2000);
+                setTimeout(() => { downloadBtn.innerHTML = originalText; }, 2000);
             }
         });
     }
 
     // --- LATEX ACTIONS ---
-
-    // 1. HELPER: Generate LaTeX using the global object
     async function getLatex(withAnswers) {
         const lang = langSelect ? langSelect.value : 'en';
-        
-        // Check for Compact Mode checkbox (now in bottom toolbar)
         const isCompact = compactModeCheckbox ? compactModeCheckbox.checked : false;
-
         if (window.LatexGenerator && typeof window.LatexGenerator.generateLatexDocument === 'function') {
             return window.LatexGenerator.generateLatexDocument(quizInput.value, withAnswers, lang, isCompact);
         }
@@ -249,7 +208,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return null;
     }
 
-    // 2. Button Handlers – change text to "Copied!" / "Downloaded" / "Failed" inside the button
     async function handleClipboardLatex(withAnswers, uiButton) {
         const originalText = uiButton.innerHTML;
         uiButton.textContent = '...';
@@ -293,10 +251,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Error downloading LaTeX questions:", error);
                 downloadBtnQ.textContent = 'Failed';
             } finally {
-                setTimeout(() => {
-                    downloadBtnQ.innerHTML = originalText;
-                    downloadBtnQ.disabled = false;
-                }, 2000);
+                setTimeout(() => { downloadBtnQ.innerHTML = originalText; downloadBtnQ.disabled = false; }, 2000);
             }
         });
     }
@@ -318,10 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error("Error downloading LaTeX Q&A:", error);
                 downloadBtnQA.textContent = 'Failed';
             } finally {
-                setTimeout(() => {
-                    downloadBtnQA.innerHTML = originalText;
-                    downloadBtnQA.disabled = false;
-                }, 2000);
+                setTimeout(() => { downloadBtnQA.innerHTML = originalText; downloadBtnQA.disabled = false; }, 2000);
             }
         });
     }
@@ -347,9 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = document.getElementById('copy-share-link');
             const originalText = btn.innerHTML;
             btn.textContent = 'Copied!';
-            setTimeout(() => {
-                btn.innerHTML = originalText;
-            }, 2000);
+            setTimeout(() => { btn.innerHTML = originalText; }, 2000);
         });
     }
 
@@ -367,7 +317,6 @@ document.addEventListener('DOMContentLoaded', () => {
             showToast('Quiz loaded!', 'success');
             loadedFromUrl = true;
             
-            // Remove the URL query param so a subsequent refresh doesn't overwrite a newer draft
             const newUrl = window.location.pathname;
             window.history.replaceState({}, document.title, newUrl);
         }
@@ -394,7 +343,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         
-        // Interval fallback
         setInterval(() => {
             const raw = quizInput.value;
             if (raw.trim().length > 10) {
@@ -428,20 +376,4 @@ function showToast(message, type = 'success') {
     document.body.appendChild(toast);
     setTimeout(() => toast.classList.add('show'), 10);
     setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
-}
-
-function showStatusMessage(button, message, type = 'success') {
-    // This function is no longer used by the main copy buttons, kept for compatibility
-    const existing = button.parentNode.querySelector('.status-message');
-    if (existing) existing.remove();
-    const status = document.createElement('span');
-    status.className = `status-message ${type}`;
-    status.textContent = message;
-    status.style.cssText = `margin-left: 8px; font-size: 12px; padding: 2px 6px; border-radius: 4px; opacity: 0; transition: opacity 0.3s;`;
-    if (type === 'success') { status.style.backgroundColor = '#dbeafe'; status.style.color = '#1e40af'; }
-    else if (type === 'error') { status.style.backgroundColor = '#fee2e2'; status.style.color = '#991b1b'; }
-    else { status.style.backgroundColor = '#fef3c7'; status.style.color = '#92400e'; }
-    button.parentNode.appendChild(status);
-    setTimeout(() => status.style.opacity = '1', 10);
-    setTimeout(() => { status.style.opacity = '0'; setTimeout(() => { if (status.parentNode) status.remove(); }, 300); }, 2000);
 }
