@@ -286,14 +286,6 @@
                 moon.style.display = next === 'dark' ? 'none' : 'inline';
                 sun.style.display = next === 'dark' ? 'inline' : 'none';
             }
-            
-            if (typeof Desmos !== 'undefined') {
-                document.querySelectorAll('.desmos-calculator').forEach(el => {
-                    if (el._desmosCalc) {
-                        el._desmosCalc.updateSettings({ invertedColors: next === 'dark' });
-                    }
-                });
-            }
         });
     }
   }
@@ -488,36 +480,6 @@
 
     // Expose for manual use
     window._restoreOpenAnswers = restoreAnswers;
-  }
-
-  // --- DESMOS INTEGRATION ---
-  function initDesmosPlots() {
-    if (typeof Desmos === 'undefined') return;
-    const isDark = document.body.classList.contains('dark');
-    document.querySelectorAll('.desmos-calculator').forEach(el => {
-      const exprsData = el.getAttribute('data-exprs');
-      if (!exprsData) return;
-      try {
-        const exprs = JSON.parse(exprsData);
-        const calc = Desmos.GraphingCalculator(el, {
-          expressions: true,    // Keep sidebar list visually present
-          settingsMenu: false,  // Hide settings wrench
-          zoomButtons: true,    // Allow zooming
-          lockViewport: false,  // Allow panning
-          invertedColors: isDark,
-          authorFeatures: true  // Required to explicitly utilize the read-only flag
-        });
-        exprs.forEach((expr, i) => {
-          // Marking an expression readonly disables editing of the LaTeX field
-          // but completely retains slider/viewport interactivity!
-          calc.setExpression({ id: 'expr-' + i, latex: expr, readonly: true });
-        });
-        // Store on DOM element so theme toggle can access it later
-        el._desmosCalc = calc;
-      } catch (e) {
-        console.error("Desmos initialization failed:", e);
-      }
-    });
   }
 
   // --- SIDEBAR & TIMER ---
@@ -898,7 +860,6 @@
 
     const onMathJaxReady = () => {
        annotateAllMathWithTex();
-       initDesmosPlots(); // Initialize plots after MathJax is ready just to be safe with page load order
     };
 
     if (window.MathJax?.startup?.promise) {
