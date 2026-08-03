@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const quizInput = document.getElementById('quizdownCode');
     const langSelect = document.getElementById('language-select');
     const examModeCheckbox = document.getElementById('examModeCheckbox');
+    const compactModeCheckbox = document.getElementById('compactMode');
     const openBuilderBtn = document.getElementById('openBuilderBtn');
    
     // HTML Buttons
@@ -24,6 +25,61 @@ document.addEventListener('DOMContentLoaded', () => {
     // Sidebar Elements
     const sidebar = document.getElementById('storageSidebar');
     const resizeHandle = document.getElementById('resizeHandle');
+
+    // --- PREFERENCES: Load & Save Choices ---
+    const savedLang = localStorage.getItem('pref_lang');
+    const savedExam = localStorage.getItem('pref_exam');
+    const savedCompact = localStorage.getItem('pref_compact');
+
+    if (savedLang && langSelect) langSelect.value = savedLang;
+    if (savedExam && examModeCheckbox) examModeCheckbox.checked = (savedExam === 'true');
+    if (savedCompact && compactModeCheckbox) compactModeCheckbox.checked = (savedCompact === 'true');
+
+    if (langSelect) langSelect.addEventListener('change', () => localStorage.setItem('pref_lang', langSelect.value));
+    if (examModeCheckbox) examModeCheckbox.addEventListener('change', () => localStorage.setItem('pref_exam', examModeCheckbox.checked));
+    if (compactModeCheckbox) compactModeCheckbox.addEventListener('change', () => localStorage.setItem('pref_compact', compactModeCheckbox.checked));
+
+    // --- OUTPUT LINK MODAL ---
+    function showGeneratedLinkModal(url) {
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-modal-overlay active';
+        
+        const box = document.createElement('div');
+        box.className = 'custom-modal-box';
+        
+        const text = document.createElement('div');
+        text.className = 'custom-modal-text';
+        text.innerHTML = `<strong>Success!</strong><br><br>Your quiz preview has been generated.`;
+        
+        const actions = document.createElement('div');
+        actions.className = 'custom-modal-actions';
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'btn btn-secondary';
+        closeBtn.textContent = 'Close';
+        
+        const openLink = document.createElement('a');
+        openLink.className = 'btn btn-primary';
+        openLink.textContent = 'Open Quiz Preview';
+        openLink.href = url;
+        openLink.target = '_blank';
+        openLink.style.textDecoration = 'none';
+        
+        actions.appendChild(closeBtn);
+        actions.appendChild(openLink);
+        box.appendChild(text);
+        box.appendChild(actions);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        
+        const close = () => {
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.remove(), 200);
+        };
+        
+        closeBtn.onclick = close;
+        openLink.onclick = () => { setTimeout(close, 100); };
+    }
 
     // --- NAVIGATION: Open Visual Builder ---
     if (openBuilderBtn) {
@@ -97,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (html) {
                     const blob = new Blob([html], { type: 'text/html' });
                     const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
+                    showGeneratedLinkModal(url);
                 } else {
                     showToast('Please enter some text first.', 'warning');
                 }
@@ -184,8 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const lang = langSelect ? langSelect.value : 'en';
         
         // Check for Compact Mode checkbox (now in bottom toolbar)
-        const compactCheckbox = document.getElementById('compactMode');
-        const isCompact = compactCheckbox ? compactCheckbox.checked : false;
+        const isCompact = compactModeCheckbox ? compactModeCheckbox.checked : false;
 
         if (window.LatexGenerator && typeof window.LatexGenerator.generateLatexDocument === 'function') {
             return window.LatexGenerator.generateLatexDocument(quizInput.value, withAnswers, lang, isCompact);
