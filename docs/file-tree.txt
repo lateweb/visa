@@ -1,3 +1,5 @@
+# docs/file-tree.txt
+
 Project Root/
 │
 ├── index.html                 # The Main Converter Tool
@@ -24,7 +26,10 @@ Project Root/
 │   │   ├── layout.css         # Quiz structure, inputs, spacing
 │   │   └── sidebar.css        # Interactive side navigation menu
 │   └── js/
-│       └── script.js          # Injected logic (grading, mathjax config, etc)
+│       ├── quiz-core.js       # Core checking logic, exam finish flows, autosaving
+│       ├── quiz-math.js       # MathJax initialization, layout, and copy handlers
+│       ├── quiz-sidebar.js    # Sidebar navigation and countdown timer logic
+│       └── quiz-utils.js      # Theme toggling, code copying, and quiz flagging
 │
 └── docs/                      
     └── file-tree.txt          # Current file structure representation
