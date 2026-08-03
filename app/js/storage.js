@@ -8,9 +8,15 @@ window.loadQuiz = loadQuiz;
 window.deleteQuiz = deleteQuiz;
 window.loadSavedQuizzes = loadSavedQuizzes;
 
-// Setup a global custom confirm modal
+// Setup a global custom confirm modal with keyboard support (Enter = confirm, Escape = cancel)
 window.customConfirm = function(message) {
     return new Promise((resolve) => {
+        // Guard: if an overlay already exists, do not create another one.
+        if (document.querySelector('.custom-modal-overlay.active')) {
+            resolve(false);
+            return;
+        }
+
         const overlay = document.createElement('div');
         overlay.className = 'custom-modal-overlay active';
         
@@ -38,15 +44,39 @@ window.customConfirm = function(message) {
         box.appendChild(actions);
         overlay.appendChild(box);
         document.body.appendChild(overlay);
-        
+
+        // Focus the confirm button by default so Enter triggers it.
+        setTimeout(() => confirmBtn.focus(), 50);
+
+        let resolved = false;
+
         const close = (result) => {
+            if (resolved) return;
+            resolved = true;
             overlay.classList.remove('active');
-            setTimeout(() => overlay.remove(), 200);
+            setTimeout(() => {
+                if (overlay.parentNode) overlay.remove();
+            }, 200);
             resolve(result);
         };
-        
+
+        // Click handlers
         cancelBtn.onclick = () => close(false);
         confirmBtn.onclick = () => close(true);
+
+        // Keyboard handlers: Enter => confirm, Escape => cancel
+        const keydownHandler = (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                e.stopPropagation();
+                close(true);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+                close(false);
+            }
+        };
+        overlay.addEventListener('keydown', keydownHandler);
     });
 };
 
