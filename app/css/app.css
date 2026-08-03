@@ -449,7 +449,7 @@ textarea#quizdownCode:focus {
 }
 
 /* ============================================================
-   Builder-specific Overhaul Styles
+   Builder-specific Boxy Overhaul Styles
    ============================================================ */
 
 .editor-page .sticky-toolbar {
@@ -472,10 +472,9 @@ textarea#quizdownCode:focus {
 .visual-card {
   background: var(--surface);
   border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-left: 5px solid var(--border-color);
   padding: 24px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.02);
   transition: border-color 0.2s;
 }
 
@@ -484,7 +483,7 @@ textarea#quizdownCode:focus {
 }
 
 .metadata-card {
-  border-top: 4px solid var(--text);
+  border-left: 5px solid var(--border-color);
 }
 
 .card-header {
@@ -511,7 +510,6 @@ textarea#quizdownCode:focus {
   width: 8px;
   height: 8px;
   background: var(--text);
-  border-radius: 50%;
 }
 
 .visual-card label {
@@ -530,7 +528,6 @@ textarea#quizdownCode:focus {
   width: 100%;
   padding: 10px 14px;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
   font-family: inherit;
   margin-bottom: 12px;
   background: var(--bg);
@@ -540,7 +537,7 @@ textarea#quizdownCode:focus {
 }
 
 .visual-card textarea {
-  overflow: hidden; /* Prevent auto-grow scrollbar flash */
+  overflow: hidden; 
 }
 
 .visual-card textarea:focus,
@@ -570,7 +567,6 @@ textarea#quizdownCode:focus {
   color: var(--bg);
   font-size: 0.75rem;
   padding: 4px 8px;
-  border-radius: 4px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -579,8 +575,8 @@ textarea#quizdownCode:focus {
 .visual-material-item {
   background: var(--surface-muted);
   padding: 16px;
-  border-radius: 8px;
   border: 1px solid var(--border-color);
+  border-left: 3px solid var(--border-color);
   margin-bottom: 12px;
 }
 
@@ -604,8 +600,7 @@ textarea#quizdownCode:focus {
   font-size: 0.8rem;
   padding: 6px 14px;
   background: var(--surface);
-  border: 1px dashed var(--border-color);
-  border-radius: 20px;
+  border: 1px solid var(--border-color);
   cursor: pointer;
   color: var(--text-muted);
   font-family: inherit;
@@ -617,7 +612,6 @@ textarea#quizdownCode:focus {
   background: var(--text);
   color: var(--bg);
   border-color: var(--text);
-  border-style: solid;
 }
 
 .btn-delete-tiny,
@@ -627,7 +621,6 @@ textarea#quizdownCode:focus {
   border: none;
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -644,7 +637,6 @@ textarea#quizdownCode:focus {
   padding: 12px 24px;
   font-size: 1rem;
   font-weight: 600;
-  border-radius: 8px;
   width: 100%;
 }
 
@@ -656,7 +648,6 @@ textarea#quizdownCode:focus {
   padding: 8px 12px;
   background: var(--bg);
   border: 1px solid var(--border-color);
-  border-radius: 6px;
   transition: border-color 0.2s;
 }
 
@@ -669,7 +660,6 @@ textarea#quizdownCode:focus {
   padding: 4px;
   margin: 0;
   box-shadow: none;
-  border-radius: 0;
   flex: 1;
 }
 
@@ -701,7 +691,6 @@ textarea#quizdownCode:focus {
 
 .table-cell-input {
   margin-bottom: 0 !important;
-  border-radius: 4px !important;
   padding: 6px 10px !important;
 }
 
