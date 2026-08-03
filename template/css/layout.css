@@ -21,7 +21,7 @@
 
 .question-block p { margin-bottom: 1.2rem; }
 
-/* Meta Actions Container (Flag & Points) - Ensures side-by-side layout */
+/* Meta Actions Container (Flag & Points) - Ensures side-by-side layout rigidly */
 .question-meta-actions {
   position: absolute;
   top: 1rem;
@@ -30,22 +30,23 @@
   flex-direction: row;
   align-items: center;
   gap: 12px;
-  z-index: 2;
+  z-index: 10;
 }
 
-.flag-question-btn {
+.question-meta-actions .flag-question-btn {
+  position: static !important;
   background: transparent;
   border: none;
   color: var(--quiz-muted);
   cursor: pointer;
   padding: 0;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: color 0.2s;
 }
 
-.flag-question-btn:hover {
+.question-meta-actions .flag-question-btn:hover {
   color: var(--quiz-text);
 }
 
@@ -57,20 +58,21 @@
   fill: currentColor;
 }
 
-.points-badge {
+.question-meta-actions .points-badge {
+  position: static !important;
   background: var(--quiz-surface);
   border: 1px solid var(--quiz-border);
   padding: 2px 8px;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--quiz-text);
-  white-space: nowrap; /* Stops text from wrapping and getting tall */
+  white-space: nowrap; 
   line-height: 1.5;
-  display: none;
+  display: none !important;
 }
 
-body.exam-mode .points-badge {
-  display: block; /* Flex container handles alignment perfectly */
+body.exam-mode .question-meta-actions .points-badge {
+  display: inline-block !important; 
 }
 
 /* ===== PADDING REMOVED – content now spans full width ===== */
@@ -272,7 +274,7 @@ body.exam-mode details .answer-box {
 @media (max-width: 768px) {
   .question-block { padding: 1.2rem 0.75rem; border-left-width: 6px; }
   .question-meta-actions { top: 0.5rem; right: 0.5rem; gap: 8px; }
-  .points-badge { font-size: 0.75rem; padding: 2px 6px; }
+  .question-meta-actions .points-badge { font-size: 0.75rem; padding: 2px 6px; }
   .check-button, summary { width: 100%; text-align: center; padding: 0.6rem 1.2rem !important; font-size: 1rem !important; }
 }
 
