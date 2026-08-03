@@ -223,8 +223,22 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
           materialHtml = `<div class="material-box">${formatParagraphs(content)}</div>`;
         }
         else if (type === 'plot') {
-          // Desmos Integration - Parses equations and yields container div
-          const exprs = content.split('\n').map(l => l.trim()).filter(Boolean);
+          // Desmos Integration - Parses equations, strips LaTeX delims, and yields container div
+          const exprs = content.split('\n')
+            .map(l => l.trim())
+            .filter(Boolean)
+            .map(l => {
+              // Strip math delimiters (e.g. \( \) or $$ $$)
+              let c = l.replace(/^\\\(/, '').replace(/\\\)$/, '');
+              c = c.replace(/^\\\[/, '').replace(/\\\]$/, '');
+              c = c.replace(/^\$\$/, '').replace(/\$\$$/, '');
+              c = c.replace(/^\$/, '').replace(/\$$/, '');
+              c = c.trim();
+              
+              // Map absolute value pipes |x| to Desmos \left|x\right| logic
+              c = c.replace(/\|([^|]+)\|/g, '\\left|$1\\right|');
+              return c;
+            });
           const safeJson = JSON.stringify(exprs).replace(/"/g, '&quot;');
           materialHtml = `<div class="material-box plot-box" style="padding: 0; overflow: hidden; border: 1px solid var(--quiz-border);">
             <div class="desmos-calculator" data-exprs="${safeJson}" style="width: 100%; height: 400px; display: block;"></div>
@@ -285,7 +299,7 @@ function parseQuizdown(text, lang = 'en', examMode = false) {
       // Build question block HTML
       let html = `<section class="question-block" id="${qId}" data-points="${questionPoints}" ${isMcq ? `data-correct-answer="${correctAnswerLetter}"` : ''} aria-labelledby="${qId}-title">`;
       
-      // Meta actions container (Flag & Points) - Flex row ensures side-by-side
+      // Meta actions container (Flag & Points) - Flex row ensures side-by-side explicitly
       html += `<div class="question-meta-actions">`;
       // Put the flag BEFORE the points badge so it shows up on the left side
       html += `<button class="flag-question-btn" aria-label="Flag for review" title="Flag for review">
