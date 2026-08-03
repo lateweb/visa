@@ -84,6 +84,55 @@ h1 {
   hyphens: auto;
 }
 
+/* Custom modal for exam finish */
+.exam-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s;
+}
+.exam-modal-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+.exam-modal-box {
+  background: var(--quiz-bg);
+  border: 1px solid var(--quiz-border);
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  color: var(--quiz-text);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.exam-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.exam-modal-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--quiz-border);
+  background: var(--quiz-surface);
+  color: var(--quiz-text);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+}
+.exam-modal-btn.primary {
+  background: var(--quiz-text);
+  color: var(--quiz-bg);
+}
+
 @media (max-width: 768px) {
   body {
     padding: 1.5rem 0.75rem !important;
