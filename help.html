@@ -5,6 +5,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Documentation - Quizdown Converter</title>
+
+  <!-- ----- INLINE THEME SCRIPT: prevents white flash ----- -->
+  <script>
+    (function() {
+      const saved = localStorage.getItem('visa-theme');
+      const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (saved === 'dark' || (!saved && prefers)) {
+        document.documentElement.classList.add('dark');
+      }
+    })();
+  </script>
+
+  <!-- ----- INLINE CRITICAL CSS: ensures dark background before external CSS loads ----- -->
+  <style>
+    /* CRITICAL: These styles must load before external CSS to prevent flash */
+    html, body {
+      background-color: #ffffff;
+    }
+    html.dark, html.dark body {
+      background-color: #000000;
+    }
+  </style>
+
   <style>
     :root {
       --bg: #ffffff;
