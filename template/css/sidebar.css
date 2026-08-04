@@ -86,7 +86,7 @@
 
 .quiz-nav-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, 51px);
+  grid-template-columns: repeat(auto-fill, 45px);
   gap: 8px;
   padding: 0;
   margin: 0;
