@@ -86,10 +86,11 @@
 
 .quiz-nav-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  grid-template-columns: repeat(auto-fill, 40px);
   gap: 8px;
   padding: 0;
   margin: 0;
+  justify-content: start;
 }
 
 .quiz-nav-item { list-style: none; }
